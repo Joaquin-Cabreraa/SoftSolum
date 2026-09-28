@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Nuevo Usuario</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+        }
+
+        form {
+            width: 400px;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+        }
+
+        input {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>Nuevo usuario</h1>
+
+<hr>
+
+<form action="/api/v1/usuario/new" method="POST">
+
+    <label for="name">Nombre:</label>
+    <input type="text" id="name" name="name" required>
+
+    <label for="lastName">Apellido:</label>
+    <input type="text" id="lastName" name="lastName" required>
+
+    <label for="userName">Nombre de usuario:</label>
+    <input type="text" id="userName" name="userName" required>
+
+    <label for="userEmail">Correo electrónico:</label>
+    <input type="email" id="userEmail" name="userEmail" required>
+
+    <label for="telefono">Teléfono:</label>
+    <input type="text" id="telefono" name="telefono">
+
+    <label for="passwordHash">Contraseña:</label>
+    <input type="password" id="passwordHash" name="passwordHash" required>
+
+    <button type="submit">Guardar usuario</button>
+
+</form>
+
+</body>
+</html>

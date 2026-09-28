@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Detalle del usuario</title>
+</head>
+
+<body>
+
+<h1>Detalle del usuario</h1>
+
+<div th:if="${mensaje} != null">
+    <h3 style="color:#ff00f2" th:text="${mensaje}"></h3>
+</div>
+
+<div th:if="${mensaje} == null">
+
+    <h5>ID:</h5>
+    <h6 th:text="${usuario.id}"></h6>
+
+    <h5>Nombre:</h5>
+    <h6 th:text="${usuario.name}"></h6>
+
+    <h5>Apellido:</h5>
+    <h6 th:text="${usuario.lastName}"></h6>
+
+    <h5>Nombre de usuario:</h5>
+    <h6 th:text="${usuario.userName}"></h6>
+
+    <h5>Email:</h5>
+    <h6 th:text="${usuario.userEmail}"></h6>
+
+    <h5>Teléfono:</h5>
+    <h6 th:text="${usuario.telefono}"></h6>
+
+</div>
+
+</body>
+
+</html>
