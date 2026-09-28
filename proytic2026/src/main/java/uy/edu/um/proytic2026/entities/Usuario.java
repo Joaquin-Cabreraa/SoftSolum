@@ -7,28 +7,42 @@ import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.NoArgsConstructor;
+import lombok.Getter;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name="usuarios")
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@Getter
 
 public class Usuario {
-    @Id
-    private long id;
 
-    @Column(name="nombre")
-    @NotEmpty
-    @NotNull
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(name = "nombre")
     @NotBlank
-    @Size(max = 30, min = 10)
+    @Size(min = 1, max = 50)
     private String name;
 
     @Column (name = "apellido")
     private String lastName;
     private String userName;
 
+    @NotBlank
     @Email(message = "Formato de correo electrónico no válido")
+    @Column(name = "correo", unique = true)
     private String userEmail;
+
+    @Column(name = "telefono")
+    private String telefono;
+
+    @Column(name = "contrasena")
+    private String passwordHash;
+
+
 }
