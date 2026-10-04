@@ -12,11 +12,13 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 
 @Entity
-@Table(name="usuarios")
+@Table(name = "usuarios")
+@Inheritance(strategy = InheritanceType.JOINED)   // NUEVO
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder                                     // antes era @Builder
 @Getter
+@Setter
 
 public class Usuario {
 
