@@ -8,7 +8,7 @@ import lombok.Setter;
 
 //Particular es subclase de Prestador.
 @Entity
-@Table(name = "Prestadores")
+@Table(name = "Particulares")
 @Getter
 @Setter
 @NoArgsConstructor
