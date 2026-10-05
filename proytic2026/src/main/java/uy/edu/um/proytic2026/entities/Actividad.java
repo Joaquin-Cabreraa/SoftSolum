@@ -34,11 +34,6 @@ public class Actividad {
     @Column (nullable = false)
     private String estado;
 
-    @Column (name = "departamento")
-    private String departamento;
-
-    @Column (name = "localidad")
-
     @Column (name = "duracion_minutos")
     private Integer duracionMinutos;
 
