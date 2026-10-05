@@ -8,6 +8,7 @@ import java.util.List;
 import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 
 // emprendimiento asociado a un prestador
@@ -32,6 +33,7 @@ public class Emprendimiento {
 
     private String descripcion;
 
+    @JsonIgnore
     @OneToMany(mappedBy = "emprendimiento")
     private List<Actividad> actividades = new ArrayList<>();
 
