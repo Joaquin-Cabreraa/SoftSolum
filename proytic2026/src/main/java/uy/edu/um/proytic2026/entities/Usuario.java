@@ -10,6 +10,11 @@ import lombok.NoArgsConstructor;
 import lombok.Getter;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
 
 @Entity
 @Table(name = "usuarios")
