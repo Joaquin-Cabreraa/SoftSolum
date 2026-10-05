@@ -41,7 +41,7 @@ public class Actividad {
     @Column(name = "localidad")
     private String localidad;
 
-    @Column(name = "duracion_minutos")
+    @Column (name = "duracion_minutos")
     private Integer duracionMinutos;
 
     @Column (nullable = false)
