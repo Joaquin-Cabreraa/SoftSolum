@@ -2,6 +2,7 @@ package uy.edu.um.proytic2026.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import uy.edu.um.proytic2026.entities.Emprendimiento;
+import uy.edu.um.proytic2026.entities.EstadoEmprendimiento;
 import uy.edu.um.proytic2026.repository.EmprendimientoRepository;
 
 @Service
@@ -12,6 +13,8 @@ public class EmprendimientoService {
 
     // guarda un emprendimiento en la base de datos
     public Emprendimiento crearEmprendimiento(Emprendimiento emprendimiento) {
+        emprendimiento.setId(null);
+        emprendimiento.setEstado(EstadoEmprendimiento.PENDIENTE);
         return emprendimientoRepository.save(emprendimiento);
     }
 }
