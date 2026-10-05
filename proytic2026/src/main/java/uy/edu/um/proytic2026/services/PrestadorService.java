@@ -99,7 +99,7 @@ public class PrestadorService {
     private Emprendimiento crearEmprendimiento(String nombre, String direccion) {
         Emprendimiento emp = new Emprendimiento();
         emp.setNombre(nombre);
-        emp.setDireccion(direccion);
+        emp.setUbicacion(direccion);
         emp.setEstado(EstadoEmprendimiento.PENDIENTE);
         // Todo emprendimiento nuevo arranca PENDIENTE hasta que el admin lo acepte (RNE #8).
         return emp;
