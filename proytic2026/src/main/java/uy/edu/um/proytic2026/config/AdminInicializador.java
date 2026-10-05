@@ -32,7 +32,7 @@ public class AdminInicializador implements CommandLineRunner {
             return; // ya hay admin, no hacemos nada
         }
         if (usuarioRepository.existsByUserEmail(email)) {
-            throw new IllegalStateException("El email del admin inicial ya lo usa otro usuario: " + email);
+            throw new IllegalStateException("El email del admin inicial ya lo utiliza otro usuario: " + email);
         }
 
         Administrador admin = Administrador.builder()
