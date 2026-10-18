@@ -1,0 +1,278 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Registro de prestadores</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --navy: #17283a;
+            --orange: #df733d;
+            --cream: #f8f7f3;
+            --muted: #6c7378;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'DM Sans', sans-serif;
+            color: var(--navy);
+            background: var(--cream);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 52% 48%;
+            min-height: 100vh;
+        }
+
+        .visual {
+            position: relative;
+            min-height: 100vh;
+            background:
+                    linear-gradient(
+                            to top,
+                            rgba(12, 28, 35, 0.65),
+                            transparent 60%
+                    ),
+                    url("/images/costa-uruguay2.png")
+                    center / cover no-repeat;
+        }
+
+        .visual-text {
+            position: absolute;
+            bottom: 55px;
+            left: 55px;
+            right: 55px;
+            color: white;
+        }
+
+        .visual-text p {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .visual-text h2 {
+            font-family: 'Manrope', sans-serif;
+            font-size: clamp(30px, 3vw, 46px);
+            line-height: 1.2;
+            max-width: 500px;
+            margin: 0;
+            font-weight: 600;
+        }
+
+        .panel {
+            display: flex;
+            flex-direction: column;
+            padding: 42px 10%;
+        }
+
+        .logo {
+            font-family: 'Manrope', sans-serif;
+            font-size: 25px;
+            font-weight: 800;
+            letter-spacing: -1.3px;
+        }
+
+        .logo span {
+            color: var(--orange);
+        }
+
+        .contenido {
+            width: 100%;
+            max-width: 430px;
+            margin: auto;
+            padding: 65px 0;
+        }
+
+        .eyebrow {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: var(--orange);
+            font-weight: 700;
+        }
+
+        h1 {
+            font-family: 'Manrope', sans-serif;
+            font-size: clamp(32px, 3vw, 43px);
+            line-height: 1.18;
+            letter-spacing: -1.5px;
+            margin: 18px 0;
+        }
+
+        .descripcion {
+            color: var(--muted);
+            font-size: 15px;
+            line-height: 1.8;
+            margin-bottom: 42px;
+        }
+
+        .opciones {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .opcion {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 23px 24px;
+            background: white;
+            border: 1px solid #e5e6e3;
+            border-radius: 6px;
+            text-decoration: none;
+            color: var(--navy);
+            transition: border-color 0.2s,
+            background 0.2s;
+        }
+
+        .opcion:hover {
+            border-color: var(--orange);
+            background: #fffaf6;
+        }
+
+        .opcion h3 {
+            font-family: 'Manrope', sans-serif;
+            font-size: 16px;
+            margin: 0 0 6px;
+            font-weight: 700;
+        }
+
+        .opcion p {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .flecha {
+            font-size: 22px;
+            color: var(--orange);
+            margin-left: 15px;
+        }
+
+        .login {
+            margin-top: 35px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .login a {
+            color: var(--navy);
+            font-weight: 700;
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        footer {
+            font-size: 12px;
+            color: #92979a;
+        }
+
+        @media (max-width: 850px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .visual {
+                min-height: 300px;
+            }
+
+            .visual-text {
+                left: 25px;
+                bottom: 25px;
+            }
+
+            .visual-text h2 {
+                font-size: 27px;
+            }
+
+            .panel {
+                padding: 30px 7%;
+                min-height: 65vh;
+            }
+
+            .contenido {
+                padding: 60px 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <section class="visual">
+        <div class="visual-text">
+            <p>Experiencias que conectan</p>
+            <h2>Descubrí Uruguay de otra manera.</h2>
+        </div>
+    </section>
+
+    <section class="panel">
+
+        <header>
+            <div class="logo">UM<span>natural</span></div>
+        </header>
+
+        <main class="contenido">
+
+            <span class="eyebrow">Registro de prestadores</span>
+
+            <h1>Formá parte de UMnatural.</h1>
+
+            <p class="descripcion">
+                Registrate para ofrecer tus actividades y
+                conectar con personas que buscan nuevas experiencias.
+            </p>
+
+            <div class="opciones">
+
+                <a href="/registro/empresa" class="opcion">
+                    <div>
+                        <h3>Empresa</h3>
+                        <p>Registrá tu empresa como prestadora.</p>
+                    </div>
+                    <span class="flecha" aria-hidden="true">→</span>
+                </a>
+
+                <a href="/registro/particular" class="opcion">
+                    <div>
+                        <h3>Particular</h3>
+                        <p>Registrate como prestador independiente.</p>
+                    </div>
+                    <span class="flecha" aria-hidden="true">→</span>
+                </a>
+
+            </div>
+
+            <p class="login">
+                ¿Ya tenés una cuenta?
+                <a href="/login">Iniciar sesión</a>
+            </p>
+
+        </main>
+
+        <footer>
+            © 2026 UMnatural · Desarrollado por SoftSolum
+        </footer>
+
+    </section>
+
+</div>
+
+</body>
+</html>
