@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Iniciar sesión</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root { --navy: #17283a; --orange: #df733d; --cream: #f8f7f3; --muted: #6c7378; }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: 'DM Sans', sans-serif; color: var(--navy); background: var(--cream); }
+        .layout { display: grid; grid-template-columns: 52% 48%; min-height: 100vh; }
+        .visual { position: relative; min-height: 100vh; background: linear-gradient(to top, rgba(12, 28, 35, .65), transparent 60%), url('/images/costa-uruguay2.png') center / cover no-repeat; }
+        .visual-text { position: absolute; bottom: 55px; left: 55px; right: 55px; color: white; }
+        .visual-text p { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 15px; }
+        .visual-text h2 { font-family: 'Manrope', sans-serif; font-size: clamp(30px, 3vw, 46px); line-height: 1.2; max-width: 500px; margin: 0; font-weight: 600; }
+        .panel { display: flex; flex-direction: column; padding: 42px 10%; }
+        .logo { font-family: 'Manrope', sans-serif; font-size: 25px; font-weight: 800; letter-spacing: -1.3px; }
+        .logo span { color: var(--orange); }
+        .contenido { width: 100%; max-width: 430px; margin: auto; padding: 55px 0; }
+        .eyebrow { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--orange); font-weight: 700; }
+        h1 { font-family: 'Manrope', sans-serif; font-size: clamp(32px, 3vw, 43px); line-height: 1.18; letter-spacing: -1.5px; margin: 18px 0; }
+        .descripcion { color: var(--muted); font-size: 15px; line-height: 1.8; margin-bottom: 30px; }
+        .campo { margin-bottom: 20px; }
+        .campo label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 9px; }
+        .campo input { width: 100%; padding: 15px 16px; border: 1px solid #dfe1de; border-radius: 6px; background: white; color: var(--navy); font: inherit; outline: none; transition: border-color .2s, box-shadow .2s; }
+        .campo input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(223, 115, 61, .12); }
+        .boton { width: 100%; border: 0; border-radius: 6px; padding: 16px 20px; background: var(--orange); color: white; font: inherit; font-weight: 700; cursor: pointer; transition: background .2s; margin-top: 8px; }
+        .boton:hover { background: #c96130; }
+        .mensaje { border-radius: 6px; padding: 12px 14px; margin: 0 0 20px; font-size: 14px; line-height: 1.5; }
+        .error { color: #8b2828; background: #fff0ee; border: 1px solid #f2c9c4; }
+        .exito { color: #235c3b; background: #edf8f0; border: 1px solid #c6e6ce; }
+        .login { margin-top: 28px; font-size: 14px; color: var(--muted); }
+        .login a { color: var(--navy); font-weight: 700; text-decoration: underline; text-underline-offset: 4px; }
+        footer { font-size: 12px; color: #92979a; }
+        @media (max-width: 850px) { .layout { grid-template-columns: 1fr; } .visual { min-height: 300px; } .visual-text { left: 25px; bottom: 25px; } .visual-text h2 { font-size: 27px; } .panel { padding: 30px 7%; min-height: 65vh; } .contenido { padding: 45px 0; } }
+    </style>
+</head>
+<body>
+<div class="layout">
+    <section class="visual">
+        <div class="visual-text">
+            <p>Experiencias que conectan</p>
+            <h2>Descubrí Uruguay de otra manera.</h2>
+        </div>
+    </section>
+    <section class="panel">
+        <header><div class="logo">UM<span>natural</span></div></header>
+        <main class="contenido">
+            <span class="eyebrow">Tu próxima experiencia empieza acá</span>
+            <h1>Qué bueno verte de nuevo.</h1>
+            <p class="descripcion">Iniciá sesión para continuar disfrutando de todo lo que Uruguay tiene para ofrecer.</p>
+
+            <div class="mensaje error" role="alert" th:if="${error}" th:text="${error}"></div>
+            <div class="mensaje exito" role="status" th:if="${loginExitoso}">
+                ¡Hola, <span th:text="${nombreUsuario}">usuario</span>! Iniciaste sesión correctamente.
+                <span>Tu rol es <strong th:text="${rolUsuario}">TURISTA</strong>.</span>
+            </div>
+            <div class="mensaje exito" role="status" th:if="${param.logout}">Cerraste sesión correctamente.</div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="campo">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" placeholder="tu@correo.com" autocomplete="email" required th:value="${email}">
+                </div>
+                <div class="campo">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" placeholder="Ingresá tu contraseña" autocomplete="current-password" required>
+                </div>
+                <button class="boton" type="submit">Iniciar sesión</button>
+            </form>
+
+            <p class="login">¿Todavía no tenés una cuenta? <a th:href="@{/registro/prestador}">Registrate como prestador</a></p>
+        </main>
+        <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+    </section>
+</div>
+</body>
+</html>
