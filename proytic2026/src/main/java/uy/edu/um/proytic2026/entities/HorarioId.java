@@ -16,5 +16,5 @@ public class HorarioId implements Serializable {
     private Long actividad;
     private LocalDate fecha;
     private LocalTime horaInicio;
-}{
+
 }
