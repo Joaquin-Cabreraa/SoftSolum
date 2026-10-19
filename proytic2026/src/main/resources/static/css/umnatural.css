@@ -228,6 +228,8 @@ button {
     .inner { margin-top: 32px; }
     h1 { font-size: 34px; }
     .fila { grid-template-columns: 1fr; }
+}
+
 /* Estilos compartidos de UMnatural.
    Mismos colores y fuentes que registro-prestador.html,
    para que todas las pantallas se vean iguales. */
