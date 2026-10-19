@@ -24,7 +24,7 @@
             <h1>Creá tu cuenta.</h1>
             <p class="lead">Completá tus datos para empezar a usar UMnatural.</p>
 
-            <form action="/api/v1/usuario/new" method="POST">
+            <form action="/api/v1/usuario/new" method="POST" onsubmit="return verificarPassword()">
 
                 <div class="fila">
                     <div class="campo">
@@ -57,12 +57,56 @@
                     <input type="password" id="passwordHash" name="passwordHash" required>
                 </div>
 
+                <div class="campo">
+                    <label for="confirmarPassword">Repetir contraseña</label>
+                    <input type="password" id="confirmarPassword" required autocomplete="new-password" placeholder="Volvé a escribir tu contraseña">
+                    <small id="avisoPassword" class="aviso-password" aria-live="polite"></small>
+                </div>
+
                 <button type="submit" class="guardar">Guardar usuario</button>
 
             </form>
         </div>
     </main>
 </div>
+
+
+<script>
+    const campoPassword = document.getElementById('passwordHash');
+    const campoConfirmar = document.getElementById('confirmarPassword');
+    const avisoPassword = document.getElementById('avisoPassword');
+
+    function actualizarAviso() {
+        campoConfirmar.classList.remove('valido', 'invalido');
+        if (campoConfirmar.value === '') {
+            avisoPassword.textContent = '';
+            avisoPassword.className = 'aviso-password';
+            return;
+        }
+        if (campoPassword.value === campoConfirmar.value) {
+            avisoPassword.textContent = 'Las contraseñas coinciden.';
+            avisoPassword.className = 'aviso-password ok';
+            campoConfirmar.classList.add('valido');
+        } else {
+            avisoPassword.textContent = 'Las contraseñas no coinciden.';
+            avisoPassword.className = 'aviso-password error';
+            campoConfirmar.classList.add('invalido');
+        }
+    }
+
+    // Si no coinciden, el formulario no se envía
+    function verificarPassword() {
+        if (campoPassword.value !== campoConfirmar.value) {
+            actualizarAviso();
+            campoConfirmar.focus();
+            return false;
+        }
+        return true;
+    }
+
+    campoPassword.addEventListener('input', actualizarAviso);
+    campoConfirmar.addEventListener('input', actualizarAviso);
+</script>
 
 </body>
 </html>
