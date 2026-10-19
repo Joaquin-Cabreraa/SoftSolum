@@ -11,72 +11,51 @@
     <link rel="stylesheet" href="/css/umnatural.css">
 
     <style>
-        .estados {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            margin-top: 16px;
-        }
-
-        .estados div {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-            color: var(--muted);
-        }
-
-        .deshabilitada {
-            opacity: 0.6;
-        }
-
-        .deshabilitada .boton {
-            pointer-events: none;
-        }
-
-        .tarjeta .boton {
-            margin-top: 18px;
-        }
+        .deshabilitada { opacity: 0.6; }
+        .deshabilitada .boton { pointer-events: none; }
+        .tarjeta .boton { margin-top: 18px; }
+        .tarjeta .estado { margin: 4px 0 14px; }
+        .dato { font-size: 14px; color: var(--muted); margin-top: 6px; }
     </style>
 </head>
-
 <body>
 
 <nav class="nav">
     <a href="/" class="logo">UM<span>natural</span></a>
     <div class="nav-links">
         <a href="/">Inicio</a>
-        <a href="/registro/prestador">Registrarse</a>
-        <a href="/panel/prestador" class="activo">Panel prestador</a>
-        <a href="/panel/admin">Panel administrador</a>
-        <a href="/login">Iniciar sesión</a>
+        <a href="/panel/prestador" class="activo">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
 
 <main class="pagina">
-
     <span class="eyebrow">Panel del prestador</span>
-    <h1>Tu emprendimiento en UMnatural.</h1>
+    <!-- th:text reemplaza el texto por el dato que mandó el controller -->
+    <h1>Hola, <span th:text="${nombre}">prestador</span>.</h1>
     <p class="descripcion">
-        Desde acá vas a poder seguir el estado de tu emprendimiento
-        y administrar tus actividades.
+        Desde acá seguís el estado de tu emprendimiento y, cuando esté aceptado, tus actividades.
     </p>
 
-    <!-- Cuando exista el login, esta pantalla va a mostrar los datos reales del prestador logueado -->
-    <div class="aviso">
-        Cuando inicies sesión, acá vas a ver los datos de tu emprendimiento.
-    </div>
+    <div class="grilla" style="margin-top: 35px">
 
-    <div class="grilla">
+        <!-- Si el prestador tiene emprendimiento, mostramos sus datos y su estado -->
+        <div class="tarjeta" th:if="${emprendimiento != null}">
+            <h3 th:text="${emprendimiento.nombre}">Mi emprendimiento</h3>
+            <div class="dato" th:if="${emprendimiento.ubicacion}" th:text="${emprendimiento.ubicacion}">Ubicación</div>
 
-        <div class="tarjeta">
-            <h3>Estado del emprendimiento</h3>
-            <p>Todo emprendimiento nuevo queda pendiente hasta que un administrador lo revise.</p>
-            <div class="estados">
-                <div><span class="estado estado-pendiente">PENDIENTE</span> En revisión</div>
-                <div><span class="estado estado-aceptado">ACEPTADO</span> Ya podés publicar actividades</div>
-                <div><span class="estado estado-denegado">DENEGADO</span> No fue aprobado</div>
-            </div>
+            <span class="estado estado-pendiente" th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">PENDIENTE</span>
+            <span class="estado estado-aceptado"  th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">ACEPTADO</span>
+            <span class="estado estado-denegado"  th:if="${emprendimiento.estado.name() == 'DENEGADO'}">DENEGADO</span>
+
+            <p th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">Un administrador está revisando tus datos.</p>
+            <p th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">Tu emprendimiento fue aceptado. Ya podés publicar actividades.</p>
+            <p th:if="${emprendimiento.estado.name() == 'DENEGADO'}">Tu emprendimiento no fue aprobado.</p>
+        </div>
+
+        <div class="tarjeta" th:if="${emprendimiento == null}">
+            <h3>Sin emprendimiento</h3>
+            <p>Tu cuenta no tiene un emprendimiento asociado.</p>
         </div>
 
         <div class="tarjeta deshabilitada">
@@ -90,14 +69,10 @@
             <p>Consultá las reservas que hicieron los turistas en tus actividades. Próximamente.</p>
             <a href="#" class="boton boton-borde boton-chico">Ver reservas</a>
         </div>
-
     </div>
-
 </main>
 
-<footer>
-    © 2026 UMnatural · Desarrollado por SoftSolum
-</footer>
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
 </body>
 </html>
