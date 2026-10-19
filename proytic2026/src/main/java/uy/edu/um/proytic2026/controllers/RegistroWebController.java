@@ -14,9 +14,24 @@ public class RegistroWebController {
         this.emprendimientoRepository = emprendimientoRepository;
     }
 
+    @GetMapping("/registro")
+    public String registro() {
+        return "redirect:/registro/prestador";
+    }
+
     @GetMapping("/registro/prestador")
     public String mostrarRegistroPrestador() {
         return "registro-prestador";
+    }
+
+    @GetMapping("/registro/empresa")
+    public String mostrarRegistroEmpresa() {
+        return "registro-empresa";
+    }
+
+    @GetMapping("/registro/particular")
+    public String mostrarRegistroParticular() {
+        return "registro-particular";
     }
 
     @GetMapping("/alta/usuario")
