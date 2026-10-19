@@ -50,11 +50,15 @@ public class LoginController {
         nuevaSesion.setAttribute("usuarioEmail", usuario.getUserEmail());
         nuevaSesion.setAttribute("usuarioRol", obtenerRol(usuario));
 
-        // La navegación posterior al login se integrará con el resto del equipo.
-        model.addAttribute("nombreUsuario", usuario.getName());
-        model.addAttribute("rolUsuario", obtenerRol(usuario));
-        model.addAttribute("loginExitoso", true);
-        return "login";
+        // Después del login, cada uno va a su panel según el rol.
+        String rol = obtenerRol(usuario);
+        if (rol.equals("ADMINISTRADOR")) {
+            return "redirect:/panel/admin";
+        }
+        if (rol.equals("EMPRESA") || rol.equals("PARTICULAR") || rol.equals("PRESTADOR")) {
+            return "redirect:/panel/prestador";
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/logout")
