@@ -135,8 +135,7 @@
             border-radius: 6px;
             text-decoration: none;
             color: var(--navy);
-            transition: border-color 0.2s,
-            background 0.2s;
+            transition: border-color 0.2s, background 0.2s;
         }
 
         .opcion:hover {
@@ -210,6 +209,7 @@
         }
 
         /* ---------- Formulario ---------- */
+
         .volver {
             display: inline-block;
             font-size: 13px;
@@ -307,6 +307,24 @@
             font-weight: 700;
         }
 
+        /* ---------- Errores de validación ---------- */
+
+        .error-campo {
+            display: none;
+            color: #b9483a;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .campo input.invalido {
+            border-color: #b9483a;
+            background: #fff8f7;
+        }
+
+        .error-campo.visible {
+            display: block;
+        }
+
         @media (max-width: 850px) {
             .fila {
                 grid-template-columns: 1fr;
@@ -355,48 +373,73 @@
             <h1>Registrate como prestador.</h1>
 
             <p class="descripcion">
-                Completá tus datos y los de tu emprendimiento. Un administrador lo va a revisar antes de que puedas publicar actividades.
+                Completá tus datos y los de tu emprendimiento.
+                Un administrador lo va a revisar antes de que
+                puedas publicar actividades.
             </p>
 
-            <!-- Acá se muestra el resultado del registro -->
+            <!-- Resultado del registro -->
             <div id="mensaje" class="mensaje"></div>
 
-            <!-- Los "name" de cada campo tienen que ser iguales a los @RequestParam de PrestadorController -->
             <form id="formulario" onsubmit="registrar(event)">
 
                 <div class="fila">
                     <div class="campo">
                         <label for="nombre">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" required>
+                        <input type="text" id="nombre"
+                               name="nombre" required>
                     </div>
 
                     <div class="campo">
                         <label for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" required>
+                        <input type="text" id="apellido"
+                               name="apellido" required>
                     </div>
                 </div>
 
-                    <div class="campo">
-                        <label for="documento">Cédula de identidad</label>
-                        <input type="text" id="documento" name="documento" required inputmode="numeric">
-                    </div>
+                <!-- Cédula con validación -->
+                <div class="campo">
+                    <label for="documento">Cédula de identidad</label>
+                    <input type="text"
+                           id="documento"
+                           name="documento"
+                           required
+                           inputmode="numeric"
+                           maxlength="8"
+                           pattern="[0-9]{7,8}"
+                           title="Ingresá una cédula de 7 u 8 dígitos, sin puntos ni guiones.">
+                    <small class="error-campo" id="errorDocumento"></small>
+                </div>
 
                 <div class="fila">
                     <div class="campo">
                         <label for="email">Email</label>
-                        <input type="email" id="email" name="email" required>
+                        <input type="email" id="email"
+                               name="email" required>
                     </div>
 
+                    <!-- Teléfono opcional con validación -->
                     <div class="campo">
                         <label for="telefono">Teléfono (opcional)</label>
-                        <input type="tel" id="telefono" name="telefono">
+                        <input type="tel"
+                               id="telefono"
+                               name="telefono"
+                               inputmode="numeric"
+                               maxlength="9"
+                               pattern="09[1-9][0-9]{6}"
+                               title="Ingresá un celular uruguayo de 9 dígitos que comience con 09.">
+                        <small class="error-campo" id="errorTelefono"></small>
                     </div>
                 </div>
 
-                    <div class="campo">
-                        <label for="password">Contraseña</label>
-                        <input type="password" id="password" name="password" required minlength="6">
-                    </div>
+                <div class="campo">
+                    <label for="password">Contraseña</label>
+                    <input type="password"
+                           id="password"
+                           name="password"
+                           required
+                           minlength="6">
+                </div>
 
                     <div class="campo">
                         <label for="confirmarPassword">Repetir contraseña</label>
@@ -406,15 +449,21 @@
 
                 <div class="subtitulo">Datos del emprendimiento</div>
 
-                    <div class="campo">
-                        <label for="nombreEmprendimiento">Nombre del emprendimiento</label>
-                        <input type="text" id="nombreEmprendimiento" name="nombreEmprendimiento" required>
-                    </div>
+                <div class="campo">
+                    <label for="nombreEmprendimiento">Nombre del emprendimiento</label>
+                    <input type="text"
+                           id="nombreEmprendimiento"
+                           name="nombreEmprendimiento"
+                           required>
+                </div>
 
-                    <div class="campo">
-                        <label for="direccion">Dirección</label>
-                        <input type="text" id="direccion" name="direccion" required>
-                    </div>
+                <div class="campo">
+                    <label for="direccion">Dirección</label>
+                    <input type="text"
+                           id="direccion"
+                           name="direccion"
+                           required>
+                </div>
 
                 <button type="submit" class="enviar">Crear cuenta</button>
             </form>
@@ -469,7 +518,13 @@
 
     // Manda los datos del formulario al backend (PrestadorController)
     async function registrar(evento) {
-        evento.preventDefault();                 // que no recargue la página
+        evento.preventDefault();
+        validarDocumento();
+
+        if (!cedulaValida(document.getElementById('documento').value.trim())) {
+            document.getElementById('documento').focus();
+            return;
+        }
 
         // Si las contraseñas no coinciden, no se envía nada
         if (!contraseniasCoinciden()) {
@@ -481,20 +536,114 @@
         const formulario = document.getElementById('formulario');
         const datos = new URLSearchParams(new FormData(formulario));
 
-        const respuesta = await fetch('/prestadores/particular', { method: 'POST', body: datos });
-        const texto = await respuesta.text();
-
         const mensaje = document.getElementById('mensaje');
-        if (respuesta.ok) {
-            mensaje.className = 'mensaje ok';
-            mensaje.innerHTML = 'Listo, quedaste registrado. Tu emprendimiento está pendiente de verificación. <a href="/login">Iniciar sesión</a>';
-            formulario.reset();
-        } else {
+
+        try {
+            const respuesta = await fetch('/prestadores/particular', {
+                method: 'POST',
+                body: datos
+            });
+
+            const texto = await respuesta.text();
+
+            if (respuesta.ok) {
+                mensaje.className = 'mensaje ok';
+                mensaje.innerHTML =
+                    'Listo, quedaste registrado. Tu emprendimiento está pendiente de verificación. ' +
+                    '<a href="/login">Iniciar sesión</a>';
+
+                formulario.reset();
+
+                // Limpiar errores visuales
+                document.querySelectorAll('.invalido').forEach(input => {
+                    input.classList.remove('invalido');
+                });
+
+                document.querySelectorAll('.error-campo').forEach(error => {
+                    error.classList.remove('visible');
+                    error.textContent = '';
+                });
+
+            } else {
+                mensaje.className = 'mensaje error';
+                mensaje.textContent = texto;
+            }
+
+        } catch (error) {
             mensaje.className = 'mensaje error';
-            mensaje.textContent = texto;          // el mensaje de error que devuelve el backend
+            mensaje.textContent =
+                'No se pudo conectar con el servidor. Intentá nuevamente.';
         }
-        mensaje.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+        mensaje.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center'
+        });
     }
+
+    // Muestra errores debajo de los campos
+    function mostrarError(campo, idError, mensaje) {
+        const input = document.getElementById(campo);
+        const error = document.getElementById(idError);
+
+        const actualizar = () => {
+            const invalido =
+                input.value.trim() !== '' && !input.validity.valid;
+
+            input.classList.toggle('invalido', invalido);
+            error.classList.toggle('visible', invalido);
+            error.textContent = invalido ? mensaje : '';
+        };
+
+        input.addEventListener('input', actualizar);
+        input.addEventListener('blur', actualizar);
+    }
+
+    function cedulaValida(cedula) {
+        if (!/^[0-9]{7,8}$/.test(cedula)) {
+            return false;
+        }
+
+        // Si tiene 7 dígitos, agregamos un 0 adelante.
+        const numero = cedula.padStart(8, '0');
+
+        // Multiplicadores de la cédula uruguaya.
+        const multiplicadores = [2, 9, 8, 7, 6, 3, 4];
+
+        let suma = 0;
+
+        for (let i = 0; i < 7; i++) {
+            suma += Number(numero[i]) * multiplicadores[i];
+        }
+
+        const digitoVerificador = (10 - (suma % 10)) % 10;
+
+        return digitoVerificador === Number(numero[7]);
+    }
+
+    const campoDocumento = document.getElementById('documento');
+    const errorDocumento = document.getElementById('errorDocumento');
+
+    function validarDocumento() {
+        const valor = campoDocumento.value.trim();
+        const invalido = valor !== '' && !cedulaValida(valor);
+
+        campoDocumento.classList.toggle('invalido', invalido);
+        errorDocumento.classList.toggle('visible', invalido);
+
+        errorDocumento.textContent = invalido
+            ? 'La cédula no es válida. Revisá el número y el dígito verificador.'
+            : '';
+    }
+
+    campoDocumento.addEventListener('input', validarDocumento);
+    campoDocumento.addEventListener('blur', validarDocumento);
+
+    mostrarError(
+        'telefono',
+        'errorTelefono',
+        'Ingresá un celular válido, por ejemplo 099123456.'
+    );
 </script>
 
 </body>

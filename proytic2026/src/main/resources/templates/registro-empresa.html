@@ -371,7 +371,11 @@
 
                     <div class="campo">
                         <label for="rut">RUT</label>
-                        <input type="text" id="rut" name="rut" required inputmode="numeric">
+                        <input type="text" id="rut" name="rut" required
+                               inputmode="numeric" maxlength="12"
+                               pattern="[0-9]{12}"
+                               title="El RUT debe contener exactamente 12 números.">
+                        <small class="error-campo" id="errorRut"></small>
                     </div>
 
                 <div class="fila">
@@ -382,7 +386,11 @@
 
                     <div class="campo">
                         <label for="telefono">Teléfono (opcional)</label>
-                        <input type="tel" id="telefono" name="telefono">
+                        <input type="tel" id="telefono" name="telefono"
+                               inputmode="numeric" maxlength="9"
+                               pattern="09[1-9][0-9]{6}"
+                               title="Ingresá un celular uruguayo de 9 dígitos que comience con 09.">
+                        <small class="error-campo" id="errorTelefono"></small>
                     </div>
                 </div>
 
@@ -426,6 +434,7 @@
     </section>
 
 </div>
+
 
 <script>
 
@@ -488,6 +497,26 @@
         }
         mensaje.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    function mostrarError(campo, mensaje) {
+        const input = document.getElementById(campo);
+        const error = document.getElementById(
+            campo === 'rut' ? 'errorRut' : 'errorTelefono'
+        );
+
+        const actualizar = () => {
+            const invalido = input.value.trim() !== '' && !input.validity.valid;
+
+            input.classList.toggle('invalido', invalido);
+            error.classList.toggle('visible', invalido);
+            error.textContent = invalido ? mensaje : '';
+        };
+
+        input.addEventListener('input', actualizar);
+        input.addEventListener('blur', actualizar);
+    }
+
+    mostrarError('rut', 'El RUT debe tener exactamente 12 números.');
+    mostrarError('telefono', 'Ingresá un celular válido, por ejemplo 099123456.');
 </script>
 
 </body>
