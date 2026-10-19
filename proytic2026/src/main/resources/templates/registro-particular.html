@@ -330,6 +330,20 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        /* ---------- Verificación de contraseña ---------- */
+        .aviso-password {
+            display: block;
+            min-height: 18px;
+            margin-top: 6px;
+            font-size: 13px;
+        }
+
+        .aviso-password.ok { color: #2f7d5b; }
+        .aviso-password.error { color: #b9483a; }
+
+        input.invalido { border-color: #b9483a; }
+        input.valido { border-color: #2f7d5b; }
     </style>
 </head>
 
@@ -427,6 +441,12 @@
                            minlength="6">
                 </div>
 
+                    <div class="campo">
+                        <label for="confirmarPassword">Repetir contraseña</label>
+                        <input type="password" id="confirmarPassword" required minlength="6" autocomplete="new-password" placeholder="Volvé a escribir tu contraseña">
+                        <small id="avisoPassword" class="aviso-password" aria-live="polite"></small>
+                    </div>
+
                 <div class="subtitulo">Datos del emprendimiento</div>
 
                 <div class="campo">
@@ -464,13 +484,52 @@
 </div>
 
 <script>
-    // Envía los datos al backend
+
+    // ---------- Verificación de contraseña ----------
+    const campoPassword = document.getElementById('password');
+    const campoConfirmar = document.getElementById('confirmarPassword');
+    const avisoPassword = document.getElementById('avisoPassword');
+
+    function contraseniasCoinciden() {
+        return campoPassword.value === campoConfirmar.value;
+    }
+
+    // Muestra en vivo si las dos contraseñas coinciden
+    function actualizarAviso() {
+        campoConfirmar.classList.remove('valido', 'invalido');
+        if (campoConfirmar.value === '') {
+            avisoPassword.textContent = '';
+            avisoPassword.className = 'aviso-password';
+            return;
+        }
+        if (contraseniasCoinciden()) {
+            avisoPassword.textContent = 'Las contraseñas coinciden.';
+            avisoPassword.className = 'aviso-password ok';
+            campoConfirmar.classList.add('valido');
+        } else {
+            avisoPassword.textContent = 'Las contraseñas no coinciden.';
+            avisoPassword.className = 'aviso-password error';
+            campoConfirmar.classList.add('invalido');
+        }
+    }
+
+    campoPassword.addEventListener('input', actualizarAviso);
+    campoConfirmar.addEventListener('input', actualizarAviso);
+
+    // Manda los datos del formulario al backend (PrestadorController)
     async function registrar(evento) {
         evento.preventDefault();
         validarDocumento();
 
         if (!cedulaValida(document.getElementById('documento').value.trim())) {
             document.getElementById('documento').focus();
+            return;
+        }
+
+        // Si las contraseñas no coinciden, no se envía nada
+        if (!contraseniasCoinciden()) {
+            actualizarAviso();
+            campoConfirmar.focus();
             return;
         }
 
