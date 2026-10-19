@@ -228,4 +228,269 @@ button {
     .inner { margin-top: 32px; }
     h1 { font-size: 34px; }
     .fila { grid-template-columns: 1fr; }
+/* Estilos compartidos de UMnatural.
+   Mismos colores y fuentes que registro-prestador.html,
+   para que todas las pantallas se vean iguales. */
+
+:root {
+    --navy: #17283a;
+    --orange: #df733d;
+    --cream: #f8f7f3;
+    --muted: #6c7378;
+    --borde: #e5e6e3;
+    --verde: #2f7d5b;
+    --rojo: #b9483a;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--navy);
+    background: var(--cream);
+}
+
+h1, h2, h3 {
+    font-family: 'Manrope', sans-serif;
+}
+
+/* ---------- Barra de navegación ---------- */
+
+.nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 6%;
+    background: var(--cream);
+    border-bottom: 1px solid var(--borde);
+}
+
+.nav.sobre-imagen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: transparent;
+    border-bottom: none;
+}
+
+.logo {
+    font-family: 'Manrope', sans-serif;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: -1.3px;
+    color: var(--navy);
+    text-decoration: none;
+}
+
+.logo span {
+    color: var(--orange);
+}
+
+.nav.sobre-imagen .logo {
+    color: white;
+}
+
+.nav-links {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+}
+
+.nav-links a {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--navy);
+    text-decoration: none;
+}
+
+.nav.sobre-imagen .nav-links a {
+    color: white;
+}
+
+.nav-links a:hover,
+.nav-links a.activo {
+    color: var(--orange);
+}
+
+/* ---------- Botones ---------- */
+
+.boton {
+    display: inline-block;
+    padding: 14px 24px;
+    border-radius: 6px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.boton-naranja {
+    background: var(--orange);
+    color: white;
+}
+
+.boton-naranja:hover {
+    background: #c9622f;
+}
+
+.boton-borde {
+    background: transparent;
+    color: var(--navy);
+    border-color: var(--borde);
+}
+
+.boton-borde:hover {
+    border-color: var(--orange);
+}
+
+.boton-blanco {
+    background: transparent;
+    color: white;
+    border-color: rgba(255, 255, 255, 0.6);
+}
+
+.boton-blanco:hover {
+    border-color: white;
+}
+
+.boton-chico {
+    padding: 10px 16px;
+    font-size: 13px;
+}
+
+.boton-verde {
+    background: var(--verde);
+    color: white;
+}
+
+.boton-rojo {
+    background: transparent;
+    color: var(--rojo);
+    border-color: var(--rojo);
+}
+
+/* ---------- Textos ---------- */
+
+.eyebrow {
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--orange);
+    font-weight: 700;
+}
+
+.descripcion {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.8;
+}
+
+/* ---------- Contenedor de los paneles ---------- */
+
+.pagina {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 55px 6% 80px;
+}
+
+.pagina h1 {
+    font-size: clamp(30px, 3vw, 40px);
+    letter-spacing: -1.5px;
+    margin: 14px 0 10px;
+}
+
+/* ---------- Tarjetas ---------- */
+
+.tarjeta {
+    background: white;
+    border: 1px solid var(--borde);
+    border-radius: 6px;
+    padding: 26px;
+}
+
+.tarjeta h3 {
+    font-size: 17px;
+    margin: 0 0 8px;
+}
+
+.tarjeta p {
+    font-size: 14px;
+    color: var(--muted);
+    line-height: 1.7;
+    margin: 0;
+}
+
+.grilla {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 16px;
+}
+
+/* ---------- Etiquetas de estado ---------- */
+
+.estado {
+    display: inline-block;
+    padding: 5px 11px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.estado-pendiente {
+    background: #fdeee5;
+    color: var(--orange);
+}
+
+.estado-aceptado {
+    background: #e3f1ea;
+    color: var(--verde);
+}
+
+.estado-denegado {
+    background: #f7e4e1;
+    color: var(--rojo);
+}
+
+/* ---------- Aviso ---------- */
+
+.aviso {
+    background: #fffaf6;
+    border: 1px solid #f3d6c4;
+    border-radius: 6px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--navy);
+    margin: 25px 0 35px;
+}
+
+/* ---------- Pie de página ---------- */
+
+footer {
+    padding: 30px 6%;
+    font-size: 12px;
+    color: #92979a;
+    border-top: 1px solid var(--borde);
+}
+
+/* ---------- Celular ---------- */
+
+@media (max-width: 850px) {
+    .nav {
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .nav-links {
+        gap: 16px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
 }

@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Panel del prestador</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .estados {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .estados div {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .deshabilitada {
+            opacity: 0.6;
+        }
+
+        .deshabilitada .boton {
+            pointer-events: none;
+        }
+
+        .tarjeta .boton {
+            margin-top: 18px;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/registro/prestador">Registrarse</a>
+        <a href="/panel/prestador" class="activo">Panel prestador</a>
+        <a href="/panel/admin">Panel administrador</a>
+        <a href="/login">Iniciar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+
+    <span class="eyebrow">Panel del prestador</span>
+    <h1>Tu emprendimiento en UMnatural.</h1>
+    <p class="descripcion">
+        Desde acá vas a poder seguir el estado de tu emprendimiento
+        y administrar tus actividades.
+    </p>
+
+    <!-- Cuando exista el login, esta pantalla va a mostrar los datos reales del prestador logueado -->
+    <div class="aviso">
+        Cuando inicies sesión, acá vas a ver los datos de tu emprendimiento.
+    </div>
+
+    <div class="grilla">
+
+        <div class="tarjeta">
+            <h3>Estado del emprendimiento</h3>
+            <p>Todo emprendimiento nuevo queda pendiente hasta que un administrador lo revise.</p>
+            <div class="estados">
+                <div><span class="estado estado-pendiente">PENDIENTE</span> En revisión</div>
+                <div><span class="estado estado-aceptado">ACEPTADO</span> Ya podés publicar actividades</div>
+                <div><span class="estado estado-denegado">DENEGADO</span> No fue aprobado</div>
+            </div>
+        </div>
+
+        <div class="tarjeta deshabilitada">
+            <h3>Mis actividades</h3>
+            <p>Cargá y editá las actividades que ofrecés. Disponible cuando tu emprendimiento sea aceptado.</p>
+            <a href="#" class="boton boton-borde boton-chico">Nueva actividad</a>
+        </div>
+
+        <div class="tarjeta deshabilitada">
+            <h3>Reservas</h3>
+            <p>Consultá las reservas que hicieron los turistas en tus actividades. Próximamente.</p>
+            <a href="#" class="boton boton-borde boton-chico">Ver reservas</a>
+        </div>
+
+    </div>
+
+</main>
+
+<footer>
+    © 2026 UMnatural · Desarrollado por SoftSolum
+</footer>
+
+</body>
+</html>
