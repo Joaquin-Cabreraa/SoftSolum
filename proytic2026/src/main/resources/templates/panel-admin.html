@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Panel del administrador</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .encabezado-lista {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 40px 0 16px;
+        }
+
+        .encabezado-lista h2 {
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .lista {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .emprendimiento {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .emprendimiento .datos {
+            font-size: 13px;
+            color: var(--muted);
+            margin-top: 6px;
+        }
+
+        .acciones {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .vacio {
+            text-align: center;
+            color: var(--muted);
+            font-size: 14px;
+            padding: 40px 26px;
+        }
+
+        #mensaje {
+            font-size: 14px;
+            font-weight: 600;
+            min-height: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .emprendimiento {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/registro/prestador">Registrarse</a>
+        <a href="/panel/prestador">Panel prestador</a>
+        <a href="/panel/admin" class="activo">Panel administrador</a>
+        <a href="/login">Iniciar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+
+    <span class="eyebrow">Panel del administrador</span>
+    <h1>Emprendimientos para revisar.</h1>
+    <p class="descripcion">
+        Revisá los datos de cada emprendimiento nuevo y decidí si se acepta o se rechaza.
+        Solo los emprendimientos aceptados pueden publicar actividades.
+    </p>
+
+    <div class="encabezado-lista">
+        <h2>Pendientes <span id="contador" class="estado estado-pendiente">0</span></h2>
+        <span id="mensaje"></span>
+    </div>
+
+    <!-- Acá se cargan los emprendimientos con JavaScript -->
+    <div id="lista" class="lista"></div>
+
+</main>
+
+<footer>
+    © 2026 UMnatural · Desarrollado por SoftSolum
+</footer>
+
+<script>
+    // Pide al backend la lista de pendientes y la dibuja en pantalla
+    async function cargarPendientes() {
+        const respuesta = await fetch('/admin/emprendimientos/pendientes');
+        const pendientes = await respuesta.json();
+
+        const lista = document.getElementById('lista');
+        lista.innerHTML = '';
+        document.getElementById('contador').textContent = pendientes.length;
+
+        if (pendientes.length === 0) {
+            lista.innerHTML = '<div class="tarjeta vacio">No hay emprendimientos pendientes de revisión.</div>';
+            return;
+        }
+
+        for (const emp of pendientes) {
+            lista.appendChild(crearTarjeta(emp));
+        }
+    }
+
+    // Arma la tarjeta de un emprendimiento con sus dos botones
+    function crearTarjeta(emp) {
+        const tarjeta = document.createElement('div');
+        tarjeta.className = 'tarjeta emprendimiento';
+
+        const info = document.createElement('div');
+
+        const nombre = document.createElement('h3');
+        nombre.textContent = emp.nombre;
+
+        const datos = document.createElement('div');
+        datos.className = 'datos';
+        datos.textContent = [emp.ubicacion, emp.email, emp.telefono]
+            .filter(dato => dato)          // saca los que vengan vacíos
+            .join(' · ') || 'Sin datos de contacto';
+
+        info.appendChild(nombre);
+        info.appendChild(datos);
+
+        const acciones = document.createElement('div');
+        acciones.className = 'acciones';
+        acciones.appendChild(crearBoton('Aceptar', 'boton boton-chico boton-verde', () => decidir(emp.id, 'aceptar')));
+        acciones.appendChild(crearBoton('Rechazar', 'boton boton-chico boton-rojo', () => decidir(emp.id, 'denegar')));
+
+        tarjeta.appendChild(info);
+        tarjeta.appendChild(acciones);
+        return tarjeta;
+    }
+
+    function crearBoton(texto, clases, alHacerClic) {
+        const boton = document.createElement('button');
+        boton.textContent = texto;
+        boton.className = clases;
+        boton.onclick = alHacerClic;
+        return boton;
+    }
+
+    // Llama a PUT /admin/emprendimientos/{id}/aceptar o /denegar
+    async function decidir(id, accion) {
+        const respuesta = await fetch('/admin/emprendimientos/' + id + '/' + accion, { method: 'PUT' });
+        const texto = await respuesta.text();
+
+        const mensaje = document.getElementById('mensaje');
+        mensaje.textContent = texto;
+        mensaje.style.color = respuesta.ok ? 'var(--verde)' : 'var(--rojo)';
+
+        cargarPendientes();   // recarga la lista: el que se decidió ya no aparece
+    }
+
+    cargarPendientes();
+</script>
+
+</body>
+</html>
