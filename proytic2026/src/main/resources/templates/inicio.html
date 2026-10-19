@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Inicio</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        /* Estilos que solo usa la página de inicio */
+
+        .hero {
+            position: relative;
+            min-height: 88vh;
+            display: flex;
+            align-items: flex-end;
+            background:
+                    linear-gradient(to top, rgba(12, 28, 35, 0.75), rgba(12, 28, 35, 0.15) 70%),
+                    url("/images/costa-uruguay2.png") center / cover no-repeat;
+        }
+
+        .hero-texto {
+            padding: 0 6% 80px;
+            color: white;
+            max-width: 720px;
+        }
+
+        .hero-texto p.chico {
+            font-size: 13px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+        }
+
+        .hero-texto h1 {
+            font-size: clamp(36px, 4.5vw, 60px);
+            line-height: 1.1;
+            letter-spacing: -2px;
+            font-weight: 700;
+            margin: 0 0 20px;
+        }
+
+        .hero-texto p.bajada {
+            font-size: 17px;
+            line-height: 1.7;
+            opacity: 0.9;
+            margin: 0 0 32px;
+        }
+
+        .hero-botones {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .seccion {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 80px 6%;
+        }
+
+        .seccion h2 {
+            font-size: clamp(26px, 2.6vw, 36px);
+            letter-spacing: -1px;
+            margin: 14px 0 40px;
+        }
+
+        .numero {
+            font-family: 'Manrope', sans-serif;
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--orange);
+            margin-bottom: 12px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- Portada con la imagen de fondo -->
+<section class="hero">
+
+    <!-- Navegación (va arriba de la imagen) -->
+    <nav class="nav sobre-imagen">
+        <a href="/" class="logo">UM<span>natural</span></a>
+        <div class="nav-links">
+            <a href="/" class="activo">Inicio</a>
+            <a href="/registro/prestador">Registrarse</a>
+            <a href="/panel/prestador">Panel prestador</a>
+            <a href="/panel/admin">Panel administrador</a>
+            <a href="/login">Iniciar sesión</a>
+        </div>
+    </nav>
+
+    <div class="hero-texto">
+        <p class="chico">Experiencias que conectan</p>
+        <h1>Descubrí Uruguay de otra manera.</h1>
+        <p class="bajada">
+            Actividades en la naturaleza ofrecidas por emprendedores locales,
+            verificados por nuestro equipo.
+        </p>
+        <div class="hero-botones">
+            <a href="/registro/prestador" class="boton boton-naranja">Registrá tu emprendimiento</a>
+            <a href="/login" class="boton boton-blanco">Iniciar sesión</a>
+        </div>
+    </div>
+</section>
+
+<!-- Cómo funciona para los prestadores -->
+<section class="seccion">
+    <span class="eyebrow">Para prestadores</span>
+    <h2>¿Cómo funciona?</h2>
+
+    <div class="grilla">
+        <div class="tarjeta">
+            <div class="numero">01</div>
+            <h3>Registrate</h3>
+            <p>Creá tu cuenta como empresa o como particular y cargá los datos de tu emprendimiento.</p>
+        </div>
+        <div class="tarjeta">
+            <div class="numero">02</div>
+            <h3>Verificamos tu emprendimiento</h3>
+            <p>Un administrador de UMnatural revisa tus datos y acepta tu emprendimiento.</p>
+        </div>
+        <div class="tarjeta">
+            <div class="numero">03</div>
+            <h3>Publicá tus actividades</h3>
+            <p>Una vez aceptado, ya podés ofrecer tus actividades y recibir reservas.</p>
+        </div>
+    </div>
+</section>
+
+<footer>
+    © 2026 UMnatural · Desarrollado por SoftSolum
+</footer>
+
+</body>
+</html>
