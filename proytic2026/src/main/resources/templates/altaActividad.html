@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nueva Actividad</title>
+    <link rel="stylesheet" th:href="@{/css/umnatural.css}" href="/css/umnatural.css">
+</head>
+<body>
+<div class="layout">
+
+    <aside class="hero" style="--foto: url('/images/uruguay-actividad.jpg')">
+        <div class="hero-text">
+            <small>Experiencias que conectan</small>
+            <h2>Descubrí Uruguay de otra manera.</h2>
+        </div>
+    </aside>
+
+    <main class="content">
+        <div class="logo">UM<span>natural</span></div>
+
+        <div class="inner">
+            <p class="eyebrow">Registro de actividades</p>
+            <h1>Sumá una actividad.</h1>
+            <p class="lead">Contanos qué ofrecés para que más personas puedan encontrarte.</p>
+
+            <form action="/api/v1/actividad/new" method="POST">
+
+                <div class="campo">
+                    <label for="estado">Estado</label>
+                    <input type="text" id="estado" name="estado" required>
+                </div>
+
+                <div class="fila">
+                    <div class="campo">
+                        <label for="departamento">Departamento</label>
+                        <input type="text" id="departamento" name="departamento">
+                    </div>
+                    <div class="campo">
+                        <label for="localidad">Localidad</label>
+                        <input type="text" id="localidad" name="localidad">
+                    </div>
+                </div>
+
+                <div class="fila">
+                    <div class="campo">
+                        <label for="duracionMinutos">Duración (minutos)</label>
+                        <input type="number" id="duracionMinutos" name="duracionMinutos" min="1">
+                    </div>
+                    <div class="campo">
+                        <label for="precio">Precio</label>
+                        <input type="number" id="precio" name="precio" step="0.01" min="0" required>
+                    </div>
+                </div>
+
+                <div class="campo">
+                    <label for="requisitosEdad">Requisitos de edad</label>
+                    <input type="text" id="requisitosEdad" name="requisitosEdad">
+                </div>
+
+                <div class="campo">
+                    <label for="minPreviosReservar">Mínimo de días previos para reservar</label>
+                    <input type="number" id="minPreviosReservar" name="minPreviosReservar" min="0" required>
+                </div>
+
+                <div class="campo">
+                    <label for="emprendimiento">Emprendimiento</label>
+                    <select id="emprendimiento" name="emprendimiento.id" required>
+
+                        <option value="">
+                            Seleccione un emprendimiento
+                        </option>
+
+                        <option
+                                th:each="emprendimiento : ${emprendimientos}"
+                                th:value="${emprendimiento.id}"
+                                th:text="${emprendimiento.nombre}">
+                        </option>
+
+                    </select>
+                </div>
+
+                <button type="submit" class="guardar">Guardar actividad</button>
+
+            </form>
+        </div>
+    </main>
+</div>
+
+</body>
+</html>

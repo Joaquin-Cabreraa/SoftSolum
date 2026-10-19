@@ -1,3 +1,233 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Manrope:wght@600;700;800&display=swap');
+
+:root {
+    --bg: #f8f7f3;
+    --card: #ffffff;
+    --navy: #1b2a41;
+    --orange: #e0713a;
+    --orange-dark: #c95f2b;
+    --pink: #d85475;
+    --muted: #6b7280;
+    --line: #e7e4dc;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: 'DM Sans', Arial, sans-serif;
+    color: var(--navy);
+    background: var(--bg);
+    border-top: 6px solid var(--pink);
+}
+
+.layout {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    min-height: calc(100vh - 6px);
+}
+
+/* ---------- Panel de imagen ---------- */
+.hero {
+    position: sticky;
+    top: 0;
+    height: calc(100vh - 6px);
+    background-image: var(--foto, none), url('/images/costa-uruguay2.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: flex-end;
+}
+
+.hero::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(10, 20, 35, .75) 0%, rgba(10, 20, 35, 0) 55%);
+}
+
+.hero-text {
+    position: relative;
+    z-index: 1;
+    padding: 0 56px 56px;
+    color: #fff;
+}
+
+.hero-text small {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: .18em;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+}
+
+.hero-text h2 {
+    margin: 0;
+    font-family: 'Manrope', sans-serif;
+    font-weight: 600;
+    font-size: 40px;
+    line-height: 1.15;
+    max-width: 420px;
+}
+
+/* ---------- Panel de contenido ---------- */
+.content {
+    padding: 48px 64px 64px;
+    display: flex;
+    flex-direction: column;
+}
+
+.logo {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--navy);
+    letter-spacing: -.02em;
+}
+.logo span { color: var(--orange); }
+
+.inner {
+    width: 100%;
+    max-width: 460px;
+    margin: 56px auto 0;
+}
+
+.eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: .14em;
+    text-transform: uppercase;
+    color: var(--orange);
+    margin: 0 0 16px;
+}
+
+h1 {
+    font-family: 'Manrope', sans-serif;
+    font-weight: 700;
+    font-size: 44px;
+    line-height: 1.1;
+    letter-spacing: -.02em;
+    margin: 0 0 20px;
+}
+
+.lead {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.7;
+    margin: 0 0 32px;
+}
+
+h2.seccion {
+    font-family: 'Manrope', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 36px 0 4px;
+}
+
+/* ---------- Formulario ---------- */
+.campo { margin-bottom: 18px; }
+
+label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+input, textarea, select {
+    width: 100%;
+    padding: 13px 16px;
+    font: inherit;
+    font-size: 14px;
+    color: var(--navy);
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+textarea { resize: vertical; min-height: 96px; }
+
+input:focus, textarea:focus, select:focus {
+    border-color: var(--orange);
+    box-shadow: 0 0 0 3px rgba(224, 113, 58, .15);
+}
+
+.fila {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+/* ---------- Tarjeta de actividad ---------- */
+.actividad {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 22px;
+    margin-top: 18px;
+}
+
+.actividad h3 {
+    margin: 0 0 18px;
+    font-family: 'Manrope', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+.actividad input { background: var(--bg); }
+
+/* ---------- Botones ---------- */
+button {
+    font: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 14px 22px;
+    border: 1px solid transparent;
+    transition: background .15s, border-color .15s;
+}
+
+.guardar {
+    width: 100%;
+    margin-top: 12px;
+    background: var(--navy);
+    color: #fff;
+}
+.guardar:hover { background: #12203a; }
+
+.agregar {
+    width: 100%;
+    margin-top: 18px;
+    background: var(--card);
+    color: var(--orange);
+    border-color: var(--line);
+}
+.agregar:hover { border-color: var(--orange); }
+
+.eliminar {
+    margin-top: 4px;
+    padding: 10px 16px;
+    background: transparent;
+    color: var(--pink);
+    border-color: var(--line);
+}
+.eliminar:hover { border-color: var(--pink); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .hero { position: relative; height: 240px; }
+    .hero-text { padding: 0 24px 24px; }
+    .hero-text h2 { font-size: 26px; }
+    .content { padding: 32px 24px 48px; }
+    .inner { margin-top: 32px; }
+    h1 { font-size: 34px; }
+    .fila { grid-template-columns: 1fr; }
 /* Estilos compartidos de UMnatural.
    Mismos colores y fuentes que registro-prestador.html,
    para que todas las pantallas se vean iguales. */
