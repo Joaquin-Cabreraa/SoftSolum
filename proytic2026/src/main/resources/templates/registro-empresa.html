@@ -312,6 +312,21 @@
                 grid-template-columns: 1fr;
             }
         }
+        .error-campo {
+            display: none;
+            color: #b9483a;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .campo input.invalido {
+            border-color: #b9483a;
+            background: #fff8f7;
+        }
+
+        .error-campo.visible {
+            display: block;
+        }
     </style>
 </head>
 
@@ -357,7 +372,11 @@
 
                     <div class="campo">
                         <label for="rut">RUT</label>
-                        <input type="text" id="rut" name="rut" required inputmode="numeric">
+                        <input type="text" id="rut" name="rut" required
+                               inputmode="numeric" maxlength="12"
+                               pattern="[0-9]{12}"
+                               title="El RUT debe contener exactamente 12 números.">
+                        <small class="error-campo" id="errorRut"></small>
                     </div>
 
                 <div class="fila">
@@ -368,7 +387,11 @@
 
                     <div class="campo">
                         <label for="telefono">Teléfono (opcional)</label>
-                        <input type="tel" id="telefono" name="telefono">
+                        <input type="tel" id="telefono" name="telefono"
+                               inputmode="numeric" maxlength="9"
+                               pattern="09[1-9][0-9]{6}"
+                               title="Ingresá un celular uruguayo de 9 dígitos que comience con 09.">
+                        <small class="error-campo" id="errorTelefono"></small>
                     </div>
                 </div>
 
@@ -407,6 +430,7 @@
 
 </div>
 
+
 <script>
     // Manda los datos del formulario al backend (PrestadorController)
     async function registrar(evento) {
@@ -429,6 +453,26 @@
         }
         mensaje.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+    function mostrarError(campo, mensaje) {
+        const input = document.getElementById(campo);
+        const error = document.getElementById(
+            campo === 'rut' ? 'errorRut' : 'errorTelefono'
+        );
+
+        const actualizar = () => {
+            const invalido = input.value.trim() !== '' && !input.validity.valid;
+
+            input.classList.toggle('invalido', invalido);
+            error.classList.toggle('visible', invalido);
+            error.textContent = invalido ? mensaje : '';
+        };
+
+        input.addEventListener('input', actualizar);
+        input.addEventListener('blur', actualizar);
+    }
+
+    mostrarError('rut', 'El RUT debe tener exactamente 12 números.');
+    mostrarError('telefono', 'Ingresá un celular válido, por ejemplo 099123456.');
 </script>
 
 </body>
