@@ -13,7 +13,9 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uy.edu.um.proytic2026.entities.Horario;
 import uy.edu.um.proytic2026.entities.HorarioId;
 import uy.edu.um.proytic2026.entities.Reserva;
+import uy.edu.um.proytic2026.entities.Turista;
 import uy.edu.um.proytic2026.repository.HorarioRepository;
+import uy.edu.um.proytic2026.repository.TuristaRepository;
 import uy.edu.um.proytic2026.services.CatalogoService;
 import uy.edu.um.proytic2026.services.ReservaService;
 
@@ -22,6 +24,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.List;
 
 // Reservar y "Mis reservas". Todo cuelga de /panel/turista, así que
@@ -38,13 +42,16 @@ public class ReservaWebController {
     @Autowired
     private HorarioRepository horarioRepository;
 
+    @Autowired
+    private TuristaRepository turistaRepository;
+
     // Formulario de reserva para un horario concreto (paso 1 de CU-T06)
     // Ej: /panel/turista/reservar?actividadId=3&fecha=2026-12-01&hora=09:00
     @GetMapping("/panel/turista/reservar")
     public String formularioReserva(@RequestParam Long actividadId,
                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fecha,
                                     @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.TIME) LocalTime hora,
-                                    Model model, RedirectAttributes redirect) {
+                                    HttpSession session, Model model, RedirectAttributes redirect) {
 
         Horario horario = horarioRepository.findById(new HorarioId(actividadId, fecha, hora)).orElse(null);
 
@@ -59,6 +66,7 @@ public class ReservaWebController {
 
         model.addAttribute("horario", horario);
         model.addAttribute("actividad", horario.getActividad());
+        model.addAttribute("titular", datosDelTitular(session));
         return "reservar";               // templates/reservar.html
     }
 
@@ -103,6 +111,7 @@ public class ReservaWebController {
             }
             model.addAttribute("horario", horario);
             model.addAttribute("actividad", horario.getActividad());
+            model.addAttribute("titular", datosDelTitular(session));
             model.addAttribute("error", error);
             // Devolvemos lo que había escrito, para no tener que escribirlo de nuevo
             model.addAttribute("cantidad", cantidad);
@@ -130,6 +139,20 @@ public class ReservaWebController {
         model.addAttribute("reservas", reservas);
         model.addAttribute("reservaService", reservaService);   // para calcular el vencimiento en la página
         return "mis-reservas";           // templates/mis-reservas.html
+    }
+
+    // Datos del turista logueado, para completar sola la "Persona 1" del formulario
+    private Map<String, String> datosDelTitular(HttpSession session) {
+        Map<String, String> datos = new HashMap<>();
+        Long turistaId = (Long) session.getAttribute("usuarioId");
+        Turista turista = turistaId == null ? null : turistaRepository.findById(turistaId).orElse(null);
+        if (turista != null) {
+            datos.put("nombre", turista.getName() == null ? "" : turista.getName());
+            datos.put("apellido", turista.getLastName() == null ? "" : turista.getLastName());
+            datos.put("ci", turista.getDocumento() == null ? "" : turista.getDocumento());
+            datos.put("fechaNacimiento", turista.getFechaNacimiento() == null ? "" : turista.getFechaNacimiento().toString());
+        }
+        return datos;
     }
 
     // Todos los valores de un campo repetido, o una lista vacía si no vino

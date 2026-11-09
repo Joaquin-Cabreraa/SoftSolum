@@ -44,6 +44,17 @@
     </div>
 
     <div class="tarjeta">
+      <h3>Mis datos</h3>
+      <p>
+        <span th:text="${turista.name} + ' ' + ${turista.lastName != null ? turista.lastName : ''}">Nombre Apellido</span><br>
+        <span th:text="${turista.userEmail}">correo</span><br>
+        <span th:text="${turista.telefono}">099...</span><br>
+        Documento: <span th:text="${turista.documento != null ? turista.documento : '—'}">—</span><br>
+        Nacimiento: <span th:text="${turista.fechaNacimiento != null ? #temporals.format(turista.fechaNacimiento, 'dd/MM/yyyy') : '—'}">—</span>
+      </p>
+    </div>
+
+    <div class="tarjeta">
       <h3>Mis reservas</h3>
       <p>Consultá tus reservas y el estado de cada una.</p>
       <a href="/panel/turista/reservas" class="boton boton-borde boton-chico">Ver reservas</a>

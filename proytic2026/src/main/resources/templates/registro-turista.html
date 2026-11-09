@@ -381,9 +381,27 @@
 
       <form id="formulario" onsubmit="registrar(event)">
 
-        <div class="campo">
-          <label for="nombre">Nombre</label>
-          <input type="text" id="nombre" name="nombre" required>
+        <div class="fila">
+          <div class="campo">
+            <label for="nombre">Nombre</label>
+            <input type="text" id="nombre" name="nombre" required>
+          </div>
+          <div class="campo">
+            <label for="apellido">Apellido</label>
+            <input type="text" id="apellido" name="apellido" required>
+          </div>
+        </div>
+
+        <div class="fila">
+          <div class="campo">
+            <label for="documento">Documento (CI o pasaporte)</label>
+            <input type="text" id="documento" name="documento" required maxlength="20"
+                   placeholder="Sin puntos ni guiones">
+          </div>
+          <div class="campo">
+            <label for="fechaNacimiento">Fecha de nacimiento</label>
+            <input type="date" id="fechaNacimiento" name="fechaNacimiento" required>
+          </div>
         </div>
 
         <div class="fila">
