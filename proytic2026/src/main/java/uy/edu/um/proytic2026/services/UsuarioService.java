@@ -24,7 +24,7 @@ public class UsuarioService {
             return Optional.empty();
         }
 
-        return usuarioRepository.findByUserEmail(email.trim())
+        return usuarioRepository.findByUserEmailIgnoreCase(email.trim())
                 .filter(usuario ->
                         passwordEncoder.matches(password, usuario.getPasswordHash()));
     }
@@ -41,7 +41,7 @@ public class UsuarioService {
             return false;
         }
 
-        if (usuarioRepository.existsByUserEmail(email)) {
+        if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {
             return false;
         }
 

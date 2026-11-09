@@ -75,8 +75,8 @@
 <nav class="nav">
     <a href="/" class="logo">UM<span>natural</span></a>
     <div class="nav-links">
-        <a href="/">Inicio</a>
-        <a href="/panel/admin" class="activo">Panel administrador</a>
+        <a href="/panel/admin" class="activo">Emprendimientos</a>
+        <a href="/panel/admin/tipos">Tipos</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -125,6 +125,7 @@
     }
 
     // Arma la tarjeta de un emprendimiento con sus dos botones
+    // Arma la tarjeta de un emprendimiento con todos sus datos y los dos botones
     function crearTarjeta(emp) {
         const tarjeta = document.createElement('div');
         tarjeta.className = 'tarjeta emprendimiento';
@@ -133,14 +134,35 @@
 
         const nombre = document.createElement('h3');
         nombre.textContent = emp.nombre;
+        info.appendChild(nombre);
+
+        // Lista de datos a mostrar: [etiqueta, valor]
+        const lineas = [
+            ['Tipo', emp.tipo],
+            ['Razón social', emp.razonSocial],
+            ['RUT', emp.rut],
+            ['Responsable', emp.responsable],
+            ['Documento', emp.documento],
+            ['Email', emp.email],
+            ['Teléfono', emp.telefono],
+            ['Dirección', emp.ubicacion],
+            ['Descripción', emp.descripcion]
+        ];
 
         const datos = document.createElement('div');
         datos.className = 'datos';
-        datos.textContent = [emp.ubicacion, emp.email, emp.telefono]
-            .filter(dato => dato)          // saca los que vengan vacíos
-            .join(' · ') || 'Sin datos de contacto';
 
-        info.appendChild(nombre);
+        for (const [etiqueta, valor] of lineas) {
+            if (!valor) continue;   // si no tiene ese dato (ej: un particular no tiene RUT), no lo muestra
+
+            const linea = document.createElement('div');
+            const nombreDato = document.createElement('strong');
+            nombreDato.textContent = etiqueta + ': ';
+            linea.appendChild(nombreDato);
+            linea.appendChild(document.createTextNode(valor));
+            datos.appendChild(linea);
+        }
+
         info.appendChild(datos);
 
         const acciones = document.createElement('div');

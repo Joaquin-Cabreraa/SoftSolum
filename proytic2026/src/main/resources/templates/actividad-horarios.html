@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Horarios</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+        .columnas { display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; margin-top: 26px; }
+        .lista { display: flex; flex-direction: column; gap: 10px; }
+        .horario { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 22px; }
+        .horario .cuando { font-family: 'Manrope', sans-serif; font-weight: 700; }
+        .horario .detalle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+        .horario form { margin: 0; }
+        .pasado { opacity: .55; }
+        .campo { margin-bottom: 14px; }
+        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin: 4px 0 14px; }
+        .check input { width: auto; margin: 0; }
+        #politica { border-left: 3px solid var(--orange); padding-left: 12px; margin-bottom: 14px; }
+        .ayuda { font-size: 12px; color: var(--muted); margin-top: 4px; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        @media (max-width: 850px) { .columnas { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/prestador">Mi panel</a>
+        <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
+        <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a href="/panel/prestador/actividades" class="volver">← Volver a mis actividades</a>
+    <span class="eyebrow">Fechas y horarios</span>
+    <h1 th:text="${actividad.titulo}">Actividad</h1>
+    <p class="descripcion">Cada fecha se carga a mano. Los turistas pueden reservar mientras queden lugares.</p>
+
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="columnas">
+        <!-- Horarios cargados -->
+        <div>
+            <div class="lista">
+                <div class="tarjeta horario" th:each="h : ${horarios}" th:classappend="${h.fecha.isBefore(hoy)} ? 'pasado' : ''">
+                    <div>
+                        <div class="cuando">
+                            <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
+                            <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(h.horaFin, 'HH:mm')}">09:00 a 11:00</span>
+                        </div>
+                        <div class="detalle">
+                            <span th:text="${h.cuposDisponibles} + ' de ' + ${h.cuposTotales} + ' lugares libres'">10 de 10</span>
+                            <span th:if="${h.cancelable}" th:text="' · Cancelable hasta ' + ${h.minMinutosCancelacion} + ' min antes, reembolso ' + ${h.porcentajeReembolso} + '%'"></span>
+                            <span th:unless="${h.cancelable}"> · Sin cancelación</span>
+                        </div>
+                    </div>
+                    <!-- Solo se puede borrar si nadie reservó (RNE #6) -->
+                    <form method="post" th:if="${h.cuposDisponibles == h.cuposTotales}"
+                          th:action="@{/panel/prestador/actividades/{id}/horarios/eliminar(id=${actividad.id})}"
+                          onsubmit="return confirm('¿Eliminar este horario?');">
+                        <input type="hidden" name="fecha" th:value="${h.fecha}">
+                        <input type="hidden" name="horaInicio" th:value="${h.horaInicio}">
+                        <button type="submit" class="boton boton-rojo boton-chico">Eliminar</button>
+                    </form>
+                </div>
+            </div>
+            <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
+                <h3>Todavía no hay horarios</h3>
+                <p>Agregá la primera fecha con el formulario.</p>
+            </div>
+        </div>
+
+        <!-- Formulario para agregar un horario (CU-P09) -->
+        <form class="tarjeta" method="post" th:action="@{/panel/prestador/actividades/{id}/horarios(id=${actividad.id})}"
+              th:if="${actividad.estado != 'BAJA'}">
+            <h3 style="margin-bottom: 16px">Agregar horario</h3>
+            <div class="campo">
+                <label for="fecha">Fecha</label>
+                <input type="date" id="fecha" name="fecha" required th:min="${hoy}">
+            </div>
+            <div class="dos">
+                <div class="campo">
+                    <label for="horaInicio">Desde</label>
+                    <input type="time" id="horaInicio" name="horaInicio" required>
+                </div>
+                <div class="campo">
+                    <label for="horaFin">Hasta</label>
+                    <input type="time" id="horaFin" name="horaFin" required>
+                </div>
+            </div>
+            <div class="campo">
+                <label for="cupos">Cupos (personas)</label>
+                <input type="number" id="cupos" name="cupos" min="1" required>
+            </div>
+
+            <!-- Política de cancelación (acta P8-P9) -->
+            <label class="check"><input type="checkbox" id="cancelable" name="cancelable" value="true"> Admite cancelación</label>
+            <div id="politica" style="display:none">
+                <div class="campo">
+                    <label for="minMinutosCancelacion">Hasta cuántos minutos antes</label>
+                    <input type="number" id="minMinutosCancelacion" name="minMinutosCancelacion" min="0">
+                </div>
+                <div class="campo">
+                    <label for="porcentajeReembolso">Reembolso (%)</label>
+                    <input type="number" id="porcentajeReembolso" name="porcentajeReembolso" min="0" max="100">
+                </div>
+            </div>
+
+            <button type="submit" class="boton boton-naranja" style="width:100%">Agregar horario</button>
+        </form>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+<script>
+    // Muestra los campos de la política de cancelación solo si se marca "Admite cancelación"
+    const cancelable = document.getElementById('cancelable');
+    const politica = document.getElementById('politica');
+    if (cancelable) {
+        cancelable.addEventListener('change', () => {
+            politica.style.display = cancelable.checked ? 'block' : 'none';
+            politica.querySelectorAll('input').forEach(i => i.required = cancelable.checked);
+        });
+    }
+</script>
+</body>
+</html>

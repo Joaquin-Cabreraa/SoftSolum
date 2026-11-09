@@ -35,7 +35,8 @@ public class PrestadorController {
             @RequestParam(required = false) String telefono,
             @RequestParam String password,
             @RequestParam String nombreEmprendimiento,
-            @RequestParam String direccion) {
+            @RequestParam String direccion,
+            @RequestParam(required = false) String descripcion) {
 
         // Comprobar campos obligatorios
         if (vacio(razonSocial) || vacio(rut) || vacio(email)
@@ -57,7 +58,7 @@ public class PrestadorController {
         }
 
         // Verificar email repetido
-        if (usuarioRepository.existsByUserEmail(email)) {
+        if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {
             return ResponseEntity.badRequest()
                     .body("Ya existe una cuenta registrada con ese correo electrónico.");
         }
@@ -71,7 +72,7 @@ public class PrestadorController {
         // Registrar empresa
         if (prestadorService.altaEmpresa(
                 razonSocial, rut, email, telefono, password,
-                nombreEmprendimiento, direccion)) {
+                nombreEmprendimiento, direccion, descripcion)) {
 
             return ResponseEntity.ok(
                     "Empresa registrada. Emprendimiento pendiente de verificación.");
@@ -92,7 +93,8 @@ public class PrestadorController {
             @RequestParam(required = false) String telefono,
             @RequestParam String password,
             @RequestParam String nombreEmprendimiento,
-            @RequestParam String direccion) {
+            @RequestParam String direccion,
+            @RequestParam(required = false) String descripcion) {
 
         // Comprobar campos obligatorios
         if (vacio(nombre) || vacio(apellido) || vacio(documento)
@@ -115,7 +117,7 @@ public class PrestadorController {
         }
 
         // Verificar email repetido
-        if (usuarioRepository.existsByUserEmail(email)) {
+        if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {
             return ResponseEntity.badRequest()
                     .body("Ya existe una cuenta registrada con ese correo electrónico.");
         }
@@ -129,7 +131,7 @@ public class PrestadorController {
         // Registrar particular
         if (prestadorService.altaParticular(
                 nombre, apellido, documento, email, telefono,
-                password, nombreEmprendimiento, direccion)) {
+                password, nombreEmprendimiento, direccion, descripcion)) {
 
             return ResponseEntity.ok(
                     "Particular registrado. Emprendimiento pendiente de verificación.");

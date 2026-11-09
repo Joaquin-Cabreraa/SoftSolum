@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Tipos de actividad y equipamiento</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .columnas { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 30px; align-items: start; }
+        .alta { display: flex; gap: 8px; margin: 14px 0 18px; }
+        .alta input { padding: 11px 12px; border-radius: 6px; }
+        .item { display: flex; gap: 8px; align-items: center; padding: 8px 0; border-top: 1px solid var(--borde); }
+        .item form { margin: 0; }
+        .item .renombrar { display: flex; gap: 6px; flex: 1; }
+        .item input { padding: 8px 10px; border-radius: 6px; font-size: 14px; }
+        .item .boton { padding: 8px 12px; font-size: 12px; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        @media (max-width: 850px) { .columnas { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/admin">Emprendimientos</a>
+        <a href="/panel/admin/tipos" class="activo">Tipos</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Panel del administrador</span>
+    <h1>Tipos de actividad y equipamiento.</h1>
+    <p class="descripcion">Datos comunes a toda la plataforma: los prestadores los eligen al publicar una actividad.</p>
+
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="columnas">
+        <!-- Tipos de actividad -->
+        <section class="tarjeta">
+            <h3>Tipos de actividad</h3>
+            <form class="alta" method="post" action="/panel/admin/tipos/actividad">
+                <input type="text" name="nombre" placeholder="Nuevo tipo, ej: Kayak" required maxlength="60">
+                <button type="submit" class="boton boton-naranja boton-chico">Agregar</button>
+            </form>
+            <div class="item" th:each="t : ${tiposActividad}">
+                <form class="renombrar" method="post" th:action="@{/panel/admin/tipos/actividad/{id}/editar(id=${t.id})}">
+                    <input type="text" name="nombre" th:value="${t.nombre}" required maxlength="60">
+                    <button type="submit" class="boton boton-borde">Guardar</button>
+                </form>
+                <form method="post" th:action="@{/panel/admin/tipos/actividad/{id}/eliminar(id=${t.id})}"
+                      onsubmit="return confirm('¿Eliminar este tipo?');">
+                    <button type="submit" class="boton boton-rojo">Eliminar</button>
+                </form>
+            </div>
+        </section>
+
+        <!-- Tipos de equipamiento -->
+        <section class="tarjeta">
+            <h3>Tipos de equipamiento</h3>
+            <form class="alta" method="post" action="/panel/admin/tipos/equipamiento">
+                <input type="text" name="nombre" placeholder="Nuevo equipamiento, ej: Linterna" required maxlength="60">
+                <button type="submit" class="boton boton-naranja boton-chico">Agregar</button>
+            </form>
+            <div class="item" th:each="e : ${tiposEquipamiento}">
+                <form class="renombrar" method="post" th:action="@{/panel/admin/tipos/equipamiento/{id}/editar(id=${e.id})}">
+                    <input type="text" name="nombre" th:value="${e.nombre}" required maxlength="60">
+                    <button type="submit" class="boton boton-borde">Guardar</button>
+                </form>
+                <form method="post" th:action="@{/panel/admin/tipos/equipamiento/{id}/eliminar(id=${e.id})}"
+                      onsubmit="return confirm('¿Eliminar este equipamiento?');">
+                    <button type="submit" class="boton boton-rojo">Eliminar</button>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>

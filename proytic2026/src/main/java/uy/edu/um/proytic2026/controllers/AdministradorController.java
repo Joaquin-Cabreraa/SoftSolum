@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import uy.edu.um.proytic2026.entities.Emprendimiento;
 import uy.edu.um.proytic2026.services.AdministradorService;
 import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -18,10 +19,8 @@ public class AdministradorController {
     private AdministradorService administradorService;
 
     @GetMapping("/emprendimientos/pendientes")
-
-    public List<Emprendimiento> verPendientes() {
+    public List<Map<String, Object>> verPendientes() {
         return administradorService.listarPendientes();
-
     }
 
     @PutMapping("/emprendimientos/{id}/aceptar")

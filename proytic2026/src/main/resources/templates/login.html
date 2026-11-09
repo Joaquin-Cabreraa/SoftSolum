@@ -49,8 +49,9 @@
         </div>
     </section>
     <section class="panel">
-        <header><div class="logo">UM<span>natural</span></div></header>
+        <header><a href="/" class="logo" style="color:inherit; text-decoration:none;">UM<span>natural</span></a></header>
         <main class="contenido">
+            <a href="/" style="display:inline-block; font-size:13px; color:#6c7378; text-decoration:none; margin-bottom:22px;">← Volver al inicio</a><br>
             <span class="eyebrow">Tu próxima experiencia empieza acá</span>
             <h1>Qué bueno verte de nuevo.</h1>
             <p class="descripcion">Iniciá sesión para continuar disfrutando de todo lo que Uruguay tiene para ofrecer.</p>
@@ -74,7 +75,8 @@
                 <button class="boton" type="submit">Iniciar sesión</button>
             </form>
 
-            <p class="login">¿Todavía no tenés una cuenta? <a th:href="@{/registro/prestador}">Registrate como prestador</a></p>
+            <p class="login">¿Todavía no tenés una cuenta? <a th:href="@{/registro/turista}">Registrate</a></p>
+            <p class="login">¿Tenés un emprendimiento? <a th:href="@{/registro/prestador}">Registrate como prestador</a></p>
         </main>
         <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
     </section>

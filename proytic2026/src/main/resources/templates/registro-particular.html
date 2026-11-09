@@ -361,7 +361,7 @@
     <section class="panel">
 
         <header>
-            <div class="logo">UM<span>natural</span></div>
+            <a href="/" class="logo" style="color:inherit; text-decoration:none;">UM<span>natural</span></a>
         </header>
 
         <main class="contenido">
@@ -464,6 +464,13 @@
                            name="direccion"
                            required>
                 </div>
+
+                    <div class="campo">
+                        <label for="descripcion">Descripción de tu emprendimiento (opcional)</label>
+                        <textarea id="descripcion" name="descripcion" maxlength="255" rows="3"
+                                  placeholder="¿Qué ofrecés? Ej: salidas en kayak y paseos por la laguna"
+                                  style="width:100%; padding:14px 15px; border:1px solid #dfe1de; border-radius:6px; font:inherit; resize:vertical;"></textarea>
+                    </div>
 
                 <button type="submit" class="enviar">Crear cuenta</button>
             </form>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${edicion} ? 'UMnatural | Editar actividad' : 'UMnatural | Nueva actividad'">UMnatural | Actividad</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+        form.formulario { max-width: 720px; margin-top: 26px; }
+        .campo { margin-bottom: 18px; }
+        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 7px; display: block; }
+        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+        .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
+        .ayuda { font-size: 12px; color: var(--muted); margin-top: 5px; }
+        fieldset { border: 1px solid var(--borde); border-radius: 6px; padding: 16px 18px; margin: 0 0 18px; background: white; }
+        legend { font-size: 13px; font-weight: 700; padding: 0 6px; }
+        .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+        .opcion { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500;
+                  border: 1px solid var(--borde); border-radius: 20px; padding: 7px 13px; cursor: pointer; margin: 0; }
+        .opcion input { width: auto; margin: 0; }
+        .opcion:has(input:checked) { border-color: var(--orange); background: #fdeee5; color: var(--orange); }
+        .otro { margin-top: 14px; }
+        .otro label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+        .otro input { padding: 10px 12px; border-radius: 6px; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        @media (max-width: 760px) { .dos, .tres { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/prestador">Mi panel</a>
+        <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
+        <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a href="/panel/prestador/actividades" class="volver">← Volver a mis actividades</a>
+    <span class="eyebrow" th:text="${edicion} ? 'Editar actividad' : 'Nueva actividad'">Nueva actividad</span>
+    <h1 th:text="${edicion} ? 'Editá tu actividad.' : 'Publicá una actividad.'">Publicá una actividad.</h1>
+    <p class="descripcion">Esta información es la que ven los turistas en el portal.</p>
+
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <form class="formulario" method="post"
+          th:action="${edicion} ? @{/panel/prestador/actividades/{id}/editar(id=${actividad.id})} : @{/panel/prestador/actividades/nueva}">
+
+        <div class="campo">
+            <label for="titulo">Título</label>
+            <input type="text" id="titulo" name="titulo" maxlength="120" required th:value="${actividad.titulo}"
+                   placeholder="Ej: Kayak al atardecer en la Laguna de Rocha">
+        </div>
+
+        <div class="campo">
+            <label for="descripcion">Descripción de la experiencia</label>
+            <textarea id="descripcion" name="descripcion" maxlength="2000" required rows="5"
+                      th:text="${actividad.descripcion}" placeholder="Qué se hace, qué incluye, punto de encuentro..."></textarea>
+        </div>
+
+        <div class="dos">
+            <div class="campo">
+                <label for="departamento">Departamento</label>
+                <select id="departamento" name="departamento" required>
+                    <option value="">Elegí uno</option>
+                    <option th:each="d : ${departamentos}" th:value="${d}" th:text="${d}"
+                            th:selected="${d == actividad.departamento}">Rocha</option>
+                </select>
+            </div>
+            <div class="campo">
+                <label for="localidad">Localidad (opcional)</label>
+                <input type="text" id="localidad" name="localidad" th:value="${actividad.localidad}" placeholder="Ej: La Paloma">
+            </div>
+        </div>
+
+        <div class="tres">
+            <div class="campo">
+                <label for="precio">Precio por persona ($)</label>
+                <input type="number" id="precio" name="precio" min="0" step="1" required th:value="${actividad.precio}">
+            </div>
+            <div class="campo">
+                <label for="duracionMinutos">Duración (minutos)</label>
+                <input type="number" id="duracionMinutos" name="duracionMinutos" min="1" required th:value="${actividad.duracionMinutos}">
+            </div>
+            <div class="campo">
+                <label for="minPreviosReservar">Cierre de reservas (min antes)</label>
+                <input type="number" id="minPreviosReservar" name="minPreviosReservar" min="0" required th:value="${actividad.minPreviosReservar}">
+                <p class="ayuda">0 = se puede reservar hasta la hora de inicio.</p>
+            </div>
+        </div>
+
+        <div class="campo">
+            <label for="requisitosEdad">Requisitos de edad (opcional)</label>
+            <input type="text" id="requisitosEdad" name="requisitosEdad" th:value="${actividad.requisitosEdad}" placeholder="Ej: Mayores de 12 años">
+        </div>
+
+        <fieldset>
+            <legend>Tipo de actividad (podés elegir varios)</legend>
+            <div class="opciones">
+                <label class="opcion" th:each="t : ${tipos}">
+                    <input type="checkbox" name="tipos" th:value="${t.id}" th:checked="${#lists.contains(tiposElegidos, t.id)}">
+                    <span th:text="${t.nombre}">Senderismo</span>
+                </label>
+            </div>
+            <div class="otro">
+                <label for="nuevosTipos">¿No está el que buscás? Escribilo (separá con comas)</label>
+                <input type="text" id="nuevosTipos" name="nuevosTipos" maxlength="200" placeholder="Ej: Kayak, Pesca deportiva">
+            </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Equipamiento necesario (opcional)</legend>
+            <div class="opciones">
+                <label class="opcion" th:each="e : ${equipamientos}">
+                    <input type="checkbox" name="equipamiento" th:value="${e.id}" th:checked="${#lists.contains(equipamientoElegido, e.id)}">
+                    <span th:text="${e.nombre}">Casco</span>
+                </label>
+            </div>
+            <div class="otro">
+                <label for="nuevoEquipamiento">¿Hace falta otro equipamiento? Escribilo (separá con comas)</label>
+                <input type="text" id="nuevoEquipamiento" name="nuevoEquipamiento" maxlength="200" placeholder="Ej: Linterna, Protector solar">
+            </div>
+        </fieldset>
+
+        <button type="submit" class="boton boton-naranja" style="width:100%"
+                th:text="${edicion} ? 'Guardar cambios' : 'Crear actividad'">Crear actividad</button>
+    </form>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>

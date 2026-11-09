@@ -23,8 +23,9 @@
 <nav class="nav">
     <a href="/" class="logo">UM<span>natural</span></a>
     <div class="nav-links">
-        <a href="/">Inicio</a>
         <a href="/panel/prestador" class="activo">Mi panel</a>
+        <a href="/panel/prestador/actividades">Mis actividades</a>
+        <a href="/panel/prestador/reservas">Reservas</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -58,16 +59,17 @@
             <p>Tu cuenta no tiene un emprendimiento asociado.</p>
         </div>
 
-        <div class="tarjeta deshabilitada">
+        <!-- Habilitada solo con el emprendimiento ACEPTADO (RNE #8) -->
+        <div class="tarjeta" th:classappend="${emprendimiento == null or emprendimiento.estado.name() != 'ACEPTADO'} ? 'deshabilitada' : ''">
             <h3>Mis actividades</h3>
-            <p>Cargá y editá las actividades que ofrecés. Disponible cuando tu emprendimiento sea aceptado.</p>
-            <a href="#" class="boton boton-borde boton-chico">Nueva actividad</a>
+            <p>Cargá y editá las actividades que ofrecés y sus fechas. Disponible cuando tu emprendimiento sea aceptado.</p>
+            <a href="/panel/prestador/actividades" class="boton boton-naranja boton-chico">Ver mis actividades</a>
         </div>
 
-        <div class="tarjeta deshabilitada">
+        <div class="tarjeta">
             <h3>Reservas</h3>
-            <p>Consultá las reservas que hicieron los turistas en tus actividades. Próximamente.</p>
-            <a href="#" class="boton boton-borde boton-chico">Ver reservas</a>
+            <p>Consultá las reservas que hicieron los turistas en tus actividades, con los datos de cada persona.</p>
+            <a href="/panel/prestador/reservas" class="boton boton-borde boton-chico">Ver reservas</a>
         </div>
     </div>
 </main>
