@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'UMnatural | ' + ${actividad.titulo != null ? actividad.titulo : 'Actividad'}">UMnatural | Actividad</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+
+        .encabezado { display: grid; grid-template-columns: 1fr 280px; gap: 40px; align-items: start; }
+        .emprendimiento { font-size: 15px; color: var(--muted); margin: 0 0 18px; }
+        .texto { font-size: 15px; line-height: 1.8; color: var(--navy); white-space: pre-line; }
+
+        .resumen { position: sticky; top: 20px; }
+        .resumen .precio { font-family: 'Manrope', sans-serif; font-size: 30px; font-weight: 800; }
+        .resumen .precio small { font-size: 13px; font-weight: 500; color: var(--muted); }
+        .resumen .boton { display: block; text-align: center; margin-top: 18px; }
+
+        .datos { list-style: none; padding: 0; margin: 18px 0 0; font-size: 14px; }
+        .datos li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--borde); }
+        .datos li span:first-child { color: var(--muted); }
+        .datos li span:last-child { font-weight: 600; text-align: right; }
+
+        .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 26px; }
+        .etiqueta { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; background: #fdeee5; color: var(--orange); }
+        .etiqueta.gris { background: #eef0ee; color: var(--navy); }
+
+        h2 { font-size: 20px; margin: 44px 0 14px; }
+
+        /* ---------- Horarios ---------- */
+        .horarios { display: flex; flex-direction: column; gap: 10px; }
+        .horario { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; }
+        .horario .cuando { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px; }
+        .horario .detalle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+        .cupos-pocos { color: var(--orange); font-weight: 700; }
+
+        .aviso-login { font-size: 13px; color: var(--muted); }
+        .aviso-login a { color: var(--navy); font-weight: 700; }
+
+        @media (max-width: 850px) {
+            .encabezado { grid-template-columns: 1fr; }
+            .resumen { position: static; }
+            .horario { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades" class="activo">Actividades</a>
+        <th:block th:if="${rol == null}">
+            <a href="/registro/turista">Registrarse</a>
+            <a href="/login">Iniciar sesión</a>
+        </th:block>
+        <th:block th:if="${rol == 'TURISTA'}">
+            <a href="/panel/turista/reservas">Mis reservas</a>
+            <a href="/panel/turista">Mi panel</a>
+            <a href="/logout">Cerrar sesión</a>
+        </th:block>
+        <th:block th:if="${rol != null and rol != 'TURISTA'}">
+            <a th:href="${rol == 'ADMINISTRADOR'} ? '/panel/admin' : '/panel/prestador'" href="#">Mi panel</a>
+            <a href="/logout">Cerrar sesión</a>
+        </th:block>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a href="/actividades" class="volver">← Volver a actividades</a>
+
+    <div class="encabezado">
+        <!-- Columna izquierda: información de la actividad -->
+        <div>
+            <span class="eyebrow" th:text="${actividad.departamento != null ? actividad.departamento : 'Actividad'}">Departamento</span>
+            <h1 th:text="${actividad.titulo != null and !#strings.isEmpty(actividad.titulo)} ? ${actividad.titulo} : 'Actividad #' + ${actividad.id}">Título</h1>
+            <p class="emprendimiento">Ofrecida por <strong th:text="${actividad.emprendimiento.nombre}">Emprendimiento</strong></p>
+
+            <div class="etiquetas" th:if="${!#lists.isEmpty(actividad.tipoActividad)}">
+                <span class="etiqueta" th:each="t : ${actividad.tipoActividad}" th:text="${t.nombre}">Tipo</span>
+            </div>
+
+            <p class="texto" th:if="${actividad.descripcion}" th:text="${actividad.descripcion}">Descripción</p>
+            <p class="texto" th:unless="${actividad.descripcion}" style="color: var(--muted)">El prestador todavía no cargó una descripción.</p>
+
+            <th:block th:if="${!#lists.isEmpty(actividad.tiposEquipamiento)}">
+                <h2>Equipamiento necesario</h2>
+                <div class="etiquetas">
+                    <span class="etiqueta gris" th:each="e : ${actividad.tiposEquipamiento}" th:text="${e.nombre}">Casco</span>
+                </div>
+            </th:block>
+        </div>
+
+        <!-- Columna derecha: resumen -->
+        <aside class="tarjeta resumen">
+            <div class="precio">$ <span th:text="${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
+                <small>por persona</small></div>
+            <ul class="datos">
+                <li th:if="${actividad.duracionMinutos}"><span>Duración</span><span th:text="${actividad.duracionMinutos} + ' min'">60 min</span></li>
+                <li th:if="${actividad.requisitosEdad}"><span>Edad</span><span th:text="${actividad.requisitosEdad}">+12</span></li>
+                <li th:if="${actividad.localidad}"><span>Localidad</span><span th:text="${actividad.localidad}">Localidad</span></li>
+                <li th:if="${actividad.departamento}"><span>Departamento</span><span th:text="${actividad.departamento}">Rocha</span></li>
+                <li><span>Reservas hasta</span>
+                    <span th:text="${actividad.minPreviosReservar == null or actividad.minPreviosReservar == 0} ? 'la hora de inicio' : ${actividad.minPreviosReservar} + ' min antes'">30 min antes</span></li>
+            </ul>
+            <a href="#horarios" class="boton boton-naranja">Ver fechas disponibles</a>
+        </aside>
+    </div>
+
+    <!-- Próximas fechas (entidad Horario) -->
+    <h2 id="horarios">Próximas fechas</h2>
+
+    <p class="aviso-login" th:if="${rol == null}">
+        Para reservar necesitás una cuenta de turista:
+        <a href="/login">iniciá sesión</a> o <a href="/registro/turista">registrate</a>.
+    </p>
+
+    <div class="horarios">
+        <div class="tarjeta horario" th:each="h : ${horarios}">
+            <div>
+                <div class="cuando">
+                    <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
+                    <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">09:00</span> a
+                    <span th:text="${#temporals.format(h.horaFin, 'HH:mm')}">11:00</span>
+                </div>
+                <div class="detalle">
+                    <span th:class="${h.cuposDisponibles <= 3} ? 'cupos-pocos' : ''"
+                          th:text="${h.cuposDisponibles == 1} ? 'Queda 1 lugar' : 'Quedan ' + ${h.cuposDisponibles} + ' lugares'">Quedan 10 lugares</span>
+                    <span th:if="${h.cancelable}"> · Admite cancelación</span>
+                </div>
+            </div>
+
+            <!-- Solo un turista puede reservar -->
+            <a th:if="${rol == 'TURISTA'}" class="boton boton-naranja boton-chico"
+               th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Reservar</a>
+            <a th:if="${rol == null}" class="boton boton-borde boton-chico" href="/login">Iniciar sesión para reservar</a>
+        </div>
+    </div>
+
+    <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
+        <h3>No hay fechas disponibles por ahora</h3>
+        <p>El prestador todavía no cargó próximas fechas, o ya no quedan lugares.</p>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+</body>
+</html>

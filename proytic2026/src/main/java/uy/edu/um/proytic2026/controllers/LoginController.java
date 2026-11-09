@@ -58,6 +58,9 @@ public class LoginController {
         if (rol.equals("EMPRESA") || rol.equals("PARTICULAR") || rol.equals("PRESTADOR")) {
             return "redirect:/panel/prestador";
         }
+        if (rol.equals("TURISTA")) {
+            return "redirect:/panel/turista";
+        }
         return "redirect:/";
     }
 
@@ -72,6 +75,7 @@ public class LoginController {
         if (usuario instanceof Empresa) return "EMPRESA";
         if (usuario instanceof Particular) return "PARTICULAR";
         if (usuario instanceof Prestador) return "PRESTADOR";
-        return "TURISTA";
+        if (usuario instanceof Turista) return "TURISTA";
+        return "DESCONOCIDO";
     }
 }

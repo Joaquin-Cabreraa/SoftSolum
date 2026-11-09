@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Reservas recibidas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+        .reserva-encabezado { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
+        .reserva .datos { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
+        table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+        th { text-align: left; color: var(--muted); font-weight: 600; padding: 7px 8px; border-bottom: 1px solid var(--borde); }
+        td { padding: 7px 8px; border-bottom: 1px solid var(--borde); }
+        .observacion { margin-top: 12px; font-size: 13px; background: #fffaf6; border: 1px solid #f3d6c4; border-radius: 6px; padding: 9px 12px; }
+        .estado-cancelado { background: #eef0ee; color: var(--muted); }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/prestador">Mi panel</a>
+        <a href="/panel/prestador/actividades">Mis actividades</a>
+        <a href="/panel/prestador/reservas" class="activo">Reservas</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Panel del prestador</span>
+    <h1>Reservas recibidas.</h1>
+    <p class="descripcion">Quiénes reservaron tus actividades, para organizar cada salida.</p>
+
+    <div class="lista">
+        <div class="tarjeta reserva" th:each="r : ${reservas}">
+            <div class="reserva-encabezado">
+                <div>
+                    <h3 th:text="${r.horario.actividad.titulo}">Actividad</h3>
+                    <div class="datos">
+                        <span th:text="${#temporals.format(r.horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
+                        <span th:text="${#temporals.format(r.horario.horaInicio, 'HH:mm')}">09:00</span> ·
+                        <span th:text="${r.cantCupos == 1} ? '1 persona' : ${r.cantCupos} + ' personas'">2 personas</span> ·
+                        $ <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    </div>
+                    <div class="datos">
+                        Reservó: <strong th:text="${r.turista.name}">Ana</strong>
+                        · <span th:text="${r.turista.userEmail}">ana@mail.com</span>
+                        <span th:if="${r.turista.telefono}" th:text="' · ' + ${r.turista.telefono}"></span>
+                    </div>
+                </div>
+                <div>
+                    <span class="estado estado-pendiente" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
+                    <span class="estado estado-aceptado"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
+                    <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+                </div>
+            </div>
+
+            <!-- Participantes del grupo -->
+            <table>
+                <thead><tr><th>Nombre</th><th>Documento</th><th>Fecha de nacimiento</th></tr></thead>
+                <tbody>
+                <tr th:each="p : ${r.participantes}">
+                    <td th:text="${p.nombre} + ' ' + ${p.apellido}">Ana Pérez</td>
+                    <td th:text="${p.ci}">12345678</td>
+                    <td th:text="${#temporals.format(p.fechaNacimiento, 'dd/MM/yyyy')}">01/01/1990</td>
+                </tr>
+                </tbody>
+            </table>
+
+            <div class="observacion" th:if="${r.observacion}">
+                <strong>Observación:</strong> <span th:text="${r.observacion}">...</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="tarjeta" th:if="${#lists.isEmpty(reservas)}" style="text-align:center; padding:40px; margin-top: 30px">
+        <h3>Todavía no recibiste reservas</h3>
+        <p>Cuando un turista reserve una de tus actividades, la vas a ver acá.</p>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>

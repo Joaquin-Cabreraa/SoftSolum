@@ -32,6 +32,13 @@ public class Actividad {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Título y descripción: el enunciado pide "una descripción de la experiencia".
+    @Column(name = "titulo")
+    private String titulo;
+
+    @Column(name = "descripcion", length = 2000)
+    private String descripcion;
+
     @Column (nullable = false)
     private String estado;
 

@@ -5,6 +5,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import uy.edu.um.proytic2026.entities.Prestador;
+import uy.edu.um.proytic2026.entities.Turista;
 import uy.edu.um.proytic2026.entities.Usuario;
 import uy.edu.um.proytic2026.repository.UsuarioRepository;
 
@@ -41,6 +42,22 @@ public class PantallasWebController {
         model.addAttribute("nombre", prestador.getName());
         model.addAttribute("emprendimiento", prestador.getEmprendimiento());
         return "panel-prestador";      // templates/panel-prestador.html
+    }
+
+    @GetMapping("/panel/turista")
+    public String panelTurista(HttpSession session, Model model) {
+        Long usuarioId = (Long) session.getAttribute("usuarioId");
+        if (usuarioId == null) {
+            return "redirect:/login";
+        }
+
+        Usuario usuario = usuarioRepository.findById(usuarioId).orElse(null);
+        if (!(usuario instanceof Turista turista)) {
+            return "redirect:/login";
+        }
+
+        model.addAttribute("nombre", turista.getName());
+        return "panel-turista";        // templates/panel-turista.html
     }
 
     @GetMapping("/panel/admin")

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Mis actividades</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .cabecera { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+        .actividad-fila { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+        .actividad-fila .datos { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
+        .acciones { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+        .acciones form { margin: 0; }
+        .baja { opacity: .6; }
+        .estado-baja { background: #eef0ee; color: var(--muted); }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .nota { font-size: 12px; color: var(--muted); margin-top: 6px; }
+        @media (max-width: 760px) { .actividad-fila { grid-template-columns: 1fr; } .acciones { justify-content: flex-start; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/prestador">Mi panel</a>
+        <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
+        <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <div class="cabecera">
+        <div>
+            <span class="eyebrow">Panel del prestador</span>
+            <h1>Mis actividades.</h1>
+            <p class="descripcion" th:if="${emprendimiento}">
+                Actividades de <strong th:text="${emprendimiento.nombre}">mi emprendimiento</strong>.
+            </p>
+        </div>
+        <a th:if="${puedePublicar}" href="/panel/prestador/actividades/nueva" class="boton boton-naranja">+ Nueva actividad</a>
+    </div>
+
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <!-- Emprendimiento todavía no aceptado (RNE #8) -->
+    <div class="aviso" th:if="${!puedePublicar}">
+        Tu emprendimiento todavía no fue aceptado por un administrador
+        <span th:if="${emprendimiento != null and emprendimiento.estado.name() == 'DENEGADO'}">(fue denegado)</span>.
+        Cuando lo acepten vas a poder publicar actividades.
+    </div>
+
+    <div class="lista">
+        <div class="tarjeta actividad-fila" th:each="a : ${actividades}" th:classappend="${a.estado == 'BAJA'} ? 'baja' : ''">
+            <div>
+                <h3>
+                    <span th:text="${a.titulo != null ? a.titulo : 'Actividad #' + a.id}">Título</span>
+                    <span class="estado estado-aceptado" th:if="${a.estado != 'BAJA'}">ACTIVA</span>
+                    <span class="estado estado-baja" th:if="${a.estado == 'BAJA'}">DADA DE BAJA</span>
+                </h3>
+                <div class="datos">
+                    <span th:text="${a.departamento}">Rocha</span> ·
+                    $ <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span> por persona ·
+                    <span th:text="${a.duracionMinutos} + ' min'">60 min</span>
+                </div>
+                <div class="nota" th:if="${#sets.contains(conReservas, a.id)}">Tiene reservas: ya no se puede editar (sí agregarle horarios).</div>
+            </div>
+            <div class="acciones" th:if="${a.estado != 'BAJA'}">
+                <a th:href="@{/panel/prestador/actividades/{id}/horarios(id=${a.id})}" href="#" class="boton boton-naranja boton-chico">Horarios</a>
+                <a th:if="${!#sets.contains(conReservas, a.id)}" th:href="@{/panel/prestador/actividades/{id}/editar(id=${a.id})}" href="#" class="boton boton-borde boton-chico">Editar</a>
+                <a th:href="@{/actividades/{id}(id=${a.id})}" href="#" class="boton boton-borde boton-chico" target="_blank">Ver en el portal</a>
+                <form method="post" th:action="@{/panel/prestador/actividades/{id}/baja(id=${a.id})}"
+                      onsubmit="return confirm('¿Dar de baja esta actividad? Deja de mostrarse en el portal.');">
+                    <button type="submit" class="boton boton-rojo boton-chico">Dar de baja</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="tarjeta" th:if="${puedePublicar and #lists.isEmpty(actividades)}" style="text-align:center; padding:40px; margin-top: 30px">
+        <h3>Todavía no publicaste actividades</h3>
+        <p style="margin-bottom: 18px">Creá tu primera actividad y después agregale fechas.</p>
+        <a href="/panel/prestador/actividades/nueva" class="boton boton-naranja">Crear actividad</a>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>
