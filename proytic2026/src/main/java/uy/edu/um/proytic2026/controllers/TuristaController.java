@@ -19,19 +19,22 @@ public class TuristaController {
     @PostMapping
     public ResponseEntity<String> registrarTurista(
             @RequestParam String nombre,
+            @RequestParam(required = false) String apellido,
+            @RequestParam(required = false) String documento,
+            @RequestParam(required = false) String fechaNacimiento,
             @RequestParam String email,
             @RequestParam String telefono,
             @RequestParam String password,
             HttpServletRequest request) {
 
         // 1. Validar: si hay error, se lo devolvemos al formulario
-        String error = turistaService.validarDatos(nombre, email, telefono, password);
+        String error = turistaService.validarDatos(nombre, apellido, documento, fechaNacimiento, email, telefono, password);
         if (error != null) {
             return ResponseEntity.badRequest().body(error);
         }
 
         // 2. Guardar
-        Turista turista = turistaService.altaTurista(nombre, email, telefono, password);
+        Turista turista = turistaService.altaTurista(nombre, apellido, documento, fechaNacimiento, email, telefono, password);
         if (turista == null) {
             return ResponseEntity.badRequest()
                     .body("No fue posible completar el registro. Intentá de nuevo.");

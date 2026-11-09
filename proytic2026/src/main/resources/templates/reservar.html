@@ -123,6 +123,9 @@
         fechaNacimiento: /*[[${fechasNacimiento}]]*/ []
     };
 
+    // Datos del turista que tiene la cuenta: completan solos la "Persona 1"
+    const titular = /*[[${titular}]]*/ {};
+
     const selectCantidad = document.getElementById('cantidad');
     const contenedor = document.getElementById('personas');
     const precio = Number(document.getElementById('precio').dataset.precio);
@@ -157,7 +160,14 @@
         const escritos = {};
         for (const campo of ['nombre', 'apellido', 'ci', 'fechaNacimiento']) {
             const inputs = contenedor.querySelectorAll('input[name="' + campo + '"]');
-            escritos[campo] = inputs.length ? Array.from(inputs).map(i => i.value) : (anteriores[campo] || []);
+            if (inputs.length) {
+                escritos[campo] = Array.from(inputs).map(i => i.value);
+            } else if (anteriores[campo] && anteriores[campo].length) {
+                escritos[campo] = anteriores[campo];
+            } else {
+                // Primera vez que se abre el formulario: la persona 1 es el titular de la cuenta
+                escritos[campo] = titular && titular[campo] ? [titular[campo]] : [];
+            }
         }
 
         contenedor.innerHTML = '';

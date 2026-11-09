@@ -57,6 +57,7 @@ public class PantallasWebController {
         }
 
         model.addAttribute("nombre", turista.getName());
+        model.addAttribute("turista", turista);      // para la tarjeta "Mis datos"
         return "panel-turista";        // templates/panel-turista.html
     }
 
