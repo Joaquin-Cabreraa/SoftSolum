@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Reservar</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+
+        .columnas { display: grid; grid-template-columns: 1fr 300px; gap: 36px; align-items: start; margin-top: 30px; }
+
+        .resumen h3 { margin-bottom: 4px; }
+        .resumen .linea { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-top: 1px solid var(--borde); }
+        .resumen .linea > span:first-child { color: var(--muted); }
+        .resumen .total { font-family: 'Manrope', sans-serif; font-size: 22px; font-weight: 800; }
+
+        .bloque { margin-bottom: 26px; }
+        .bloque > label, .persona h3 { font-weight: 700; }
+        .campo { margin-bottom: 14px; }
+        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .persona { margin-bottom: 14px; }
+        .persona h3 { font-size: 15px; margin: 0 0 14px; }
+
+        .mensaje-error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .ayuda { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+        @media (max-width: 850px) {
+            .columnas { grid-template-columns: 1fr; }
+            .dos { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades" class="activo">Actividades</a>
+        <a href="/panel/turista/reservas">Mis reservas</a>
+        <a href="/panel/turista">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a th:href="@{/actividades/{id}(id=${actividad.id})}" href="#" class="volver">← Volver a la actividad</a>
+
+    <span class="eyebrow">Reservar</span>
+    <h1 th:text="${actividad.titulo != null and !#strings.isEmpty(actividad.titulo)} ? ${actividad.titulo} : 'Actividad #' + ${actividad.id}">Título</h1>
+
+    <div class="mensaje-error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="columnas">
+        <!-- Formulario -->
+        <form method="post" action="/panel/turista/reservar" id="formulario">
+            <!-- Identifican el horario elegido (no se ven) -->
+            <input type="hidden" name="actividadId" th:value="${actividad.id}">
+            <input type="hidden" name="fecha" th:value="${horario.fecha}">
+            <input type="hidden" name="hora" th:value="${horario.horaInicio}">
+
+            <div class="bloque">
+                <label for="cantidad">¿Cuántas personas van?</label>
+                <select id="cantidad" name="cantidad" style="max-width: 200px; margin-top: 8px">
+                    <!-- Hasta los cupos disponibles (máximo 10 por reserva en el formulario) -->
+                    <option th:each="n : ${#numbers.sequence(1, horario.cuposDisponibles > 10 ? 10 : horario.cuposDisponibles)}"
+                            th:value="${n}" th:text="${n}"
+                            th:selected="${cantidad != null and n == cantidad}">1</option>
+                </select>
+                <p class="ayuda" th:text="'Quedan ' + ${horario.cuposDisponibles} + ' lugares en este horario.'">Quedan 10 lugares.</p>
+            </div>
+
+            <div class="bloque">
+                <label>Datos de cada persona</label>
+                <p class="ayuda">El prestador los necesita para organizar la actividad.</p>
+                <!-- Acá JavaScript agrega una tarjeta por persona según la cantidad elegida -->
+                <div id="personas" style="margin-top: 14px"></div>
+            </div>
+
+            <div class="bloque">
+                <label for="observacion">Observaciones (opcional)</label>
+                <textarea id="observacion" name="observacion" maxlength="500" style="margin-top: 8px"
+                          placeholder="Ej: una persona va en silla de ruedas"
+                          th:text="${observacion}"></textarea>
+            </div>
+
+            <button type="submit" class="boton boton-naranja" style="width: 100%">Confirmar reserva</button>
+            <p class="ayuda" style="text-align:center">Los lugares quedan guardados por 2 horas mientras completás el pago.</p>
+        </form>
+
+        <!-- Resumen -->
+        <aside class="tarjeta resumen">
+            <h3>Resumen</h3>
+            <p th:text="${actividad.emprendimiento.nombre}" style="margin-bottom: 14px">Emprendimiento</p>
+            <div class="linea"><span>Fecha</span><span th:text="${#temporals.format(horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span></div>
+            <div class="linea"><span>Horario</span>
+                <span th:text="${#temporals.format(horario.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(horario.horaFin, 'HH:mm')}">09:00 a 11:00</span></div>
+            <div class="linea"><span>Precio por persona</span><span>$ <span id="precio" th:text="${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}" th:attr="data-precio=${actividad.precio}">0</span></span></div>
+            <div class="linea"><span>Personas</span><span id="personas-resumen">1</span></div>
+            <div class="linea"><span>Total</span><span class="total">$ <span id="total">0</span></span></div>
+        </aside>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+<script th:inline="javascript">
+    // Si el formulario vuelve con un error, estos datos traen lo que ya se había escrito
+    // para no tener que escribirlo de nuevo. (Thymeleaf reemplaza los valores.)
+    const anteriores = {
+        nombre: /*[[${nombres}]]*/ [],
+        apellido: /*[[${apellidos}]]*/ [],
+        ci: /*[[${cis}]]*/ [],
+        fechaNacimiento: /*[[${fechasNacimiento}]]*/ []
+    };
+
+    // Datos del turista que tiene la cuenta: completan solos la "Persona 1"
+    const titular = /*[[${titular}]]*/ {};
+
+    const selectCantidad = document.getElementById('cantidad');
+    const contenedor = document.getElementById('personas');
+    const precio = Number(document.getElementById('precio').dataset.precio);
+    const hoy = new Date().toISOString().slice(0, 10);
+
+    // Crea un campo con su etiqueta. Todos los de una misma clase se llaman igual
+    // (ej. "nombre"), así el backend los recibe como una lista en orden.
+    function crearCampo(etiqueta, nombre, tipo, valor) {
+        const div = document.createElement('div');
+        div.className = 'campo';
+
+        const label = document.createElement('label');
+        label.textContent = etiqueta;
+
+        const input = document.createElement('input');
+        input.type = tipo;
+        input.name = nombre;
+        input.required = true;
+        input.value = valor || '';
+        if (tipo === 'date') input.max = hoy;   // no se puede nacer en el futuro
+
+        div.appendChild(label);
+        div.appendChild(input);
+        return div;
+    }
+
+    // Dibuja una tarjeta por persona, conservando lo que ya estaba escrito
+    function dibujarPersonas() {
+        const cantidad = Number(selectCantidad.value);
+
+        // Guardar lo escrito antes de redibujar
+        const escritos = {};
+        for (const campo of ['nombre', 'apellido', 'ci', 'fechaNacimiento']) {
+            const inputs = contenedor.querySelectorAll('input[name="' + campo + '"]');
+            if (inputs.length) {
+                escritos[campo] = Array.from(inputs).map(i => i.value);
+            } else if (anteriores[campo] && anteriores[campo].length) {
+                escritos[campo] = anteriores[campo];
+            } else {
+                // Primera vez que se abre el formulario: la persona 1 es el titular de la cuenta
+                escritos[campo] = titular && titular[campo] ? [titular[campo]] : [];
+            }
+        }
+
+        contenedor.innerHTML = '';
+        for (let i = 0; i < cantidad; i++) {
+            const tarjeta = document.createElement('div');
+            tarjeta.className = 'tarjeta persona';
+
+            const titulo = document.createElement('h3');
+            titulo.textContent = 'Persona ' + (i + 1);
+            tarjeta.appendChild(titulo);
+
+            const fila1 = document.createElement('div');
+            fila1.className = 'dos';
+            fila1.appendChild(crearCampo('Nombre', 'nombre', 'text', escritos.nombre[i]));
+            fila1.appendChild(crearCampo('Apellido', 'apellido', 'text', escritos.apellido[i]));
+
+            const fila2 = document.createElement('div');
+            fila2.className = 'dos';
+            fila2.appendChild(crearCampo('Documento (CI)', 'ci', 'text', escritos.ci[i]));
+            fila2.appendChild(crearCampo('Fecha de nacimiento', 'fechaNacimiento', 'date', escritos.fechaNacimiento[i]));
+
+            tarjeta.appendChild(fila1);
+            tarjeta.appendChild(fila2);
+            contenedor.appendChild(tarjeta);
+        }
+
+        // Actualizar el resumen
+        document.getElementById('personas-resumen').textContent = cantidad;
+        document.getElementById('total').textContent = (precio * cantidad).toLocaleString('es-UY', { maximumFractionDigits: 0 });
+    }
+
+    selectCantidad.addEventListener('change', dibujarPersonas);
+    dibujarPersonas();
+</script>
+
+</body>
+</html>

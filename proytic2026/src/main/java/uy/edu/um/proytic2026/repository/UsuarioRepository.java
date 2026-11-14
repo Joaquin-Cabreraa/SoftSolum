@@ -10,4 +10,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long>{//Con es
     public boolean existsByUserEmail(String userEmail);
 
     public java.util.Optional<Usuario> findByUserEmail(String userEmail);
+
+    // Igual que los de arriba pero sin distinguir mayúsculas/minúsculas
+    // ("Ana@Mail.com" y "ana@mail.com" son el mismo correo)
+    public boolean existsByUserEmailIgnoreCase(String userEmail);
+
+    public java.util.Optional<Usuario> findByUserEmailIgnoreCase(String userEmail);
 }

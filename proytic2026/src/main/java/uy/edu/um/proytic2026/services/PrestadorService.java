@@ -24,7 +24,8 @@ public class PrestadorService {
     // ---------- Registro de EMPRESA ----------
 
     public boolean altaEmpresa(String razonSocial, String rut, String email, String telefono,
-                               String password, String nombreEmprendimiento, String direccion) {
+                               String password, String nombreEmprendimiento, String direccion,
+                               String descripcion) {
 
         // Comprobar campos obligatorios
         if (vacio(razonSocial) || vacio(rut) || vacio(email)
@@ -33,7 +34,7 @@ public class PrestadorService {
         }
 
         // Comprobar que el email no esté registrado
-        if (usuarioRepository.existsByUserEmail(email)) {
+        if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {
             return false;
         }
 
@@ -56,13 +57,13 @@ public class PrestadorService {
 
         empresa.setName(razonSocial);
         empresa.setRut(rut);
-        empresa.setUserName(email);
-        empresa.setUserEmail(email);
+        empresa.setUserName(email.trim().toLowerCase());
+        empresa.setUserEmail(email.trim().toLowerCase());
         empresa.setTelefono(telefono);
         empresa.setPasswordHash(passwordEncoder.encode(password));
 
         empresa.setEmprendimiento(
-                crearEmprendimiento(nombreEmprendimiento, direccion)
+                crearEmprendimiento(nombreEmprendimiento, direccion, email, telefono, descripcion)
         );
 
         empresaRepository.save(empresa);
@@ -73,7 +74,8 @@ public class PrestadorService {
     // ---------- Registro de PARTICULAR ----------
 
     public boolean altaParticular(String nombre, String apellido, String documento, String email,
-                                  String telefono, String password, String nombreEmprendimiento, String direccion) {
+                                  String telefono, String password, String nombreEmprendimiento, String direccion,
+                               String descripcion) {
 
         // Comprobar campos obligatorios
         if (vacio(nombre) || vacio(apellido) || vacio(documento)
@@ -83,7 +85,7 @@ public class PrestadorService {
         }
 
         // Comprobar que el email no esté registrado
-        if (usuarioRepository.existsByUserEmail(email)) {
+        if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {
             return false;
         }
 
@@ -107,13 +109,13 @@ public class PrestadorService {
         particular.setName(nombre);
         particular.setLastName(apellido);
         particular.setDocumento(documento);
-        particular.setUserName(email);
-        particular.setUserEmail(email);
+        particular.setUserName(email.trim().toLowerCase());
+        particular.setUserEmail(email.trim().toLowerCase());
         particular.setTelefono(telefono);
         particular.setPasswordHash(passwordEncoder.encode(password));
 
         particular.setEmprendimiento(
-                crearEmprendimiento(nombreEmprendimiento, direccion)
+                crearEmprendimiento(nombreEmprendimiento, direccion, email, telefono, descripcion)
         );
 
         particularRepository.save(particular);
@@ -123,11 +125,17 @@ public class PrestadorService {
 
     // ---------- Métodos de ayuda ----------
 
-    private Emprendimiento crearEmprendimiento(String nombre, String direccion) {
+    // Crea el emprendimiento con sus datos de contacto (el enunciado pide
+    // "datos de identificación, contacto, ubicación y una descripción general").
+    private Emprendimiento crearEmprendimiento(String nombre, String direccion, String email,
+                                               String telefono, String descripcion) {
         Emprendimiento emp = new Emprendimiento();
 
         emp.setNombre(nombre);
         emp.setUbicacion(direccion);
+        emp.setEmail(email.trim().toLowerCase());
+        emp.setTelefono(vacio(telefono) ? null : telefono.trim());
+        emp.setDescripcion(vacio(descripcion) ? null : descripcion.trim());
         emp.setEstado(EstadoEmprendimiento.PENDIENTE);
 
         return emp;

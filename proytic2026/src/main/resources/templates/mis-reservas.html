@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Mis reservas</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
+        .reserva { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
+        .reserva h3 a { color: var(--navy); text-decoration: none; }
+        .reserva h3 a:hover { color: var(--orange); }
+        .reserva .datos { font-size: 14px; color: var(--muted); line-height: 1.8; margin-top: 4px; }
+        .reserva .derecha { text-align: right; }
+        .monto { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 800; margin-top: 10px; }
+        .vence { font-size: 13px; color: var(--orange); font-weight: 600; margin-top: 8px; }
+        .participantes { font-size: 13px; color: var(--muted); margin-top: 10px; }
+        .estado-cancelado { background: #eef0ee; color: var(--muted); }
+
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .ultimo-intento { font-size: 13px; color: var(--muted); margin-top: 8px; }
+        .ultimo-intento.malo { color: #b9483a; }
+        .derecha .boton { margin-top: 12px; }
+
+        @media (max-width: 700px) {
+            .reserva { grid-template-columns: 1fr; }
+            .reserva .derecha { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades">Actividades</a>
+        <a href="/panel/turista/reservas" class="activo">Mis reservas</a>
+        <a href="/panel/turista">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Turista</span>
+    <h1>Mis reservas.</h1>
+    <p class="descripcion">Acá ves todas tus reservas y en qué estado está cada una.</p>
+
+    <!-- Mensaje que manda el controller después de reservar -->
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Reserva creada</div>
+    <!-- Mensaje de error (ej. intentaron pagar una reserva vencida) -->
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="lista">
+        <div class="tarjeta reserva" th:each="r : ${reservas}">
+            <div>
+                <h3>
+                    <a th:href="@{/actividades/{id}(id=${r.horario.actividad.id})}" href="#"
+                       th:text="${r.horario.actividad.titulo != null and !#strings.isEmpty(r.horario.actividad.titulo)} ? ${r.horario.actividad.titulo} : 'Actividad #' + ${r.horario.actividad.id}">Actividad</a>
+                </h3>
+                <div class="datos">
+                    <div th:text="${r.horario.actividad.emprendimiento.nombre}">Emprendimiento</div>
+                    <div>
+                        <span th:text="${#temporals.format(r.horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
+                        <span th:text="${#temporals.format(r.horario.horaInicio, 'HH:mm')}">09:00</span> a
+                        <span th:text="${#temporals.format(r.horario.horaFin, 'HH:mm')}">11:00</span>
+                    </div>
+                    <div th:text="${r.cantCupos == 1} ? '1 persona' : ${r.cantCupos} + ' personas'">2 personas</div>
+                </div>
+                <div class="participantes">
+                    <span th:each="p, i : ${r.participantes}"
+                          th:text="${p.nombre} + ' ' + ${p.apellido} + (${i.last} ? '' : ', ')">Ana Pérez</span>
+                </div>
+            </div>
+
+            <div class="derecha">
+                <!-- Etiqueta según el estado -->
+                <span class="estado estado-pendiente" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
+                <span class="estado estado-aceptado"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
+                <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+
+                <div class="monto">$ <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></div>
+
+                <!-- Plazo para pagar (2 horas desde que reservó) -->
+                <div class="vence" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}"
+                     th:text="'Pagá antes de las ' + ${#temporals.format(reservaService.venceElPago(r), 'HH:mm')} + ' del ' + ${#temporals.format(reservaService.venceElPago(r), 'dd/MM')}">
+                    Pagá antes de las 15:30
+                </div>
+
+                <!-- Resultado del último intento de pago (si hubo alguno) -->
+                <div class="ultimo-intento malo"
+                     th:if="${r.estado.name() == 'PENDIENTE_PAGO' and pagoService.ultimoCobro(r) != null}"
+                     th:text="${pagoService.ultimoCobro(r).estado.name() == 'RECHAZADO'} ? 'Último intento: tarjeta rechazada' : 'Último intento: no se pudo procesar el pago'">
+                    Último intento: tarjeta rechazada
+                </div>
+
+                <!-- Botón "Pagar" (primer intento) o "Reintentar pago" (ya hubo un intento fallido).
+                     Solo mientras la reserva esté pendiente y no hayan pasado las 2 horas. -->
+                <a class="boton boton-naranja" th:if="${pagoService.sePuedePagar(r)}"
+                   th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}" href="#"
+                   th:text="${pagoService.ultimoCobro(r) == null} ? 'Pagar' : 'Reintentar pago'">Pagar</a>
+            </div>
+        </div>
+    </div>
+
+    <div class="tarjeta" th:if="${#lists.isEmpty(reservas)}" style="text-align:center; padding:40px; margin-top: 30px">
+        <h3>Todavía no hiciste ninguna reserva</h3>
+        <p style="margin-bottom: 18px">Explorá las actividades y reservá tu próxima experiencia.</p>
+        <a href="/actividades" class="boton boton-naranja">Ver actividades</a>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+</body>
+</html>

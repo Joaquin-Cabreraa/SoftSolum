@@ -34,6 +34,11 @@ public class RegistroWebController {
         return "registro-particular";
     }
 
+    @GetMapping("/registro/turista")
+    public String mostrarRegistroTurista() {
+        return "registro-turista";
+    }
+
     @GetMapping("/alta/usuario")
     public String altaUsuario() {
         return "altaUsuario";

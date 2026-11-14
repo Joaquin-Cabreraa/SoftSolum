@@ -35,3 +35,6 @@ build/
 ### Base de datos local (H2) ###
 data/
 *.mv.db
+
+### Copia vieja de la config de IntelliJ ###
+.idea-vieja/

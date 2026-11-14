@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Actividades</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        /* ---------- Filtros ---------- */
+        .filtros {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto;
+            gap: 12px;
+            align-items: end;
+            margin: 30px 0 14px;
+        }
+        .filtros label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .filtros input, .filtros select { padding: 11px 12px; border-radius: 6px; }
+        .filtros .boton { padding: 12px 20px; }
+        .limpiar { font-size: 13px; color: var(--muted); }
+
+        .contador { font-size: 14px; color: var(--muted); margin: 26px 0 14px; }
+
+        /* ---------- Tarjetas de actividad ---------- */
+        .actividad-tarjeta {
+            display: flex;
+            flex-direction: column;
+            text-decoration: none;
+            color: var(--navy);
+            transition: border-color .2s, transform .2s;
+        }
+        .actividad-tarjeta:hover { border-color: var(--orange); transform: translateY(-2px); }
+        .actividad-tarjeta .emprendimiento { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+        .actividad-tarjeta .lugar { font-size: 13px; color: var(--muted); margin-top: 10px; }
+        .actividad-tarjeta .pie {
+            display: flex; justify-content: space-between; align-items: baseline;
+            margin-top: auto; padding-top: 18px;
+        }
+        .precio { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 800; }
+        .precio small { font-size: 12px; font-weight: 500; color: var(--muted); }
+        .duracion { font-size: 13px; color: var(--muted); }
+
+        .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .etiqueta {
+            font-size: 11px; font-weight: 700; letter-spacing: .3px;
+            padding: 4px 9px; border-radius: 20px;
+            background: #fdeee5; color: var(--orange);
+        }
+
+        .mensaje-error {
+            background: #f7e4e1; color: #b9483a;
+            padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .filtros { grid-template-columns: 1fr 1fr; }
+            .filtros .campo-texto { grid-column: 1 / -1; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades" class="activo">Actividades</a>
+        <!-- Sin sesión -->
+        <th:block th:if="${rol == null}">
+            <a href="/registro/turista">Registrarse</a>
+            <a href="/login">Iniciar sesión</a>
+        </th:block>
+        <!-- Turista -->
+        <th:block th:if="${rol == 'TURISTA'}">
+            <a href="/panel/turista/reservas">Mis reservas</a>
+            <a href="/panel/turista">Mi panel</a>
+            <a href="/logout">Cerrar sesión</a>
+        </th:block>
+        <!-- Prestador o administrador -->
+        <th:block th:if="${rol != null and rol != 'TURISTA'}">
+            <a th:href="${rol == 'ADMINISTRADOR'} ? '/panel/admin' : '/panel/prestador'" href="#">Mi panel</a>
+            <a href="/logout">Cerrar sesión</a>
+        </th:block>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Explorar</span>
+    <h1>Actividades en todo Uruguay.</h1>
+    <p class="descripcion">Buscá por palabra clave o filtrá por departamento, tipo de actividad, fecha o precio.</p>
+
+    <div class="mensaje-error" th:if="${error}" th:text="${error}">Error</div>
+
+    <!-- Filtros: es un formulario GET, así los filtros quedan en la URL -->
+    <form class="filtros" method="get" action="/actividades">
+        <div class="campo-texto">
+            <label for="q">Palabra clave</label>
+            <input type="text" id="q" name="q" th:value="${q}" placeholder="kayak, vino, Colonia...">
+        </div>
+        <div>
+            <label for="departamento">Departamento</label>
+            <select id="departamento" name="departamento">
+                <option value="">Todos</option>
+                <option th:each="d : ${departamentos}" th:value="${d}" th:text="${d}"
+                        th:selected="${d == departamentoElegido}">Rocha</option>
+            </select>
+        </div>
+        <div>
+            <label for="tipo">Tipo</label>
+            <select id="tipo" name="tipo">
+                <option value="">Todos</option>
+                <option th:each="t : ${tipos}" th:value="${t.id}" th:text="${t.nombre}"
+                        th:selected="${t.id == tipoElegido}">Senderismo</option>
+            </select>
+        </div>
+        <div>
+            <label for="fecha">Fecha</label>
+            <input type="date" id="fecha" name="fecha" th:value="${fecha}">
+        </div>
+        <div>
+            <label for="precioMaximo">Precio máx. ($)</label>
+            <input type="number" id="precioMaximo" name="precioMaximo" min="0" step="1" th:value="${precioMaximo}">
+        </div>
+        <button type="submit" class="boton boton-naranja">Buscar</button>
+    </form>
+    <a href="/actividades" class="limpiar">Limpiar filtros</a>
+
+    <p class="contador" th:text="${#lists.size(actividades) == 1} ? '1 actividad encontrada' : ${#lists.size(actividades)} + ' actividades encontradas'">
+        0 actividades encontradas
+    </p>
+
+    <!-- Resultados -->
+    <div class="grilla">
+        <a class="tarjeta actividad-tarjeta" th:each="a : ${actividades}" th:href="@{/actividades/{id}(id=${a.id})}" href="#">
+            <h3 th:text="${a.titulo != null and !#strings.isEmpty(a.titulo)} ? ${a.titulo} : 'Actividad #' + ${a.id}">Título</h3>
+            <div class="emprendimiento" th:text="${a.emprendimiento.nombre}">Emprendimiento</div>
+
+            <p th:if="${a.descripcion}" th:text="${#strings.abbreviate(a.descripcion, 110)}">Descripción</p>
+
+            <div class="etiquetas" th:if="${!#lists.isEmpty(a.tipoActividad)}">
+                <span class="etiqueta" th:each="t : ${a.tipoActividad}" th:text="${t.nombre}">Tipo</span>
+            </div>
+
+            <div class="lugar" th:if="${a.departamento != null or a.localidad != null}"
+                 th:text="${a.localidad != null ? a.localidad + ', ' : ''} + ${a.departamento != null ? a.departamento : ''}">
+                Localidad, Departamento
+            </div>
+
+            <div class="pie">
+                <span class="precio">$ <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    <small>por persona</small></span>
+                <span class="duracion" th:if="${a.duracionMinutos}" th:text="${a.duracionMinutos} + ' min'">60 min</span>
+            </div>
+        </a>
+    </div>
+
+    <div class="tarjeta" th:if="${#lists.isEmpty(actividades)}" style="text-align:center; padding:40px">
+        <h3>No encontramos actividades</h3>
+        <p>Probá con otra palabra o sacando algún filtro.</p>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+</body>
+</html>

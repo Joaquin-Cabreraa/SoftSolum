@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UMnatural | Mi panel</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/umnatural.css">
+
+  <style>
+    .deshabilitada { opacity: 0.6; }
+    .deshabilitada .boton { pointer-events: none; }
+    .tarjeta .boton { margin-top: 18px; }
+  </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="logo">UM<span>natural</span></a>
+  <div class="nav-links">
+    <a href="/">Inicio</a>
+    <a href="/actividades">Actividades</a>
+    <a href="/panel/turista/reservas">Mis reservas</a>
+    <a href="/panel/turista" class="activo">Mi panel</a>
+    <a href="/logout">Cerrar sesión</a>
+  </div>
+</nav>
+
+<main class="pagina">
+  <span class="eyebrow">Panel del turista</span>
+  <h1>Hola, <span th:text="${nombre}">turista</span>.</h1>
+  <p class="descripcion">
+    Desde acá buscás actividades, reservás y seguís tus reservas.
+  </p>
+
+  <div class="grilla" style="margin-top: 35px">
+    <div class="tarjeta">
+      <h3>Explorar actividades</h3>
+      <p>Buscá experiencias por departamento, tipo de actividad, fecha o precio.</p>
+      <a href="/actividades" class="boton boton-naranja boton-chico">Ver actividades</a>
+    </div>
+
+    <div class="tarjeta">
+      <h3>Mis datos</h3>
+      <p>
+        <span th:text="${turista.name} + ' ' + ${turista.lastName != null ? turista.lastName : ''}">Nombre Apellido</span><br>
+        <span th:text="${turista.userEmail}">correo</span><br>
+        <span th:text="${turista.telefono}">099...</span><br>
+        Documento: <span th:text="${turista.documento != null ? turista.documento : '—'}">—</span><br>
+        Nacimiento: <span th:text="${turista.fechaNacimiento != null ? #temporals.format(turista.fechaNacimiento, 'dd/MM/yyyy') : '—'}">—</span>
+      </p>
+    </div>
+
+    <div class="tarjeta">
+      <h3>Mis reservas</h3>
+      <p>Consultá tus reservas y el estado de cada una.</p>
+      <a href="/panel/turista/reservas" class="boton boton-borde boton-chico">Ver reservas</a>
+    </div>
+  </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+</body>
+</html>
