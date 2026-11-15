@@ -17,6 +17,7 @@ import uy.edu.um.proytic2026.entities.Turista;
 import uy.edu.um.proytic2026.repository.HorarioRepository;
 import uy.edu.um.proytic2026.repository.TuristaRepository;
 import uy.edu.um.proytic2026.services.CatalogoService;
+import uy.edu.um.proytic2026.services.PagoService;
 import uy.edu.um.proytic2026.services.ReservaService;
 
 import java.time.LocalDate;
@@ -35,6 +36,9 @@ public class ReservaWebController {
 
     @Autowired
     private ReservaService reservaService;
+
+    @Autowired
+    private PagoService pagoService;
 
     @Autowired
     private CatalogoService catalogoService;
@@ -123,11 +127,10 @@ public class ReservaWebController {
             return "reservar";
         }
 
-        // 3. Listo: a "Mis reservas" con un mensaje.
-        //    (Acá P3 va a redirigir a la pantalla de pago en vez de a Mis reservas.)
-        redirect.addFlashAttribute("exito", "¡Reserva creada! Tenés " + ReservaService.HORAS_PARA_PAGAR
-                + " horas para pagarla; mientras tanto tus cupos quedan guardados.");
-        return "redirect:/panel/turista/reservas";
+        // 3. Listo: a la pantalla de pago de la reserva recién creada (CU-T07)
+        redirect.addFlashAttribute("exito", "¡Reserva creada! Tus cupos quedan guardados por " + ReservaService.HORAS_PARA_PAGAR
+                + " horas: completá el pago para confirmarla.");
+        return "redirect:/panel/turista/reservas/" + reserva.getId() + "/pagar";
     }
 
     // Mis reservas (CU-T09)
@@ -138,6 +141,7 @@ public class ReservaWebController {
 
         model.addAttribute("reservas", reservas);
         model.addAttribute("reservaService", reservaService);   // para calcular el vencimiento en la página
+        model.addAttribute("pagoService", pagoService);         // para el botón "Pagar" / "Reintentar pago"
         return "mis-reservas";           // templates/mis-reservas.html
     }
 

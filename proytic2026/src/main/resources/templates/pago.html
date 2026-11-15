@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Pagar reserva</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <style>
+        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+
+        .columnas { display: grid; grid-template-columns: 1fr 300px; gap: 36px; align-items: start; margin-top: 30px; }
+
+        .resumen h3 { margin-bottom: 4px; }
+        .resumen .linea { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-top: 1px solid var(--line); gap: 12px; }
+        .resumen .linea > span:first-child { color: var(--muted); }
+        .resumen .total { font-family: 'Manrope', sans-serif; font-size: 22px; font-weight: 800; }
+
+        .campo { margin-bottom: 14px; }
+        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .ayuda { font-size: 13px; color: var(--muted); margin-top: 6px; }
+
+        .prueba { font-size: 13px; color: var(--muted); line-height: 1.7; margin-top: 22px; }
+        .prueba code { background: var(--bg); padding: 1px 6px; border-radius: 4px; }
+
+        .intento { display: flex; justify-content: space-between; font-size: 13px; padding: 7px 0; border-top: 1px solid var(--line); gap: 10px; }
+        .intento .malo { color: #b9483a; font-weight: 600; }
+
+        @media (max-width: 850px) {
+            .columnas { grid-template-columns: 1fr; }
+            .dos { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades">Actividades</a>
+        <a href="/panel/turista/reservas" class="activo">Mis reservas</a>
+        <a href="/panel/turista">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a href="/panel/turista/reservas" class="volver">← Volver a Mis reservas</a>
+
+    <span class="eyebrow">Pagar reserva</span>
+    <h1 th:text="${actividad.titulo != null and !#strings.isEmpty(actividad.titulo)} ? ${actividad.titulo} : 'Actividad #' + ${actividad.id}">Título</h1>
+
+    <!-- Lo manda ReservaWebController al crear la reserva -->
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Reserva creada</div>
+    <!-- Mensaje claro según el resultado del pago (rechazado, error, tarjeta inválida) -->
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="columnas">
+        <!-- Formulario de pago -->
+        <form method="post" th:action="@{/panel/turista/reservas/{id}/pagar(id=${reserva.id})}" action="#" autocomplete="off">
+            <div class="campo">
+                <label for="numeroTarjeta">Número de tarjeta</label>
+                <input type="text" id="numeroTarjeta" name="numeroTarjeta" inputmode="numeric"
+                       maxlength="23" placeholder="4111 1111 1111 1111" required>
+            </div>
+
+            <div class="dos">
+                <div class="campo">
+                    <label for="vencimiento">Vencimiento (MM/AA)</label>
+                    <input type="text" id="vencimiento" name="vencimiento" maxlength="7"
+                           placeholder="12/30" required>
+                </div>
+                <div class="campo">
+                    <label for="cvv">CVV</label>
+                    <input type="password" id="cvv" name="cvv" inputmode="numeric" maxlength="4"
+                           placeholder="123" required>
+                </div>
+            </div>
+
+            <button type="submit" class="boton boton-naranja" style="width: 100%; margin-top: 6px">
+                <span th:text="${#lists.isEmpty(intentos)} ? 'Pagar' : 'Reintentar pago'">Pagar</span>
+                $ <span th:text="${#numbers.formatDecimal(reserva.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
+            </button>
+            <p class="ayuda" style="text-align:center"
+               th:text="'Tenés hasta las ' + ${#temporals.format(venceElPago, 'HH:mm')} + ' del ' + ${#temporals.format(venceElPago, 'dd/MM')} + ' para pagar; después la reserva se cancela y se liberan los lugares.'">
+                Tenés hasta las 15:30 para pagar.
+            </p>
+
+            <!-- Ayuda para probar la pasarela simulada -->
+            <div class="prueba">
+                <strong>Tarjetas de prueba (pasarela simulada)</strong><br>
+                Terminada en <code>1111</code> → pago aprobado<br>
+                Terminada en <code>2222</code> → rechazada (fondos insuficientes)<br>
+                Terminada en <code>3333</code> → la pasarela tarda demasiado (timeout)<br>
+                Terminada en <code>4444</code> → pasarela caída<br>
+                Vencimiento: cualquier fecha futura. CVV: 3 dígitos.
+            </div>
+        </form>
+
+        <!-- Resumen -->
+        <aside class="tarjeta resumen">
+            <h3>Resumen</h3>
+            <p th:text="${actividad.emprendimiento.nombre}" style="margin-bottom: 14px">Emprendimiento</p>
+            <div class="linea"><span>Fecha</span><span th:text="${#temporals.format(horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span></div>
+            <div class="linea"><span>Horario</span>
+                <span th:text="${#temporals.format(horario.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(horario.horaFin, 'HH:mm')}">09:00 a 11:00</span></div>
+            <div class="linea"><span>Personas</span><span th:text="${reserva.cantCupos}">2</span></div>
+            <div class="linea"><span>Total a pagar</span><span class="total">$ <span th:text="${#numbers.formatDecimal(reserva.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></span></div>
+
+            <!-- Intentos anteriores (RNE #14: todos quedan guardados) -->
+            <div th:if="${!#lists.isEmpty(intentos)}" style="margin-top: 16px">
+                <strong style="font-size: 13px">Intentos anteriores</strong>
+                <div class="intento" th:each="p : ${intentos}">
+                    <span th:text="${#temporals.format(p.fecha, 'dd/MM HH:mm')} + ' · ****' + ${p.ultimos4}">01/12 10:00 · ****1111</span>
+                    <span class="malo" th:text="${p.estado.name() == 'RECHAZADO'} ? 'Rechazado' : 'Error'">Rechazado</span>
+                </div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+</body>
+</html>
