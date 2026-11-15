@@ -62,6 +62,12 @@ public class Reserva {
     @OneToMany(mappedBy = "reserva", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Participante> participantes = new ArrayList<>();
 
+    // Relación "se paga con": Reserva (1) --- (n) Pago (RNE #14). Guarda TODOS los intentos de pago,
+    // también los rechazados o con error. Sin cascade: los Pagos los guarda PagoService.
+    @OneToMany(mappedBy = "reserva")
+    @OrderBy("fecha ASC, id ASC")
+    private List<Pago> pagos = new ArrayList<>();
+
     public void agregarParticipante(Participante participante) {
         participante.setReserva(this);
         participantes.add(participante);

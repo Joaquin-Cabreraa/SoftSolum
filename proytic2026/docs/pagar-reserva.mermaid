@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor T as Turista
+    participant C as PagoWebController
+    participant S as PagoService
+    participant BD as Base de datos
+    participant PC as PasarelaClient
+    participant P as Pasarela (/pasarela/pagar)
+
+    T->>C: POST /panel/turista/reservas/{id}/pagar (tarjeta, vencimiento, CVV)
+    C->>S: validarReservaPagable() y validarTarjeta()
+    S-->>C: mensaje de error o null
+    alt datos inválidos / reserva cancelada, vencida o ya pagada
+        C-->>T: mensaje de error (no se llama a la pasarela)
+    end
+    C->>S: pagar(turistaId, reservaId, tarjeta, vencimiento, cvv)
+    S->>BD: SELECT reserva FOR UPDATE (bloqueo anti doble cobro)
+    BD-->>S: reserva (PENDIENTE_PAGO)
+    S->>S: monto = precio x cupos (guardado en la reserva)
+    S->>PC: cobrar(tarjeta, vencimiento, cvv, monto)
+    PC->>P: POST /pasarela/pagar (RestClient, timeout 3 s)
+    alt tarjeta ...1111: APROBADO
+        P-->>PC: 200 {APROBADO, código}
+        PC-->>S: RespuestaPasarela
+        S->>BD: INSERT Pago (APROBADO, últimos 4, código)
+        S->>BD: UPDATE reserva estado = CONFIRMADA
+        S-->>C: Pago APROBADO
+        C-->>T: "Pago aprobado, tu reserva quedó confirmada"
+    else tarjeta ...2222: RECHAZADO
+        P-->>PC: 200 {RECHAZADO, fondos insuficientes}
+        PC-->>S: RespuestaPasarela
+        S->>BD: INSERT Pago (RECHAZADO)
+        Note over S,BD: la reserva sigue PENDIENTE_PAGO
+        S-->>C: Pago RECHAZADO
+        C-->>T: "Pago rechazado... podés reintentar hasta las HH:mm"
+    else ...3333 (timeout) o pasarela caída (5xx)
+        PC--xS: ResourceAccessException (timeout / 503)
+        S->>BD: INSERT Pago (ERROR, sin código)
+        Note over S,BD: la reserva sigue PENDIENTE_PAGO, no se rompe
+        S-->>C: Pago ERROR
+        C-->>T: "El servicio de pagos no respondió... reintentá"
+    end

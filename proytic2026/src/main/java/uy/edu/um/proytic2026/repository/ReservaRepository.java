@@ -1,6 +1,8 @@
 package uy.edu.um.proytic2026.repository;
 
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uy.edu.um.proytic2026.entities.EstadoReserva;
@@ -10,6 +12,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.Optional;
 
 public interface ReservaRepository extends JpaRepository<Reserva, Long> {
 
@@ -36,4 +39,11 @@ public interface ReservaRepository extends JpaRepository<Reserva, Long> {
     @Query("SELECT r FROM Reserva r WHERE r.horario.actividad.emprendimiento.id = :emprendimientoId " +
             "ORDER BY r.horario.fecha, r.horario.horaInicio, r.fechaCreacion")
     List<Reserva> reservasDelEmprendimiento(@Param("emprendimientoId") Long emprendimientoId);
+
+    // Trae la reserva BLOQUEÁNDOLA (SELECT ... FOR UPDATE) hasta que termine la transacción.
+    // La usa PagoService para que dos pagos simultáneos de la misma reserva (ej. doble clic)
+    // se hagan de a uno y no se cobre dos veces.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT r FROM Reserva r WHERE r.id = :id")
+    Optional<Reserva> findByIdParaPagar(@Param("id") Long id);
 }
