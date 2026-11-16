@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Comprobante de reserva</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+    <!-- Generador de códigos QR (qrcode-generator, licencia MIT), guardado en el proyecto -->
+    <script src="/js/qrcode.js"></script>
+
+    <style>
+        .comprobante { max-width: 760px; margin: 0 auto; display: grid; grid-template-columns: 260px 1fr; gap: 34px; align-items: start; }
+        .qr { background: white; border: 1px solid var(--borde); border-radius: 10px; padding: 18px; text-align: center; }
+        .qr svg { width: 100%; height: auto; display: block; }
+        .qr .codigo { font-family: 'Manrope', sans-serif; font-weight: 800; letter-spacing: 3px; font-size: 20px; margin-top: 10px; }
+        .qr .ayuda { font-size: 14px; color: var(--muted); margin-top: 6px; }
+        .sello { display: inline-block; font-weight: 800; font-size: 17px; padding: 8px 16px; border-radius: 24px; margin-bottom: 14px; }
+        .sello.ok { background: #e3f1ea; color: #2f7d5b; }
+        .sello.pendiente { background: #fff6e0; color: #8a6514; }
+        .sello.no { background: #f7e4e1; color: #b9483a; }
+        .linea { display: flex; justify-content: space-between; gap: 14px; padding: 10px 0; border-top: 1px solid var(--borde); font-size: 17px; }
+        .linea > span:first-child { color: var(--muted); }
+        .linea > span:last-child { font-weight: 600; text-align: right; }
+        .personas { margin-top: 16px; }
+        .persona { display: flex; justify-content: space-between; padding: 8px 0; border-top: 1px dashed var(--borde); font-size: 16px; }
+        .acciones { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+        @media (max-width: 760px) { .comprobante { grid-template-columns: 1fr; } .qr { max-width: 300px; margin: 0 auto; } }
+        @media print { .nav, footer, .acciones { display: none; } body { border: 0; background: white; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades">Actividades</a>
+        <a th:if="${rol == 'TURISTA'}" href="/panel/turista/reservas">Mis reservas</a>
+        <a th:if="${rol != null}" th:href="${urlPanel}" href="#">Mi panel</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Comprobante de reserva</span>
+    <h1 th:text="${actividad.titulo}" style="margin-bottom: 26px">Actividad</h1>
+
+    <div class="comprobante">
+        <!-- Código QR: lleva a esta misma página -->
+        <div class="qr">
+            <div id="qr"></div>
+            <div class="codigo" th:text="${codigoCorto}">A1B2C3D4</div>
+            <div class="ayuda">Mostrá este código al llegar a la actividad.</div>
+        </div>
+
+        <div>
+            <span class="sello ok" th:if="${reserva.estado.name() == 'CONFIRMADA'}">✔ Reserva confirmada y paga</span>
+            <span class="sello pendiente" th:if="${reserva.estado.name() == 'PENDIENTE_PAGO'}">Pendiente de pago: todavía no es válida</span>
+            <span class="sello pendiente" th:if="${reserva.estado.name() == 'EN_ESPERA'}">En lista de espera: todavía no es válida</span>
+            <span class="sello no" th:if="${reserva.estado.name() == 'CANCELADA'}">✖ Reserva cancelada</span>
+
+            <div class="linea"><span>Ofrecida por</span><span th:text="${actividad.emprendimiento.nombre}">Emprendimiento</span></div>
+            <div class="linea"><span>Fecha</span><span th:text="${#temporals.format(reserva.horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span></div>
+            <div class="linea"><span>Horario</span>
+                <span th:text="${#temporals.format(reserva.horario.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(reserva.horario.horaFin, 'HH:mm')}">09:00 a 11:00</span></div>
+            <div class="linea" th:if="${actividad.localidad != null or actividad.departamento != null}"><span>Lugar</span>
+                <span th:text="${actividad.localidad != null ? actividad.localidad + ', ' : ''} + ${actividad.departamento != null ? actividad.departamento : ''}">La Paloma, Rocha</span></div>
+            <div class="linea"><span>Reservó</span>
+                <span th:text="${reserva.turista.name} + ' ' + ${reserva.turista.lastName != null ? reserva.turista.lastName : ''}">Ana Pérez</span></div>
+            <div class="linea"><span>Cancelación</span><span th:text="${reserva.horario.textoPoliticaCancelacion()}" style="text-align:right">No admite</span></div>
+            <div class="linea" th:if="${reserva.canceladaPorPrestador()}"><span>Cancelada por el prestador</span><span th:text="${reserva.motivoCancelacionPrestador}" style="text-align:right">Motivo</span></div>
+            <div class="linea"><span>Total</span>
+                <span th:text="'$U ' + ${#numbers.formatDecimal(reserva.montoTotal, 1, 'POINT', 0, 'COMMA')}">$U 3.000</span></div>
+            <div class="linea" th:if="${reserva.observacion}"><span>Observación</span><span th:text="${reserva.observacion}">-</span></div>
+
+            <div class="personas">
+                <b th:text="${reserva.cantCupos == 1} ? '1 persona' : ${reserva.cantCupos} + ' personas'">2 personas</b>
+                <div class="persona" th:each="p : ${reserva.participantes}">
+                    <span th:text="${p.nombre} + ' ' + ${p.apellido}">Ana Pérez</span>
+                    <span th:text="'Doc. ' + ${T(uy.edu.um.proytic2026.controllers.ComprobanteWebController).ocultar(p.ci)}">Doc. •••••672</span>
+                </div>
+            </div>
+
+            <div class="acciones">
+                <button type="button" class="boton boton-naranja boton-chico" onclick="window.print()">Imprimir o guardar PDF</button>
+                <a th:if="${rol == 'TURISTA'}" href="/panel/turista/reservas" class="boton boton-borde boton-chico">Volver a mis reservas</a>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+<script th:inline="javascript">
+    // Dibuja el QR con el link a este comprobante
+    const url = /*[[${urlQr}]]*/ '';
+    const qr = qrcode(0, 'M');
+    qr.addData(url);
+    qr.make();
+    document.getElementById('qr').innerHTML = qr.createSvgTag({ cellSize: 6, margin: 2, scalable: true });
+</script>
+</body>
+</html>

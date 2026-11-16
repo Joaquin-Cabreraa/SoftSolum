@@ -19,14 +19,28 @@
             align-items: end;
             margin: 30px 0 14px;
         }
-        .filtros label { font-size: 12px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .filtros label { font-size: 14px; font-weight: 600; margin-bottom: 6px; display: block; }
         .filtros input, .filtros select { padding: 11px 12px; border-radius: 6px; }
         .filtros .boton { padding: 12px 20px; }
-        .limpiar { font-size: 13px; color: var(--muted); }
+        .limpiar { font-size: 15px; color: var(--muted); }
 
-        .contador { font-size: 14px; color: var(--muted); margin: 26px 0 14px; }
+        .contador { font-size: 17px; color: var(--muted); margin: 26px 0 14px; }
 
         /* ---------- Tarjetas de actividad ---------- */
+        .actividad-tarjeta { overflow: hidden; }
+        .estrellas-tarjeta { color: #f2b01e; font-size: 15px; margin-top: 10px; }
+        .estrellas-tarjeta b { color: var(--navy); }
+        .estrellas-tarjeta span { color: var(--muted); }
+        /* auto-fill: aunque haya una sola actividad, la tarjeta mantiene su tamaño */
+        .grilla { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+        .portada-tarjeta { position: relative; margin: -26px -26px 18px; aspect-ratio: 16 / 10; overflow: hidden;
+                           background: linear-gradient(135deg, #dfe8e4, #f3ead9); }
+        .portada-tarjeta img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .4s; }
+        .actividad-tarjeta:hover .portada-tarjeta img { transform: scale(1.04); }
+        .portada-tarjeta .sin-foto { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                                     font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 26px; color: rgba(27,42,65,.25); }
+        .cinta-uh { position: absolute; left: 12px; top: 12px; background: var(--orange); color: white; font-size: 14px;
+                    font-weight: 700; padding: 5px 11px; border-radius: 20px; box-shadow: 0 2px 8px rgba(0,0,0,.15); }
         .actividad-tarjeta {
             display: flex;
             flex-direction: column;
@@ -35,26 +49,26 @@
             transition: border-color .2s, transform .2s;
         }
         .actividad-tarjeta:hover { border-color: var(--orange); transform: translateY(-2px); }
-        .actividad-tarjeta .emprendimiento { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
-        .actividad-tarjeta .lugar { font-size: 13px; color: var(--muted); margin-top: 10px; }
+        .actividad-tarjeta .emprendimiento { font-size: 15px; color: var(--muted); margin-bottom: 12px; }
+        .actividad-tarjeta .lugar { font-size: 15px; color: var(--muted); margin-top: 10px; }
         .actividad-tarjeta .pie {
             display: flex; justify-content: space-between; align-items: baseline;
             margin-top: auto; padding-top: 18px;
         }
-        .precio { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 800; }
-        .precio small { font-size: 12px; font-weight: 500; color: var(--muted); }
-        .duracion { font-size: 13px; color: var(--muted); }
+        .precio { font-family: 'Manrope', sans-serif; font-size: 24px; font-weight: 800; }
+        .precio small { font-size: 14px; font-weight: 500; color: var(--muted); }
+        .duracion { font-size: 15px; color: var(--muted); }
 
         .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
         .etiqueta {
-            font-size: 11px; font-weight: 700; letter-spacing: .3px;
+            font-size: 13px; font-weight: 700; letter-spacing: .3px;
             padding: 4px 9px; border-radius: 20px;
             background: #fdeee5; color: var(--orange);
         }
 
         .mensaje-error {
             background: #f7e4e1; color: #b9483a;
-            padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px;
+            padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px;
         }
 
         @media (max-width: 850px) {
@@ -123,7 +137,7 @@
             <input type="date" id="fecha" name="fecha" th:value="${fecha}">
         </div>
         <div>
-            <label for="precioMaximo">Precio máx. ($)</label>
+            <label for="precioMaximo">Precio máx. ($U)</label>
             <input type="number" id="precioMaximo" name="precioMaximo" min="0" step="1" th:value="${precioMaximo}">
         </div>
         <button type="submit" class="boton boton-naranja">Buscar</button>
@@ -137,6 +151,12 @@
     <!-- Resultados -->
     <div class="grilla">
         <a class="tarjeta actividad-tarjeta" th:each="a : ${actividades}" th:href="@{/actividades/{id}(id=${a.id})}" href="#">
+            <div class="portada-tarjeta">
+                <img th:if="${portadas[a.id] != null}" th:src="@{/imagenes/{id}(id=${portadas[a.id]})}" alt="" loading="lazy">
+                <div class="sin-foto" th:if="${portadas[a.id] == null}">UMnatural</div>
+                <span class="cinta-uh" th:if="${#sets.contains(ultimaHora, a.id)}"
+                      th:text="'⏱ Última hora -' + ${a.descuentoUltimaHora} + ' %'">⏱ Última hora</span>
+            </div>
             <h3 th:text="${a.titulo != null and !#strings.isEmpty(a.titulo)} ? ${a.titulo} : 'Actividad #' + ${a.id}">Título</h3>
             <div class="emprendimiento" th:text="${a.emprendimiento.nombre}">Emprendimiento</div>
 
@@ -151,10 +171,14 @@
                 Localidad, Departamento
             </div>
 
+            <div class="estrellas-tarjeta" th:if="${valoraciones[a.id] != null}">
+                ★ <b th:text="${#numbers.formatDecimal(valoraciones[a.id][0], 1, 1, 'COMMA')}">4,8</b>
+                <span th:text="'(' + ${#numbers.formatInteger(valoraciones[a.id][1], 1)} + ')'">(12)</span>
+            </div>
             <div class="pie">
-                <span class="precio">$ <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
+                <span class="precio">$U <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
                     <small>por persona</small></span>
-                <span class="duracion" th:if="${a.duracionMinutos}" th:text="${a.duracionMinutos} + ' min'">60 min</span>
+                <span class="duracion" th:if="${a.textoDuracion() != null}" th:text="'⏱ ' + ${a.textoDuracion()}">2 h</span>
             </div>
         </a>
     </div>
@@ -167,5 +191,6 @@
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
+<div th:replace="~{fragments/aviso-resena :: aviso}"></div>
 </body>
 </html>

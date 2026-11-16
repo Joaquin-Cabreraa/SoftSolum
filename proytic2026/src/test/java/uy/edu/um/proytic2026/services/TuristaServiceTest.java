@@ -55,4 +55,19 @@ class TuristaServiceTest {
         assertEquals("Ya existe una cuenta registrada con ese correo electrónico.", turistaService.validarDatos(
                 "Ana", "Pérez", "12345672", "1999-03-02", "ana@mail.com", "099123456", "clave1234"));
     }
+
+    @Test
+    void rechazaDocumentoDeOtraCuenta() {
+        // Una persona = una cuenta: el mismo documento no se registra dos veces
+        when(turistaRepository.existsByDocumentoIgnoreCase("12345672")).thenReturn(true);
+
+        assertEquals("Ya existe una cuenta registrada con ese documento.", turistaService.validarDatos(
+                "Ana", "Pérez", "1.234.567-2", "1999-03-02", "otra@mail.com", "099123456", "clave1234"));
+    }
+
+    @Test
+    void rechazaCedulaInventada() {
+        assertTrue(turistaService.validarDatos("Ana", "Pérez", "1.234.567-9", "1999-03-02",
+                "ana@mail.com", "099123456", "clave1234").contains("no es válida"));
+    }
 }

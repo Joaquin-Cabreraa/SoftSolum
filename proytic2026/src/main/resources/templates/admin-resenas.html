@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Moderar reseñas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+    <style>
+        .estrellas-fijas { color: #f2b01e; letter-spacing: 2px; }
+        .estrellas-fijas .apagada { color: #ddd6c8; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+        .resena .cabeza { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+        .resena .quien { font-weight: 700; }
+        .resena .cuando { font-size: 14px; color: var(--muted); }
+        .resena .texto { margin: 10px 0 0; line-height: 1.7; }
+        .respuesta { margin-top: 14px; background: #f6f4ef; border-left: 3px solid var(--orange); border-radius: 6px; padding: 10px 14px; font-size: 16px; }
+        .respuesta b { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+        .oculta-aviso { margin-top: 12px; font-size: 15px; background: #f7e4e1; color: #b9483a; border-radius: 6px; padding: 8px 12px; }
+        textarea { width: 100%; min-height: 80px; }
+        .filtros { display: flex; gap: 8px; margin-top: 22px; }
+        .filtro { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--line); text-decoration: none; color: var(--navy); font-weight: 600; background: white; }
+        .filtro.activo { background: var(--navy); color: white; border-color: var(--navy); }
+        .acciones { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; align-items: flex-start; }
+        .acciones form { margin: 0; }
+        .acciones details[open] { flex-basis: 100%; background: #fff7f5; border: 1px solid #f1d2cb; border-radius: 8px; padding: 12px; }
+        .acciones summary { list-style: none; cursor: pointer; }
+        .resena.oculta-tarjeta { border-color: #f1d2cb; }
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/admin">Pendientes</a>
+        <a href="/panel/admin/emprendimientos">Emprendimientos</a>
+        <a href="/panel/admin/actividades">Actividades</a>
+        <a href="/panel/admin/resenas" class="activo">Reseñas</a>
+        <a href="/panel/admin/tipos">Tipos</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+<main class="pagina">
+    <span class="eyebrow">Panel del administrador</span>
+    <h1>Reseñas.</h1>
+    <p class="descripcion">Todas las reseñas del portal. Si una tiene contenido ofensivo o falso la podés ocultar (no se borra;
+        el turista ve el motivo) y también podés quitar una respuesta inapropiada de un prestador.</p>
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="filtros">
+        <a class="filtro" href="/panel/admin/resenas" th:classappend="${!soloOcultas} ? 'activo' : ''">Todas</a>
+        <a class="filtro" href="/panel/admin/resenas?ocultas=true" th:classappend="${soloOcultas} ? 'activo' : ''">Ocultas</a>
+    </div>
+
+    <div class="lista">
+        <div class="tarjeta resena" th:each="r : ${resenas}" th:classappend="${r.estaOculta()} ? 'oculta-tarjeta' : ''">
+            <div class="cabeza">
+                <div>
+                    <span class="quien" th:text="${r.autor()}">Ana P.</span> ·
+                    <span class="estrellas-fijas"><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i > r.puntaje} ? 'apagada' : ''">★</span></span>
+                    <div class="cuando" th:text="${r.actividad.titulo} + ' (' + ${r.actividad.emprendimiento.nombre} + ') · ' + ${#temporals.format(r.fecha, 'dd/MM/yyyy')}">Actividad</div>
+                </div>
+                <span class="estado estado-denegado" th:if="${r.estaOculta()}">OCULTA</span>
+            </div>
+            <p class="texto" th:if="${r.comentario}" th:text="${r.comentario}"></p>
+            <div class="oculta-aviso" th:if="${r.estaOculta()}" th:text="'Motivo: ' + ${r.motivoOculta}"></div>
+            <div class="respuesta" th:if="${r.respuestaPrestador}">
+                <b>Respuesta del prestador</b>
+                <span th:text="${r.respuestaPrestador}"></span>
+            </div>
+            <div class="acciones">
+                <details th:if="${!r.estaOculta()}">
+                    <summary class="boton boton-rojo boton-chico">Ocultar reseña</summary>
+                    <form method="post" th:action="@{/panel/admin/resenas/{id}/ocultar(id=${r.id})}" style="margin-top: 10px">
+                        <textarea name="motivo" maxlength="300" required placeholder="Ej: lenguaje ofensivo"></textarea>
+                        <button type="submit" class="boton boton-rojo boton-chico" style="margin-top: 8px">Confirmar</button>
+                    </form>
+                </details>
+                <form method="post" th:action="@{/panel/admin/resenas/{id}/mostrar(id=${r.id})}" th:if="${r.estaOculta()}">
+                    <button type="submit" class="boton boton-verde boton-chico">Volver a mostrar</button>
+                </form>
+                <form method="post" th:action="@{/panel/admin/resenas/{id}/quitar-respuesta(id=${r.id})}" th:if="${r.respuestaPrestador}"
+                      onsubmit="return confirm('¿Quitar la respuesta del prestador?');">
+                    <button type="submit" class="boton boton-borde boton-chico">Quitar respuesta</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="tarjeta" th:if="${#lists.isEmpty(resenas)}" style="text-align:center; padding:34px; margin-top: 24px">
+        <h3>No hay reseñas para mostrar</h3>
+    </div>
+</main>
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>

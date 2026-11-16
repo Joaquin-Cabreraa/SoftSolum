@@ -53,6 +53,30 @@ public class Reserva {
     @Column(name = "fecha_creacion", nullable = false)
     private LocalDateTime fechaCreacion;
 
+    // Código secreto de la reserva (UUID). Va dentro del QR: quien lo escanea ve el comprobante
+    // en /reserva/{codigo}. No se puede adivinar, así que nadie ve reservas ajenas.
+    @Column(name = "codigo", length = 36, unique = true)
+    private String codigo;
+
+    // Desde cuándo corren las 2 horas para pagar. Normalmente es la fecha de creación,
+    // pero si la reserva estaba EN_ESPERA es el momento en que se le asignó el lugar.
+    // (null en reservas viejas: se usa fechaCreacion)
+    // Si la canceló el PRESTADOR (canceló toda la salida): el motivo que dio.
+    // null si la canceló el turista o venció el pago.
+    @Column(name = "motivo_cancelacion_prestador", length = 300)
+    private String motivoCancelacionPrestador;
+
+    public boolean canceladaPorPrestador() {
+        return motivoCancelacionPrestador != null;
+    }
+
+    @Column(name = "plazo_pago_desde")
+    private LocalDateTime plazoPagoDesde;
+
+    public LocalDateTime inicioPlazoPago() {
+        return plazoPagoDesde != null ? plazoPagoDesde : fechaCreacion;
+    }
+
     // Precio de la actividad x cantidad de cupos (RNE #11).
     // Se guarda para que no cambie si después cambia el precio de la actividad.
     @Column(name = "monto_total", nullable = false)

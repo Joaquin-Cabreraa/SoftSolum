@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Pagar reserva</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+
+    <!-- SDK de Mercado Pago: solo si hay credenciales. Es el que convierte la tarjeta en un token. -->
+    <script th:if="${pasarela == 'MERCADO_PAGO'}" src="https://sdk.mercadopago.com/js/v2"></script>
+
+    <style>
+        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver:hover { color: var(--orange); }
+        .columnas { display: grid; grid-template-columns: 1fr 320px; gap: 36px; align-items: start; margin-top: 26px; }
+        .resumen .linea { display: flex; justify-content: space-between; gap: 10px; font-size: 17px; padding: 9px 0; border-top: 1px solid var(--borde); }
+        .resumen .linea > span:first-child { color: var(--muted); }
+        .resumen .total { font-family: 'Manrope', sans-serif; font-size: 26px; font-weight: 800; }
+        .vence { margin-top: 14px; font-size: 15px; color: var(--orange); font-weight: 600; }
+        .seguro { display: flex; gap: 10px; align-items: flex-start; font-size: 15px; color: var(--muted); margin-top: 14px; line-height: 1.5; }
+        .campo { margin-bottom: 14px; }
+        .campo label { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .tarjeta-visual { background: linear-gradient(135deg, #1b2a41, #34507a); color: white; border-radius: 12px; padding: 22px 24px;
+                          margin-bottom: 20px; font-family: 'Manrope', sans-serif; max-width: 380px; aspect-ratio: 1.6; display: flex;
+                          flex-direction: column; justify-content: space-between; box-shadow: 0 8px 22px rgba(27,42,65,.25); }
+        .tarjeta-visual .numero { font-size: 21px; letter-spacing: 2px; }
+        .tarjeta-visual .abajo { display: flex; justify-content: space-between; font-size: 14px; text-transform: uppercase; opacity: .9; }
+        .tarjeta-visual .marca { align-self: flex-end; font-weight: 800; font-size: 18px; text-transform: uppercase; }
+        .prueba { background: #eef4fb; border: 1px solid #c9dbef; color: #23446b; border-radius: 6px; padding: 12px 16px; font-size: 15px; line-height: 1.6; margin-bottom: 20px; }
+        .prueba code { background: white; padding: 1px 6px; border-radius: 4px; }
+        .resultado { padding: 14px 18px; border-radius: 6px; font-size: 17px; margin-bottom: 18px; display: none; }
+        .resultado.ok { display: block; background: #e3f1ea; color: #2f7d5b; }
+        .resultado.mal { display: block; background: #f7e4e1; color: #b9483a; }
+        .resultado.espera { display: block; background: #fff6e0; color: #8a6514; }
+        .intentos { margin-top: 26px; font-size: 15px; color: var(--muted); }
+        .intentos li { margin-bottom: 4px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        button[disabled] { opacity: .6; cursor: wait; }
+        @media (max-width: 850px) { .columnas { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades">Actividades</a>
+        <a href="/panel/turista/reservas" class="activo">Mis reservas</a>
+        <a href="/panel/turista">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <a href="/panel/turista/reservas" class="volver">← Volver a mis reservas</a>
+    <span class="eyebrow">Pago</span>
+    <h1>Pagá tu reserva.</h1>
+    <p class="descripcion">Pagás acá mismo, sin salir de UMnatural.</p>
+
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Reserva creada</div>
+
+    <div class="columnas">
+        <div>
+            <div id="resultado" class="resultado"></div>
+
+            <!-- ===== Opción 1: formulario de Mercado Pago (Card Payment Brick) ===== -->
+            <th:block th:if="${pasarela == 'MERCADO_PAGO'}">
+                <div class="prueba">
+                    <b>Modo prueba de Mercado Pago:</b> no se cobra de verdad. Tarjeta Visa <code>4509 9535 6623 3704</code>,
+                    vencimiento <code>11/30</code>, código <code>123</code>.
+                    El <b>nombre del titular</b> define el resultado: <code>APRO</code> aprobado, <code>OTHE</code> rechazado.
+                </div>
+                <!-- Acá Mercado Pago dibuja su formulario de tarjeta -->
+                <div id="formularioMercadoPago"></div>
+            </th:block>
+
+            <!-- ===== Opción 2: pasarela simulada (sin credenciales de Mercado Pago) ===== -->
+            <th:block th:if="${pasarela == 'SIMULADA'}">
+                <div class="prueba">
+                    <b>Pasarela de prueba:</b> no se cobra de verdad. Usá una tarjeta de prueba, ej. <code>4509 9535 6623 3704</code>.
+                    El <b>nombre del titular</b> define el resultado: <code>APRO</code> aprobado, <code>OTHE</code> rechazado,
+                    <code>FUND</code> sin saldo, <code>ERROR</code> pasarela caída.
+                </div>
+
+                <div class="tarjeta-visual">
+                    <div class="marca" id="vistaMarca">Tarjeta</div>
+                    <div class="numero" id="vistaNumero">•••• •••• •••• ••••</div>
+                    <div class="abajo"><span id="vistaTitular">Nombre del titular</span><span id="vistaVence">MM/AA</span></div>
+                </div>
+
+                <form id="formularioSimulado" class="tarjeta" autocomplete="off" novalidate>
+                    <div class="campo">
+                        <label for="numero">Número de tarjeta</label>
+                        <input type="text" id="numero" inputmode="numeric" maxlength="23" placeholder="1234 5678 9012 3456">
+                    </div>
+                    <div class="campo">
+                        <label for="titular">Nombre del titular (como figura en la tarjeta)</label>
+                        <input type="text" id="titular" maxlength="60" placeholder="APRO">
+                    </div>
+                    <div class="dos">
+                        <div class="campo">
+                            <label for="vencimiento">Vencimiento</label>
+                            <input type="text" id="vencimiento" inputmode="numeric" maxlength="5" placeholder="MM/AA">
+                        </div>
+                        <div class="campo">
+                            <label for="cvv">Código de seguridad</label>
+                            <input type="password" id="cvv" inputmode="numeric" maxlength="4" placeholder="123">
+                        </div>
+                    </div>
+                    <button type="submit" id="botonPagar" class="boton boton-naranja" style="width:100%">
+                        Pagar $U <span th:text="${#numbers.formatDecimal(reserva.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
+                    </button>
+                </form>
+            </th:block>
+
+            <!-- Intentos anteriores (si alguno fue rechazado) -->
+            <div class="intentos" th:if="${!#lists.isEmpty(intentos)}">
+                <b>Intentos anteriores</b>
+                <ul>
+                    <li th:each="p : ${intentos}"
+                        th:text="${#temporals.format(p.fecha, 'dd/MM HH:mm')} + ' · ' + ${p.estado} + (${p.ultimosDigitos} != null ? ' · tarjeta terminada en ' + ${p.ultimosDigitos} : '')">
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Resumen -->
+        <aside class="tarjeta resumen">
+            <h3 th:text="${actividad.titulo}">Actividad</h3>
+            <p th:text="${actividad.emprendimiento.nombre}" style="margin-bottom: 14px">Emprendimiento</p>
+            <div class="linea"><span>Fecha</span><span th:text="${#temporals.format(reserva.horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span></div>
+            <div class="linea"><span>Horario</span>
+                <span th:text="${#temporals.format(reserva.horario.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(reserva.horario.horaFin, 'HH:mm')}">09:00 a 11:00</span></div>
+            <div class="linea"><span>Personas</span><span th:text="${reserva.cantCupos}">2</span></div>
+            <div class="linea"><span>Total</span>
+                <span class="total">$U <span th:text="${#numbers.formatDecimal(reserva.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></span></div>
+            <div class="vence" th:text="'Tus lugares están guardados hasta las ' + ${#temporals.format(vence, 'HH:mm')} + ' del ' + ${#temporals.format(vence, 'dd/MM')}">
+                Guardado hasta las 15:30
+            </div>
+            <div class="seguro">
+                <span>🔒</span>
+                <span>Los datos de tu tarjeta no pasan por nuestros servidores: se convierten en un código seguro en tu navegador.</span>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+
+<script th:inline="javascript">
+    const URL_PAGO = /*[[@{/panel/turista/reservas/{id}/pagar(id=${reserva.id})}]]*/ '';
+    const MONTO = /*[[${reserva.montoTotal}]]*/ 0;
+    const EMAIL = /*[[${emailTurista}]]*/ '';
+    const PASARELA = /*[[${pasarela}]]*/ 'SIMULADA';
+    const CLAVE_PUBLICA = /*[[${clavePublica}]]*/ null;
+    const caja = document.getElementById('resultado');
+
+    // Manda los datos de pago (nunca el número de la tarjeta) a nuestro servidor
+    async function enviarPago(datos) {
+        const respuesta = await fetch(URL_PAGO, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(datos)
+        });
+        if (!respuesta.ok) throw new Error('HTTP ' + respuesta.status);
+        return respuesta.json();
+    }
+
+    function mostrar(resultado) {
+        caja.textContent = resultado.mensaje;
+        caja.className = 'resultado ' + (resultado.aprobado ? 'ok' : resultado.estado === 'PENDIENTE' ? 'espera' : 'mal');
+        caja.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        if (resultado.aprobado || resultado.estado === 'NO_PERMITIDO') {
+            // Pago aprobado: al comprobante con el código QR
+            const destino = resultado.comprobante || '/panel/turista/reservas';
+            setTimeout(() => { window.location.href = destino; }, 2000);
+        }
+    }
+
+    // ---------- Mercado Pago: Card Payment Brick ----------
+    if (PASARELA === 'MERCADO_PAGO') {
+        const mp = new MercadoPago(CLAVE_PUBLICA, { locale: 'es-UY' });
+        mp.bricks().create('cardPayment', 'formularioMercadoPago', {
+            initialization: { amount: Number(MONTO), payer: { email: EMAIL } },
+            customization: { paymentMethods: { maxInstallments: 1 } },
+            callbacks: {
+                onReady: () => {},
+                // El Brick ya convirtió la tarjeta en un token: lo mandamos a nuestro servidor
+                onSubmit: (formData) => enviarPago(formData)
+                    .then(mostrar)
+                    .catch(() => mostrar({ aprobado: false, estado: 'ERROR',
+                        mensaje: 'No pudimos procesar el pago. Tu lugar sigue guardado: probá de nuevo.' })),
+                onError: (error) => console.error(error)
+            }
+        });
+    }
+
+    // ---------- Pasarela simulada ----------
+    if (PASARELA === 'SIMULADA') {
+        const numero = document.getElementById('numero');
+        const titular = document.getElementById('titular');
+        const vencimiento = document.getElementById('vencimiento');
+        const cvv = document.getElementById('cvv');
+        const boton = document.getElementById('botonPagar');
+
+        const soloDigitos = (t) => t.replace(/\D/g, '');
+        const marca = (n) => /^4/.test(n) ? 'visa' : /^(5[1-5]|2[2-7])/.test(n) ? 'master' : /^3[47]/.test(n) ? 'amex' : /^5/.test(n) ? 'oca' : '';
+
+        // Algoritmo de Luhn: el control que usan todas las tarjetas para detectar números mal escritos
+        function luhn(n) {
+            let suma = 0;
+            for (let i = 0; i < n.length; i++) {
+                let d = Number(n[n.length - 1 - i]);
+                if (i % 2 === 1) { d *= 2; if (d > 9) d -= 9; }
+                suma += d;
+            }
+            return n.length >= 13 && suma % 10 === 0;
+        }
+
+        numero.addEventListener('input', () => {
+            const d = soloDigitos(numero.value).slice(0, 19);
+            numero.value = d.replace(/(.{4})/g, '$1 ').trim();
+            document.getElementById('vistaNumero').textContent = (numero.value || '•••• •••• •••• ••••');
+            document.getElementById('vistaMarca').textContent = marca(d) || 'Tarjeta';
+        });
+        titular.addEventListener('input', () => {
+            document.getElementById('vistaTitular').textContent = titular.value || 'Nombre del titular';
+        });
+        vencimiento.addEventListener('input', () => {
+            const d = soloDigitos(vencimiento.value).slice(0, 4);
+            vencimiento.value = d.length > 2 ? d.slice(0, 2) + '/' + d.slice(2) : d;
+            document.getElementById('vistaVence').textContent = vencimiento.value || 'MM/AA';
+        });
+
+        document.getElementById('formularioSimulado').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const n = soloDigitos(numero.value);
+            const [mm, aa] = vencimiento.value.split('/').map(Number);
+            const hoy = new Date();
+            const vencida = !mm || !aa || mm < 1 || mm > 12
+                || (2000 + aa) < hoy.getFullYear() || ((2000 + aa) === hoy.getFullYear() && mm < hoy.getMonth() + 1);
+
+            let error = null;
+            if (!luhn(n)) error = 'El número de tarjeta no es válido.';
+            else if (!titular.value.trim()) error = 'Falta el nombre del titular.';
+            else if (vencida) error = 'La fecha de vencimiento no es válida.';
+            else if (!/^\d{3,4}$/.test(cvv.value)) error = 'El código de seguridad no es válido.';
+            if (error) { mostrar({ aprobado: false, estado: 'RECHAZADO', mensaje: error }); return; }
+
+            boton.disabled = true;
+            boton.textContent = 'Procesando…';
+            try {
+                // Al servidor solo van el titular, la marca y los últimos 4 números
+                const r = await enviarPago({ titular: titular.value.trim(), payment_method_id: marca(n) || 'tarjeta',
+                                             ultimosDigitos: n.slice(-4), installments: 1 });
+                mostrar(r);
+                if (r.aprobado) return;
+            } catch (err) {
+                mostrar({ aprobado: false, estado: 'ERROR', mensaje: 'No pudimos procesar el pago. Tu lugar sigue guardado: probá de nuevo.' });
+            }
+            boton.disabled = false;
+            boton.textContent = 'Reintentar pago';
+        });
+    }
+</script>
+</body>
+</html>

@@ -15,15 +15,27 @@
         .reserva { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; }
         .reserva h3 a { color: var(--navy); text-decoration: none; }
         .reserva h3 a:hover { color: var(--orange); }
-        .reserva .datos { font-size: 14px; color: var(--muted); line-height: 1.8; margin-top: 4px; }
+        .reserva .datos { font-size: 17px; color: var(--muted); line-height: 1.8; margin-top: 4px; }
         .reserva .derecha { text-align: right; }
-        .monto { font-family: 'Manrope', sans-serif; font-size: 20px; font-weight: 800; margin-top: 10px; }
-        .vence { font-size: 13px; color: var(--orange); font-weight: 600; margin-top: 8px; }
-        .participantes { font-size: 13px; color: var(--muted); margin-top: 10px; }
+        .monto { font-family: 'Manrope', sans-serif; font-size: 24px; font-weight: 800; margin-top: 10px; }
+        .vence { font-size: 15px; color: var(--orange); font-weight: 600; margin-top: 8px; }
+        .participantes { font-size: 15px; color: var(--muted); margin-top: 10px; }
         .estado-cancelado { background: #eef0ee; color: var(--muted); }
 
-        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
         .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .estado-espera { background: #fff6e0; color: #8a6514; }
+        .espera-info { font-size: 15px; color: #8a6514; margin-top: 8px; max-width: 260px; margin-left: auto; }
+        .acciones-reserva { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; margin-top: 12px; }
+        .acciones-reserva form { margin: 0; }
+        .aviso-prestador { font-size: 15px; background: #fff7f5; border: 1px solid #f1d2cb; border-radius: 8px; padding: 10px 12px; margin: 10px 0 0 auto; max-width: 300px; text-align: left; }
+        .estrellas-fijas { color: #f2b01e; }
+        .estrellas-fijas .apagada { color: #ddd6c8; }
+        .mi-resena { font-size: 15px; text-align: right; max-width: 300px; }
+        .oculta-motivo { color: #b9483a; font-size: 14px; }
+        .respuesta-prestador { color: var(--muted); font-size: 14px; margin-top: 4px; }
+        .reembolso { font-size: 14px; color: var(--muted); }
 
         @media (max-width: 700px) {
             .reserva { grid-template-columns: 1fr; }
@@ -51,6 +63,7 @@
 
     <!-- Mensaje que manda el controller después de reservar -->
     <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Reserva creada</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
 
     <div class="lista">
         <div class="tarjeta reserva" th:each="r : ${reservas}">
@@ -67,6 +80,7 @@
                         <span th:text="${#temporals.format(r.horario.horaFin, 'HH:mm')}">11:00</span>
                     </div>
                     <div th:text="${r.cantCupos == 1} ? '1 persona' : ${r.cantCupos} + ' personas'">2 personas</div>
+                    <div th:if="${r.estado.name() != 'CANCELADA'}" th:text="'Política: ' + ${r.horario.textoPoliticaCancelacion()}">Política</div>
                 </div>
                 <div class="participantes">
                     <span th:each="p, i : ${r.participantes}"
@@ -78,16 +92,69 @@
                 <!-- Etiqueta según el estado -->
                 <span class="estado estado-pendiente" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
                 <span class="estado estado-aceptado"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
-                <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+                <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA' and !r.canceladaPorPrestador()}">CANCELADA</span>
+                <span class="estado estado-denegado" th:if="${r.canceladaPorPrestador()}">CANCELADA POR EL PRESTADOR</span>
+                <div class="aviso-prestador" th:if="${r.canceladaPorPrestador()}">
+                    <b>Motivo:</b> <span th:text="${r.motivoCancelacionPrestador}"></span><br>
+                    <span th:if="${r.montoTotal != null}">Si habías pagado, te devolvimos el 100 % a tu tarjeta.</span>
+                </div>
+                <span class="estado estado-espera" th:if="${r.estado.name() == 'EN_ESPERA'}">EN LISTA DE ESPERA</span>
+                <div class="espera-info" th:if="${r.estado.name() == 'EN_ESPERA'}">
+                    Sos el <b th:text="${posiciones[r.id]} + 'º'">1º</b> de la fila. Si se libera lugar, se te asigna solo
+                    y vas a tener 2 horas para pagar.
+                </div>
 
-                <div class="monto">$ <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></div>
+                <div class="monto">$U <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></div>
 
                 <!-- Plazo para pagar (2 horas desde que reservó) -->
                 <div class="vence" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}"
                      th:text="'Pagá antes de las ' + ${#temporals.format(reservaService.venceElPago(r), 'HH:mm')} + ' del ' + ${#temporals.format(reservaService.venceElPago(r), 'dd/MM')}">
                     Pagá antes de las 15:30
                 </div>
-                <!-- Acá P3 agrega el botón "Pagar" / "Reintentar pago" -->
+                <div class="acciones-reserva">
+                    <!-- Comprobante con código QR -->
+                    <a th:if="${r.estado.name() == 'CONFIRMADA' or r.estado.name() == 'PENDIENTE_PAGO'}"
+                       class="boton boton-borde boton-chico" th:href="@{/reserva/{c}(c=${r.codigo})}" href="#">▦ Ver QR</a>
+
+                    <!-- Reseña: cuando la actividad ya terminó -->
+                    <a th:if="${misResenas[r.id] == null and r.estado.name() == 'CONFIRMADA' and r.horario.fecha.atTime(r.horario.horaFin).isBefore(ahora)}"
+                       class="boton boton-naranja boton-chico" th:href="@{/panel/turista/reservas/{id}/resena(id=${r.id})}">★ Dejar reseña</a>
+                    <div class="mi-resena" th:if="${misResenas[r.id] != null}" th:with="mr=${misResenas[r.id]}">
+                        Tu reseña: <span class="estrellas-fijas"><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i > mr.puntaje} ? 'apagada' : ''">★</span></span>
+                        <div class="oculta-motivo" th:if="${mr.estaOculta()}" th:text="'El administrador la ocultó: ' + ${mr.motivoOculta}"></div>
+                        <div class="respuesta-prestador" th:if="${mr.respuestaPrestador}" th:text="'Respuesta del prestador: ' + ${mr.respuestaPrestador}"></div>
+                    </div>
+
+                    <!-- Pagar (CU-T07) -->
+                    <a th:if="${r.estado.name() == 'PENDIENTE_PAGO'}" class="boton boton-naranja boton-chico"
+                       th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}" href="#">Pagar</a>
+
+                    <!-- Cancelar (CU-T08). Se decide con la hora del servidor (Uruguay) y la política del horario -->
+                    <th:block th:with="motivo=${reservaService.puedeCancelar(r, ahora)}">
+                        <th:block th:if="${motivo == null}">
+                            <!-- En espera o pendiente: no se pagó nada -->
+                            <form method="post" th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
+                                  th:if="${r.estado.name() != 'CONFIRMADA'}"
+                                  onsubmit="return confirm('¿Cancelar esta reserva? Los lugares quedan libres para otro turista.');">
+                                <button type="submit" class="boton boton-borde boton-chico"
+                                        th:text="${r.estado.name() == 'EN_ESPERA'} ? 'Salir de la lista' : 'Cancelar'">Cancelar</button>
+                            </form>
+                            <!-- Confirmada: se avisa cuánto se devuelve -->
+                            <form method="post" th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
+                                  th:if="${r.estado.name() == 'CONFIRMADA'}"
+                                  th:attr="onsubmit=${r.horario.reembolso() > 0}
+                                     ? 'return confirm(&quot;¿Cancelar esta reserva? Te devolvemos $U ' + ${#numbers.formatDecimal(reservaService.montoAReembolsar(r), 1, 'POINT', 0, 'COMMA')} + '.&quot;)'
+                                     : 'return confirm(&quot;¿Cancelar esta reserva? Según la política de este horario NO hay reembolso.&quot;)'">
+                                <button type="submit" class="boton boton-borde boton-chico">Cancelar</button>
+                            </form>
+                            <span class="reembolso" th:if="${r.estado.name() == 'CONFIRMADA'}"
+                                  th:text="(${r.horario.reembolso() > 0} ? 'Te devolvemos $U ' + ${#numbers.formatDecimal(reservaService.montoAReembolsar(r), 1, 'POINT', 0, 'COMMA')} + ' (' + ${r.horario.reembolso()} + ' %)' : 'Sin reembolso')
+                                           + ' · hasta el ' + ${#temporals.format(r.horario.limiteCancelacion(), 'dd/MM HH:mm')}"></span>
+                        </th:block>
+                        <!-- No se puede: se explica por qué -->
+                        <span class="reembolso" th:if="${motivo != null and r.estado.name() != 'CANCELADA'}" th:text="${motivo}"></span>
+                    </th:block>
+                </div>
             </div>
         </div>
     </div>
@@ -101,5 +168,6 @@
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
+<div th:replace="~{fragments/aviso-resena :: aviso}"></div>
 </body>
 </html>

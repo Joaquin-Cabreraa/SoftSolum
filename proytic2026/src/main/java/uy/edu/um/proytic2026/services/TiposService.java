@@ -98,7 +98,7 @@ public class TiposService {
     @Transactional
     public String eliminarTipoEquipamiento(Long id) {
         if (!tipoEquipamientoRepository.existsById(id)) return "El tipo de equipamiento no existe.";
-        if (actividadRepository.existsByTiposEquipamiento_Id(id)) {
+        if (actividadRepository.existsByTiposEquipamiento_Id(id) || actividadRepository.existsByEquipamientoIncluido_Id(id)) {
             return "No se puede eliminar: hay actividades que usan este equipamiento.";
         }
         tipoEquipamientoRepository.deleteById(id);
