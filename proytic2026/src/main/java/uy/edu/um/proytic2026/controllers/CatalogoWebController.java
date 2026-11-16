@@ -24,6 +24,12 @@ public class CatalogoWebController {
     @Autowired
     private CatalogoService catalogoService;
 
+    @Autowired
+    private uy.edu.um.proytic2026.services.ImagenService imagenService;
+
+    @Autowired
+    private uy.edu.um.proytic2026.services.ResenaService resenaService;
+
     // Explorar y buscar actividades (CU-T04). Todos los filtros son opcionales.
     // Ej: /actividades?q=kayak&departamento=Rocha&precioMaximo=2000
     @GetMapping("/actividades")
@@ -34,7 +40,17 @@ public class CatalogoWebController {
                            @RequestParam(required = false) BigDecimal precioMaximo,
                            HttpSession session, Model model) {
 
-        model.addAttribute("actividades", catalogoService.buscar(q, departamento, tipo, fecha, precioMaximo));
+        java.util.List<Actividad> actividades = catalogoService.buscar(q, departamento, tipo, fecha, precioMaximo);
+        model.addAttribute("actividades", actividades);
+        model.addAttribute("portadas", imagenService.portadas());          // primera foto de cada una
+        model.addAttribute("valoraciones", resenaService.promedios());     // ★ promedio y cantidad
+
+        // Cuáles tienen ahora mismo un horario con descuento de última hora (etiqueta en la tarjeta)
+        java.util.Set<Long> ultimaHora = new java.util.HashSet<>();
+        for (Actividad a : actividades) {
+            if (catalogoService.tieneUltimaHoraAhora(a)) ultimaHora.add(a.getId());
+        }
+        model.addAttribute("ultimaHora", ultimaHora);
 
         // Opciones de los desplegables
         model.addAttribute("departamentos", catalogoService.departamentosConActividades());
@@ -61,7 +77,11 @@ public class CatalogoWebController {
         }
 
         model.addAttribute("actividad", actividad);
-        model.addAttribute("horarios", catalogoService.proximosHorarios(actividad));
+        // Todos los horarios en plazo: los que tienen lugar se reservan, los llenos ofrecen lista de espera
+        model.addAttribute("horarios", catalogoService.horariosEnPlazo(actividad));
+        model.addAttribute("imagenes", imagenService.idsDe(actividad.getId()));
+        model.addAttribute("resenas", resenaService.visiblesDe(actividad.getId()));
+        model.addAttribute("valoracion", resenaService.promedios().get(actividad.getId()));
         model.addAttribute("rol", session.getAttribute("usuarioRol"));
         return "actividad-detalle";     // templates/actividad-detalle.html
     }

@@ -16,6 +16,8 @@
 body {
     margin: 0;
     font-family: 'DM Sans', Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.55;
     color: var(--navy);
     background: var(--bg);
     border-top: 6px solid var(--pink);
@@ -56,7 +58,7 @@ body {
 
 .hero-text small {
     display: block;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
     letter-spacing: .18em;
     text-transform: uppercase;
@@ -82,7 +84,7 @@ body {
 .logo {
     font-family: 'Manrope', sans-serif;
     font-weight: 800;
-    font-size: 24px;
+    font-size: 26px;
     color: var(--navy);
     letter-spacing: -.02em;
 }
@@ -95,7 +97,7 @@ body {
 }
 
 .eyebrow {
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 600;
     letter-spacing: .14em;
     text-transform: uppercase;
@@ -114,14 +116,14 @@ h1 {
 
 .lead {
     color: var(--muted);
-    font-size: 15px;
+    font-size: 18px;
     line-height: 1.7;
     margin: 0 0 32px;
 }
 
 h2.seccion {
     font-family: 'Manrope', sans-serif;
-    font-size: 18px;
+    font-size: 21px;
     font-weight: 700;
     margin: 36px 0 4px;
 }
@@ -131,7 +133,7 @@ h2.seccion {
 
 label {
     display: block;
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 600;
     margin-bottom: 7px;
 }
@@ -140,7 +142,7 @@ input, textarea, select {
     width: 100%;
     padding: 13px 16px;
     font: inherit;
-    font-size: 14px;
+    font-size: 17px;
     color: var(--navy);
     background: var(--card);
     border: 1px solid var(--line);
@@ -174,7 +176,7 @@ input:focus, textarea:focus, select:focus {
 .actividad h3 {
     margin: 0 0 18px;
     font-family: 'Manrope', sans-serif;
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 700;
 }
 
@@ -183,7 +185,7 @@ input:focus, textarea:focus, select:focus {
 /* ---------- Botones ---------- */
 button {
     font: inherit;
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
     cursor: pointer;
     border-radius: 10px;
@@ -223,7 +225,7 @@ button {
     .layout { grid-template-columns: 1fr; }
     .hero { position: relative; height: 240px; }
     .hero-text { padding: 0 24px 24px; }
-    .hero-text h2 { font-size: 26px; }
+    .hero-text h2 { font-size: 29px; }
     .content { padding: 32px 24px 48px; }
     .inner { margin-top: 32px; }
     h1 { font-size: 34px; }
@@ -281,7 +283,7 @@ h1, h2, h3 {
 
 .logo {
     font-family: 'Manrope', sans-serif;
-    font-size: 25px;
+    font-size: 28px;
     font-weight: 800;
     letter-spacing: -1.3px;
     color: var(--navy);
@@ -303,7 +305,7 @@ h1, h2, h3 {
 }
 
 .nav-links a {
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 500;
     color: var(--navy);
     text-decoration: none;
@@ -325,7 +327,7 @@ h1, h2, h3 {
     padding: 14px 24px;
     border-radius: 6px;
     font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
+    font-size: 17px;
     font-weight: 600;
     text-decoration: none;
     border: 1px solid transparent;
@@ -364,7 +366,7 @@ h1, h2, h3 {
 
 .boton-chico {
     padding: 10px 16px;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .boton-verde {
@@ -381,7 +383,7 @@ h1, h2, h3 {
 /* ---------- Textos ---------- */
 
 .eyebrow {
-    font-size: 12px;
+    font-size: 14px;
     letter-spacing: 1.5px;
     text-transform: uppercase;
     color: var(--orange);
@@ -390,7 +392,7 @@ h1, h2, h3 {
 
 .descripcion {
     color: var(--muted);
-    font-size: 15px;
+    font-size: 18px;
     line-height: 1.8;
 }
 
@@ -403,7 +405,7 @@ h1, h2, h3 {
 }
 
 .pagina h1 {
-    font-size: clamp(30px, 3vw, 40px);
+    font-size: clamp(33px, 3vw, 40px);
     letter-spacing: -1.5px;
     margin: 14px 0 10px;
 }
@@ -418,12 +420,12 @@ h1, h2, h3 {
 }
 
 .tarjeta h3 {
-    font-size: 17px;
+    font-size: 20px;
     margin: 0 0 8px;
 }
 
 .tarjeta p {
-    font-size: 14px;
+    font-size: 17px;
     color: var(--muted);
     line-height: 1.7;
     margin: 0;
@@ -441,7 +443,7 @@ h1, h2, h3 {
     display: inline-block;
     padding: 5px 11px;
     border-radius: 20px;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 700;
     letter-spacing: 0.5px;
 }
@@ -468,7 +470,7 @@ h1, h2, h3 {
     border: 1px solid #f3d6c4;
     border-radius: 6px;
     padding: 14px 18px;
-    font-size: 14px;
+    font-size: 17px;
     color: var(--navy);
     margin: 25px 0 35px;
 }
@@ -477,7 +479,7 @@ h1, h2, h3 {
 
 footer {
     padding: 30px 6%;
-    font-size: 12px;
+    font-size: 14px;
     color: #92979a;
     border-top: 1px solid var(--borde);
 }
@@ -502,7 +504,7 @@ footer {
     display: block;
     min-height: 18px;
     margin-top: 6px;
-    font-size: 13px;
+    font-size: 15px;
 }
 
 .aviso-password.ok { color: #2f7d5b; }
@@ -510,3 +512,182 @@ footer {
 
 input.invalido { border-color: #b9483a; }
 input.valido { border-color: #2f7d5b; }
+
+/* Lo que tiene el atributo hidden no se muestra nunca (aunque su clase diga display) */
+[hidden] { display: none !important; }
+
+/* =====================================================================
+   Diseño general (aplica a todas las páginas internas)
+   - la página ocupa todo el alto: el pie queda siempre abajo
+   - contenido más ancho y fondo con color suave arriba
+   - tarjetas con sombra, estados vacíos más visibles, números destacados
+   ===================================================================== */
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+body > main { flex: 1 0 auto; width: 100%; }
+
+/* Fondo con dos manchas de color suaves arriba (naranja y azul del logo) */
+body:has(> main.pagina) {
+    background:
+        radial-gradient(1100px 420px at 92% -120px, rgba(223, 115, 61, .16), transparent 70%),
+        radial-gradient(900px 380px at -5% -80px, rgba(43, 108, 140, .12), transparent 70%),
+        var(--cream);
+    background-repeat: no-repeat;
+}
+
+.nav { background: rgba(248, 247, 243, .85); backdrop-filter: blur(6px); position: sticky; top: 0; z-index: 10; }
+.nav.sobre-imagen { position: absolute; background: transparent; backdrop-filter: none; }
+
+.pagina { max-width: 1180px; padding-top: 48px; }
+.pagina h1 { font-size: clamp(34px, 3.4vw, 46px); }
+.descripcion { max-width: 760px; }
+
+/* Tarjetas */
+.tarjeta {
+    border-radius: 12px;
+    border-color: #ebe8e1;
+    box-shadow: 0 1px 2px rgba(23, 40, 58, .04), 0 10px 30px rgba(23, 40, 58, .05);
+}
+.grilla > .tarjeta { transition: transform .2s, box-shadow .2s; display: flex; flex-direction: column; }
+.grilla > .tarjeta:hover { transform: translateY(-3px); box-shadow: 0 2px 4px rgba(23, 40, 58, .05), 0 16px 36px rgba(23, 40, 58, .09); }
+.grilla > .tarjeta > .boton { margin-top: auto; align-self: flex-start; }
+.grilla > .tarjeta > p { margin-bottom: 18px; }
+
+/* Icono redondeado arriba de una tarjeta */
+.icono {
+    width: 52px; height: 52px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; margin-bottom: 16px;
+    background: #fdeee5;
+}
+.icono.azul { background: #e3eef4; }
+.icono.verde { background: #e3f1ea; }
+
+/* Números destacados (resumen arriba de los paneles) */
+.stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin: 32px 0 22px;
+}
+.stat {
+    background: white;
+    border: 1px solid #ebe8e1;
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: 0 1px 2px rgba(23, 40, 58, .04), 0 10px 30px rgba(23, 40, 58, .05);
+    position: relative;
+    overflow: hidden;
+}
+.stat::after {   /* franja de color a la izquierda */
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 5px; background: var(--orange);
+}
+.stat.azul::after { background: #2b6c8c; }
+.stat.verde::after { background: var(--verde); }
+.stat.gris::after { background: #b8bcbf; }
+.stat .num { display: block; font-family: 'Manrope', sans-serif; font-size: 36px; font-weight: 800; line-height: 1.1; }
+.stat .lbl { display: block; color: var(--muted); font-size: 16px; margin-top: 4px; }
+.stat a { position: absolute; inset: 0; }
+
+/* Aviso destacado (ej. "tu próxima actividad") */
+.destacado {
+    display: flex; gap: 22px; align-items: center; justify-content: space-between; flex-wrap: wrap;
+    background: linear-gradient(120deg, #17283a, #2b4a66);
+    color: white; border-radius: 14px; padding: 26px 30px; margin: 0 0 22px;
+    box-shadow: 0 14px 34px rgba(23, 40, 58, .18);
+}
+.destacado .chico { font-size: 14px; letter-spacing: .14em; text-transform: uppercase; opacity: .75; margin: 0 0 6px; }
+.destacado h3 { font-size: 24px; margin: 0 0 4px; color: white; }
+.destacado p { margin: 0; opacity: .85; }
+
+/* Estados vacíos ("todavía no hay...") */
+.vacio,
+.tarjeta[style*="text-align:center"] {
+    border: 2px dashed #e2ddd3 !important;
+    background: rgba(255, 255, 255, .6) !important;
+    box-shadow: none !important;
+    padding: 46px 30px !important;
+    text-align: center;
+    font-size: 18px;
+    color: var(--muted);
+}
+.vacio::before,
+.tarjeta[style*="text-align:center"]::before {
+    content: "🌿";
+    display: block;
+    font-size: 40px;
+    margin-bottom: 10px;
+}
+.tarjeta[style*="text-align:center"] h3 { font-size: 22px; color: var(--navy); }
+
+/* Pie de página */
+footer {
+    background: var(--navy);
+    color: rgba(255, 255, 255, .7);
+    border-top: none;
+    padding: 30px 6%;
+    font-size: 15px;
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 40px;
+}
+footer::after { content: "Turismo de naturaleza en todo Uruguay"; opacity: .6; }
+
+/* =====================================================================
+   Ajustes de ancho y de textos largos
+   ===================================================================== */
+
+/* El margen de los costados era un % del ancho de la ventana: en pantallas grandes
+   el contenido quedaba angosto. Ahora el margen es fijo y el contenido más ancho. */
+.pagina { max-width: 1280px; padding-left: clamp(18px, 4vw, 48px); padding-right: clamp(18px, 4vw, 48px); }
+.nav { padding-left: clamp(18px, 5vw, 80px); padding-right: clamp(18px, 5vw, 80px); }
+footer { padding-left: clamp(18px, 5vw, 80px); padding-right: clamp(18px, 5vw, 80px); }
+
+/* Textos largos (correos, links, palabras largas) cortan línea en vez de salirse de la tarjeta */
+.tarjeta, .stat, .destacado, .resena, .datos, .mensaje, .aviso-admin, .respuesta, .descripcion, p, li, td {
+    overflow-wrap: anywhere;
+}
+.grilla > *, .stats > *, .lista > * { min-width: 0; }
+
+/* Títulos de secciones dentro de un panel */
+.titulo-seccion { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 44px 0 16px; }
+.titulo-seccion h2 { font-size: 26px; margin: 0; }
+.titulo-seccion a { color: var(--orange); font-weight: 700; text-decoration: none; }
+
+/* Tarjetas de actividad (panel del turista) */
+.mini-actividades { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; }
+.mini-actividad { display: flex; flex-direction: column; background: white; border: 1px solid #ebe8e1; border-radius: 12px;
+                  overflow: hidden; text-decoration: none; color: var(--navy); transition: transform .2s, box-shadow .2s;
+                  box-shadow: 0 1px 2px rgba(23, 40, 58, .04), 0 10px 30px rgba(23, 40, 58, .05); }
+.mini-actividad:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(23, 40, 58, .1); }
+.mini-actividad .foto { aspect-ratio: 16 / 10; background: linear-gradient(135deg, #dfe8e4, #f3ead9); position: relative; }
+.mini-actividad .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.mini-actividad .foto span { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+                             font-family: 'Manrope', sans-serif; font-weight: 800; color: rgba(27, 42, 65, .25); font-size: 22px; }
+.mini-actividad .cuerpo { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+.mini-actividad h3 { font-size: 18px; margin: 0; }
+.mini-actividad .chico { font-size: 14px; color: var(--muted); }
+.mini-actividad .pie { display: flex; justify-content: space-between; align-items: baseline; margin-top: auto; padding-top: 10px; }
+.mini-actividad .precio { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 18px; }
+.mini-actividad .estrellas { color: #f2b01e; font-size: 14px; }
+
+/* Tabla de próximas salidas (panel del prestador) */
+.tabla-salidas { width: 100%; border-collapse: collapse; background: white; border: 1px solid #ebe8e1; border-radius: 12px; overflow: hidden;
+                 box-shadow: 0 1px 2px rgba(23, 40, 58, .04), 0 10px 30px rgba(23, 40, 58, .05); }
+.tabla-salidas th, .tabla-salidas td { text-align: left; padding: 14px 18px; border-bottom: 1px solid #f0ede6; font-size: 16px; }
+.tabla-salidas th { font-size: 13px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); background: #fbfaf7; }
+.tabla-salidas tr:last-child td { border-bottom: none; }
+.ocupacion { display: flex; align-items: center; gap: 10px; min-width: 160px; }
+.ocupacion .barra { flex: 1; height: 8px; background: #efece5; border-radius: 4px; overflow: hidden; }
+.ocupacion .barra span { display: block; height: 100%; background: var(--verde); }
+@media (max-width: 700px) { .tabla-salidas th:nth-child(3), .tabla-salidas td:nth-child(3) { display: none; } }
+.pagina { max-width: 1400px; }
+/* Las etiquetas de estado no se estiran dentro de las tarjetas */
+.grilla > .tarjeta > .estado, .tarjeta .estado { align-self: flex-start; width: auto; }

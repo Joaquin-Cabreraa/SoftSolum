@@ -30,9 +30,14 @@ public class TuristaService {
             return "Completá todos los campos obligatorios.";
         }
 
-        // CI uruguaya o pasaporte: letras y números, sin puntos ni guiones
-        if (!limpiarDocumento(documento).matches("[0-9A-Za-z]{5,20}")) {
-            return "El documento no es válido.";
+        // CI uruguaya (con dígito verificador) o pasaporte
+        String errorDocumento = Documentos.validar(documento);
+        if (errorDocumento != null) {
+            return errorDocumento;
+        }
+        // Una persona = una cuenta: no puede haber dos turistas con el mismo documento
+        if (turistaRepository.existsByDocumentoIgnoreCase(Documentos.limpiar(documento))) {
+            return "Ya existe una cuenta registrada con ese documento.";
         }
 
         LocalDate nacimiento = convertirFecha(fechaNacimiento);
@@ -87,7 +92,7 @@ public class TuristaService {
 
     // Saca puntos, guiones y espacios: "1.234.567-2" -> "12345672"
     private String limpiarDocumento(String documento) {
-        return documento.replaceAll("[.\\-\\s]", "");
+        return Documentos.limpiar(documento);
     }
 
     // "2001-05-30" (formato del <input type="date">) -> LocalDate, o null si no es válida

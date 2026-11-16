@@ -35,7 +35,8 @@ public class CatalogoService {
         }
         boolean emprendimientoAceptado =
                 actividad.getEmprendimiento().getEstado() == EstadoEmprendimiento.ACEPTADO;
-        boolean dadaDeBaja = "BAJA".equalsIgnoreCase(actividad.getEstado());
+        boolean dadaDeBaja = "BAJA".equalsIgnoreCase(actividad.getEstado())
+                || "ELIMINADA".equalsIgnoreCase(actividad.getEstado());
         return emprendimientoAceptado && !dadaDeBaja;
     }
 
@@ -159,6 +160,29 @@ public class CatalogoService {
         return estaPublicada(actividad) ? actividad : null;
     }
 
+    // Horarios futuros que todavía están en plazo para reservar, tengan lugar o no
+    // (los llenos se muestran con el botón de lista de espera)
+    public List<Horario> horariosEnPlazo(Actividad actividad) {
+        LocalDateTime ahora = LocalDateTime.now();
+        List<Horario> lista = new ArrayList<>();
+        for (Horario horario : horarioRepository
+                .findByActividadIdAndFechaGreaterThanEqualOrderByFechaAscHoraInicioAsc(actividad.getId(), ahora.toLocalDate())) {
+            if (horario.disponible() && sePuedeReservar(horario, ahora)) {
+                lista.add(horario);
+            }
+        }
+        return lista;
+    }
+
+    // ¿Algún horario de la actividad tiene hoy descuento de última hora? (para la etiqueta del buscador)
+    public boolean tieneUltimaHoraAhora(Actividad actividad) {
+        if (!actividad.tieneDescuentoUltimaHora()) return false;
+        for (Horario horario : proximosHorarios(actividad)) {
+            if (horario.enDescuentoUltimaHora()) return true;
+        }
+        return false;
+    }
+
     // Próximas oportunidades para hacer la actividad: horarios futuros,
     // con cupos y que todavía estén dentro del plazo para reservar.
     public List<Horario> proximosHorarios(Actividad actividad) {
@@ -167,7 +191,7 @@ public class CatalogoService {
 
         for (Horario horario : horarioRepository
                 .findByActividadIdAndFechaGreaterThanEqualOrderByFechaAscHoraInicioAsc(actividad.getId(), ahora.toLocalDate())) {
-            if (horario.getCuposDisponibles() > 0 && sePuedeReservar(horario, ahora)) {
+            if (horario.disponible() && horario.getCuposDisponibles() > 0 && sePuedeReservar(horario, ahora)) {
                 disponibles.add(horario);
             }
         }

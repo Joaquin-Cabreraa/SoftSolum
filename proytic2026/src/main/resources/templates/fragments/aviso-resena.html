@@ -1,0 +1,43 @@
+<!-- Aviso emergente: "¿Cómo te fue?" para las actividades que ya terminaron y no tienen reseña.
+     Lo incluyen las páginas del turista con th:replace. Se muestra una vez por sesión del navegador. -->
+<th:block th:fragment="aviso" th:if="${resenasPendientes != null and !#lists.isEmpty(resenasPendientes)}"
+          th:with="r=${resenasPendientes[0]}">
+    <div class="aviso-resena-fondo" id="avisoResena" hidden>
+        <div class="aviso-resena" role="dialog" aria-labelledby="avisoResenaTitulo">
+            <div class="aviso-resena-estrellas">★★★★★</div>
+            <h3 id="avisoResenaTitulo">¿Cómo te fue en <span th:text="${r.horario.actividad.titulo}">la actividad</span>?</h3>
+            <p th:text="'La hiciste el ' + ${#temporals.format(r.horario.fecha, 'dd/MM')} + ' con ' + ${r.horario.actividad.emprendimiento.nombre} + '. Tu opinión ayuda a otros turistas.'"></p>
+            <p class="aviso-resena-mas" th:if="${#lists.size(resenasPendientes) > 1}"
+               th:text="'Tenés ' + ${#lists.size(resenasPendientes)} + ' actividades para reseñar.'"></p>
+            <div class="aviso-resena-botones">
+                <a class="boton boton-naranja" th:href="@{/panel/turista/reservas/{id}/resena(id=${r.id})}">Dejar mi reseña</a>
+                <button type="button" class="boton boton-borde" onclick="cerrarAvisoResena()">Más tarde</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .aviso-resena-fondo { position: fixed; inset: 0; background: rgba(23, 40, 58, .45); z-index: 100;
+                              display: flex; align-items: center; justify-content: center; padding: 20px; }
+        .aviso-resena-fondo[hidden] { display: none; }
+        .aviso-resena { background: white; border-radius: 16px; padding: 30px 32px; max-width: 440px; width: 100%;
+                        text-align: center; box-shadow: 0 24px 60px rgba(0, 0, 0, .25); animation: aparecer .25s ease-out; }
+        .aviso-resena-estrellas { color: #f2b01e; font-size: 30px; letter-spacing: 4px; }
+        .aviso-resena h3 { font-size: 22px; margin: 10px 0 8px; }
+        .aviso-resena p { color: var(--muted); margin: 0 0 6px; }
+        .aviso-resena-mas { font-size: 14px; }
+        .aviso-resena-botones { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+        @keyframes aparecer { from { transform: translateY(12px); opacity: 0; } to { transform: none; opacity: 1; } }
+    </style>
+    <script th:inline="javascript">
+        (function () {
+            const clave = 'avisoResena-' + /*[[${r.id}]]*/ 0;
+            let visto = false;
+            try { visto = sessionStorage.getItem(clave) === '1'; } catch (e) {}
+            if (!visto) document.getElementById('avisoResena').hidden = false;
+            window.cerrarAvisoResena = function () {
+                document.getElementById('avisoResena').hidden = true;
+                try { sessionStorage.setItem(clave, '1'); } catch (e) {}
+            };
+        })();
+    </script>
+</th:block>

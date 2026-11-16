@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Actividades</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+    <style>
+        .buscador { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 24px; align-items: end; }
+        .buscador input, .buscador select { max-width: 320px; }
+        .lista { display: flex; flex-direction: column; gap: 12px; margin-top: 22px; }
+        .act { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
+        .act h3 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 4px; }
+        .act .datos { font-size: 16px; color: var(--muted); line-height: 1.7; }
+        .act .acciones { display: flex; gap: 8px; align-items: center; }
+        .act .acciones form { margin: 0; }
+        .estado-baja { background: #eef0ee; color: var(--muted); }
+        .act { align-items: start; }
+        .quitar summary { list-style: none; cursor: pointer; }
+        .quitar summary::-webkit-details-marker { display: none; }
+        .quitar[open] { background: #fff7f5; border: 1px solid #f1d2cb; border-radius: 8px; padding: 12px; min-width: 300px; }
+        .quitar[open] summary { display: none; }
+        .quitar label { display: block; font-size: 14px; font-weight: 600; margin: 6px 0 4px; }
+        .quitar textarea { width: 100%; min-height: 70px; }
+        .motivo-admin { font-size: 15px; margin-top: 8px; background: #fff7f5; border: 1px solid #f1d2cb; border-radius: 6px; padding: 8px 10px; }
+        .oculta { font-size: 14px; color: #b9483a; font-weight: 600; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        @media (max-width: 760px) { .act { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/admin">Pendientes</a>
+        <a href="/panel/admin/emprendimientos">Emprendimientos</a>
+        <a href="/panel/admin/actividades" class="activo">Actividades</a>
+        <a href="/panel/admin/resenas">Reseñas</a>
+        <a href="/panel/admin/tipos">Tipos</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+
+<main class="pagina">
+    <span class="eyebrow">Panel del administrador</span>
+    <h1>Actividades.</h1>
+    <p class="descripcion">Todas las actividades de todos los emprendimientos. Podés quitar del portal una actividad
+        (por ejemplo, si tiene información falsa o inapropiada) y volver a publicarla. Las reservas hechas se mantienen.
+        Si la quitás vos, el prestador no la puede volver a publicar por su cuenta.</p>
+
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <form class="buscador" method="get" action="/panel/admin/actividades">
+        <input type="text" name="q" th:value="${q}" placeholder="Título, emprendimiento o departamento">
+        <select name="estado">
+            <option value="" th:selected="${estado == null or estado == ''}">Todas</option>
+            <option value="ACTIVA" th:selected="${estado == 'ACTIVA'}">Publicadas</option>
+            <option value="BAJA" th:selected="${estado == 'BAJA'}">No publicadas</option>
+        </select>
+        <button class="boton boton-naranja boton-chico" type="submit">Buscar</button>
+    </form>
+
+    <div class="lista">
+        <div class="tarjeta act" th:each="a : ${actividades}">
+            <div>
+                <h3>
+                    <span th:text="${a.titulo != null ? a.titulo : 'Actividad #' + a.id}">Título</span>
+                    <span class="estado estado-aceptado" th:if="${a.estado != 'BAJA'}">PUBLICADA</span>
+                    <span class="estado estado-baja" th:if="${a.estado == 'BAJA' and !a.quitadaPorAdministrador()}">PAUSADA POR EL PRESTADOR</span>
+                    <span class="estado estado-denegado" th:if="${a.estado == 'BAJA' and a.quitadaPorAdministrador()}">QUITADA POR EL ADMINISTRADOR</span>
+                </h3>
+                <div class="datos">
+                    <span th:text="${a.emprendimiento.nombre}">Emprendimiento</span> ·
+                    <span th:text="${a.departamento}">Rocha</span> ·
+                    $U <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span> ·
+                    <span th:text="${#lists.size(a.horarios)} + ' horario(s)'">0 horarios</span>
+                    <span th:if="${#sets.contains(conReservas, a.id)}"> · con reservas</span>
+                </div>
+                <div class="motivo-admin" th:if="${a.quitadaPorAdministrador() and a.motivoBajaAdmin != null}">
+                    <b>Motivo:</b> <span th:text="${a.motivoBajaAdmin}"></span> ·
+                    <b>Contacto:</b> <span th:text="${a.contactoBajaAdmin}"></span>
+                </div>
+                <div class="oculta" th:if="${a.estado != 'BAJA' and a.emprendimiento.estado.name() != 'ACEPTADO'}">
+                    No se ve en el portal: su emprendimiento no está aceptado.
+                </div>
+            </div>
+            <div class="acciones">
+                <a th:if="${a.estado != 'BAJA' and a.emprendimiento.estado.name() == 'ACEPTADO'}" class="boton boton-borde boton-chico"
+                   th:href="@{/actividades/{id}(id=${a.id})}" target="_blank">Ver en el portal</a>
+                <details class="quitar" th:if="${a.estado != 'BAJA' or !a.quitadaPorAdministrador()}">
+                    <summary class="boton boton-chico boton-rojo">Quitar del portal</summary>
+                    <form method="post" th:action="@{/panel/admin/actividades/{id}/estado(id=${a.id})}"
+                          onsubmit="return confirm('¿Quitar esta actividad del portal? El prestador no la va a poder volver a publicar por su cuenta.');">
+                        <input type="hidden" name="estado" value="BAJA">
+                        <label>Motivo (lo ve el prestador)</label>
+                        <textarea name="motivo" maxlength="500" required placeholder="Ej: las fotos no corresponden a la actividad; falta información de seguridad"></textarea>
+                        <label>Correo de contacto para el prestador</label>
+                        <input type="email" name="contacto" required th:value="${correoAdmin}" placeholder="soporte@umnatural.uy">
+                        <button class="boton boton-chico boton-rojo" style="margin-top: 8px">Confirmar</button>
+                    </form>
+                </details>
+                <form method="post" th:action="@{/panel/admin/actividades/{id}/estado(id=${a.id})}" th:if="${a.estado == 'BAJA'}">
+                    <input type="hidden" name="estado" value="ACTIVA">
+                    <button class="boton boton-chico boton-verde">Volver a publicar</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="tarjeta" th:if="${#lists.isEmpty(actividades)}" style="text-align:center; padding:34px; margin-top: 22px">
+        No se encontraron actividades.
+    </div>
+</main>
+
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>

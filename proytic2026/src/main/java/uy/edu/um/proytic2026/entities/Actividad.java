@@ -48,8 +48,21 @@ public class Actividad {
     @Column(name = "localidad")
     private String localidad;
 
-    @Column (name = "duracion_minutos")
-    private Integer duracionMinutos;
+    // La duración NO se carga aparte: sale de la hora de inicio y de fin de cada horario.
+    // Si todas las salidas duran lo mismo devuelve, por ej., "2 h 30 min";
+    // si varían, "1 h a 2 h 30 min"; sin horarios, null.
+    public String textoDuracion() {
+        java.util.TreeSet<Long> duraciones = new java.util.TreeSet<>();
+        for (Horario h : horarios) {
+            if (!h.estaEliminado() && h.getHoraInicio() != null && h.getHoraFin() != null) {
+                duraciones.add(h.duracionMinutos());
+            }
+        }
+        if (duraciones.isEmpty()) return null;
+        String menor = Horario.formatoDuracion(duraciones.first());
+        String mayor = Horario.formatoDuracion(duraciones.last());
+        return menor.equals(mayor) ? menor : menor + " a " + mayor;
+    }
 
     @Column (nullable = false)
     private BigDecimal precio;
@@ -59,6 +72,20 @@ public class Actividad {
 
     @Column (name = "min_previos_reservar", nullable = false)
     private Integer minPreviosReservar;
+
+    // Descuento de última hora (diferenciador): si quedan lugares libres poco antes
+    // del inicio, el precio baja solo. Ej.: 20 % de descuento en las 3 horas previas.
+    // Los dos en null = sin descuento.
+    @Column(name = "descuento_ultima_hora")
+    private Integer descuentoUltimaHora;      // porcentaje (1 a 90)
+
+    @Column(name = "horas_ultima_hora")
+    private Integer horasUltimaHora;          // cuántas horas antes del inicio empieza el descuento
+
+    public boolean tieneDescuentoUltimaHora() {
+        return descuentoUltimaHora != null && descuentoUltimaHora > 0
+                && horasUltimaHora != null && horasUltimaHora > 0;
+    }
 
     //Relación "ofrece": Emprendimiento (1) -- (n) Actividdad
     @ManyToOne(optional = false) //el optional false obliga a que toda Actividad tiene que tener un Emprendimiento asociado
@@ -90,4 +117,33 @@ public class Actividad {
             inverseJoinColumns = @JoinColumn(name = "tipo_equipamiento_id")
     )
     private List<TipoEquipamiento> tiposEquipamiento = new ArrayList<>();
+
+    // Equipamiento que PROVEE el prestador (va incluido en la actividad: ej. kayak, chaleco, casco).
+    // tiposEquipamiento (arriba) es lo que el turista tiene que traer.
+    @ManyToMany
+    @JoinTable(
+            name = "actividad_equipamiento_incluido",
+            joinColumns = @JoinColumn(name = "actividad_id"),
+            inverseJoinColumns = @JoinColumn(name = "tipo_equipamiento_id")
+    )
+    private List<TipoEquipamiento> equipamientoIncluido = new ArrayList<>();
+
+    // true si la dio de baja el ADMINISTRADOR (ej. contenido inapropiado):
+    // en ese caso el prestador no la puede volver a publicar por su cuenta.
+    @Column(name = "baja_por_administrador")
+    private Boolean bajaPorAdministrador;
+
+    // Cuando la quita el administrador: por qué, y a qué correo puede escribir el prestador
+    @Column(name = "motivo_baja_admin", length = 500)
+    private String motivoBajaAdmin;
+
+    @Column(name = "contacto_baja_admin", length = 150)
+    private String contactoBajaAdmin;
+
+    @Column(name = "fecha_baja_admin")
+    private java.time.LocalDateTime fechaBajaAdmin;
+
+    public boolean quitadaPorAdministrador() {
+        return Boolean.TRUE.equals(bajaPorAdministrador);
+    }
 }

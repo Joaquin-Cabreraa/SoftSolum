@@ -13,17 +13,24 @@
     <style>
         .cabecera { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; }
         .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
-        .actividad-fila { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: center; }
-        .actividad-fila .datos { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
+        .actividad-fila { display: grid; grid-template-columns: 120px 1fr auto; gap: 20px; align-items: center; }
+        .miniatura { width: 120px; aspect-ratio: 4 / 3; border-radius: 6px; object-fit: cover; display: block;
+                     background: linear-gradient(135deg, #e9e3d6, #f6efe3); }
+        .miniatura.vacia { display: flex; align-items: center; justify-content: center; font-size: 13px; color: var(--muted); text-align: center; }
+        .actividad-fila .datos { font-size: 17px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
         .acciones { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
         .acciones form { margin: 0; }
-        .baja { opacity: .6; }
+        .aviso-admin { margin-top: 10px; font-size: 15px; line-height: 1.6; background: #fff7f5; border: 1px solid #f1d2cb;
+                       border-radius: 8px; padding: 10px 12px; color: var(--navy); opacity: 1; }
+        .aviso-admin a { color: #b9483a; font-weight: 600; }
+        button[disabled] { opacity: .45; cursor: not-allowed; }
+        .baja .miniatura, .baja .datos, .baja h3 > span:first-child { opacity: .55; }
         .estado-baja { background: #eef0ee; color: var(--muted); }
-        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
         .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
         .mensaje.error { background: #f7e4e1; color: #b9483a; }
-        .nota { font-size: 12px; color: var(--muted); margin-top: 6px; }
-        @media (max-width: 760px) { .actividad-fila { grid-template-columns: 1fr; } .acciones { justify-content: flex-start; } }
+        .nota { font-size: 14px; color: var(--muted); margin-top: 6px; }
+        @media (max-width: 760px) { .actividad-fila { grid-template-columns: 1fr; } .miniatura { width: 100%; } .acciones { justify-content: flex-start; } }
     </style>
 </head>
 <body>
@@ -34,6 +41,7 @@
         <a href="/panel/prestador">Mi panel</a>
         <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
         <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/panel/prestador/resenas">Reseñas</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -62,27 +70,54 @@
 
     <div class="lista">
         <div class="tarjeta actividad-fila" th:each="a : ${actividades}" th:classappend="${a.estado == 'BAJA'} ? 'baja' : ''">
+            <img class="miniatura" th:if="${portadas[a.id] != null}" th:src="@{/imagenes/{id}(id=${portadas[a.id]})}" alt="Foto">
+            <div class="miniatura vacia" th:if="${portadas[a.id] == null}">Sin foto</div>
             <div>
                 <h3>
                     <span th:text="${a.titulo != null ? a.titulo : 'Actividad #' + a.id}">Título</span>
-                    <span class="estado estado-aceptado" th:if="${a.estado != 'BAJA'}">ACTIVA</span>
-                    <span class="estado estado-baja" th:if="${a.estado == 'BAJA'}">DADA DE BAJA</span>
+                    <span class="estado estado-aceptado" th:if="${a.estado != 'BAJA'}">PUBLICADA</span>
+                    <span class="estado estado-baja" th:if="${a.estado == 'BAJA' and !a.quitadaPorAdministrador()}">PAUSADA</span>
+                    <span class="estado estado-denegado" th:if="${a.estado == 'BAJA' and a.quitadaPorAdministrador()}">QUITADA POR EL ADMINISTRADOR</span>
                 </h3>
                 <div class="datos">
                     <span th:text="${a.departamento}">Rocha</span> ·
-                    $ <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span> por persona ·
-                    <span th:text="${a.duracionMinutos} + ' min'">60 min</span>
+                    $U <span th:text="${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">0</span> por persona<th:block th:if="${a.textoDuracion() != null}"> ·
+                    <span th:text="${a.textoDuracion()}">2 h</span></th:block>
                 </div>
-                <div class="nota" th:if="${#sets.contains(conReservas, a.id)}">Tiene reservas: ya no se puede editar (sí agregarle horarios).</div>
+                <div class="aviso-admin" th:if="${a.quitadaPorAdministrador()}">
+                    <b>El administrador quitó esta actividad del portal</b>
+                    <span th:if="${a.fechaBajaAdmin != null}" th:text="' el ' + ${#temporals.format(a.fechaBajaAdmin, 'dd/MM/yyyy')}"></span>.<br>
+                    <th:block th:if="${a.motivoBajaAdmin != null}"><b>Motivo:</b> <span th:text="${a.motivoBajaAdmin}"></span><br></th:block>
+                    <th:block th:if="${a.contactoBajaAdmin != null}"><b>Contacto:</b>
+                        <a th:href="'mailto:' + ${a.contactoBajaAdmin}" th:text="${a.contactoBajaAdmin}"></a></th:block>
+                </div>
+                <div class="nota" th:if="${a.estado != 'BAJA' and horariosActivos[a.id] > 0}"
+                     th:text="'Tiene ' + ${horariosActivos[a.id]} + ' horario(s) próximo(s): para pausarla, primero eliminalos o cancelá esas salidas.'"></div>
+                <div class="nota" th:if="${a.estado != 'BAJA' and #sets.contains(conReservas, a.id)}">Tiene reservas vigentes: no se puede editar hasta que pasen esas salidas (sí agregarle horarios).</div>
             </div>
             <div class="acciones" th:if="${a.estado != 'BAJA'}">
                 <a th:href="@{/panel/prestador/actividades/{id}/horarios(id=${a.id})}" href="#" class="boton boton-naranja boton-chico">Horarios</a>
                 <a th:if="${!#sets.contains(conReservas, a.id)}" th:href="@{/panel/prestador/actividades/{id}/editar(id=${a.id})}" href="#" class="boton boton-borde boton-chico">Editar</a>
                 <a th:href="@{/actividades/{id}(id=${a.id})}" href="#" class="boton boton-borde boton-chico" target="_blank">Ver en el portal</a>
-                <form method="post" th:action="@{/panel/prestador/actividades/{id}/baja(id=${a.id})}"
-                      onsubmit="return confirm('¿Dar de baja esta actividad? Deja de mostrarse en el portal.');">
-                    <button type="submit" class="boton boton-rojo boton-chico">Dar de baja</button>
+                <form method="post" th:action="@{/panel/prestador/actividades/{id}/baja(id=${a.id})}" th:if="${horariosActivos[a.id] == 0}"
+                      onsubmit="return confirm('¿Pausar la publicación? La actividad deja de verse en el portal hasta que la vuelvas a publicar.');">
+                    <button type="submit" class="boton boton-borde boton-chico" title="Deja de verse en el portal; la podés volver a publicar">⏸ Pausar</button>
                 </form>
+                <!-- Con salidas próximas no se puede pausar -->
+                <button type="button" class="boton boton-borde boton-chico" disabled th:if="${horariosActivos[a.id] > 0}"
+                        th:title="'Para pausarla, primero eliminá o cancelá sus ' + ${horariosActivos[a.id]} + ' horario(s) próximo(s)'">⏸ Pausar</button>
+            </div>
+            <div class="acciones" th:if="${a.estado == 'BAJA'}">
+                <a th:href="@{/panel/prestador/actividades/{id}/horarios(id=${a.id})}" href="#" class="boton boton-borde boton-chico">Horarios</a>
+                <form method="post" th:action="@{/panel/prestador/actividades/{id}/reactivar(id=${a.id})}" th:if="${!a.quitadaPorAdministrador()}">
+                    <button type="submit" class="boton boton-naranja boton-chico">▶ Volver a publicar</button>
+                </form>
+                <form method="post" th:action="@{/panel/prestador/actividades/{id}/eliminar(id=${a.id})}" th:if="${!a.quitadaPorAdministrador()}"
+                      onsubmit="return confirm('¿Eliminar esta actividad? Desaparece de tu lista y no se puede deshacer.');">
+                    <button type="submit" class="boton boton-rojo boton-chico">🗑 Eliminar</button>
+                </form>
+                <a class="boton boton-borde boton-chico" th:if="${a.quitadaPorAdministrador() and a.contactoBajaAdmin != null}"
+                   th:href="'mailto:' + ${a.contactoBajaAdmin} + '?subject=' + ${#uris.escapeQueryParam('Actividad quitada: ' + a.titulo)}">✉ Contactar al administrador</a>
             </div>
         </div>
     </div>

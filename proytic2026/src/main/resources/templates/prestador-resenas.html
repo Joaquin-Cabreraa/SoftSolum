@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Reseñas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+    <style>
+        .estrellas-fijas { color: #f2b01e; letter-spacing: 2px; }
+        .estrellas-fijas .apagada { color: #ddd6c8; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+        .resena .cabeza { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+        .resena .quien { font-weight: 700; }
+        .resena .cuando { font-size: 14px; color: var(--muted); }
+        .resena .texto { margin: 10px 0 0; line-height: 1.7; }
+        .respuesta { margin-top: 14px; background: #f6f4ef; border-left: 3px solid var(--orange); border-radius: 6px; padding: 10px 14px; font-size: 16px; }
+        .respuesta b { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+        .oculta-aviso { margin-top: 12px; font-size: 15px; background: #f7e4e1; color: #b9483a; border-radius: 6px; padding: 8px 12px; }
+        textarea { width: 100%; min-height: 80px; }
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/panel/prestador">Mi panel</a>
+        <a href="/panel/prestador/actividades">Mis actividades</a>
+        <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/panel/prestador/resenas" class="activo">Reseñas</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+<main class="pagina">
+    <span class="eyebrow">Panel del prestador</span>
+    <h1>Reseñas de tus actividades.</h1>
+    <p class="descripcion">Lo que opinan los turistas que ya hicieron tus actividades. Podés responder cada reseña con un comentario
+        (se publica debajo); las reseñas no se pueden borrar ni modificar.</p>
+    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <div class="lista">
+        <div class="tarjeta resena" th:each="r : ${resenas}">
+            <div class="cabeza">
+                <div>
+                    <span class="quien" th:text="${r.autor()}">Ana P.</span> ·
+                    <span class="estrellas-fijas"><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i > r.puntaje} ? 'apagada' : ''">★</span></span>
+                    <div class="cuando" th:text="${r.actividad.titulo} + ' · ' + ${#temporals.format(r.fecha, 'dd/MM/yyyy')}">Actividad</div>
+                </div>
+            </div>
+            <p class="texto" th:if="${r.comentario}" th:text="${r.comentario}"></p>
+            <div class="oculta-aviso" th:if="${r.estaOculta()}" th:text="'El administrador ocultó esta reseña del portal: ' + ${r.motivoOculta}"></div>
+
+            <div class="respuesta" th:if="${r.respuestaPrestador}">
+                <b th:text="'Tu respuesta · ' + ${#temporals.format(r.fechaRespuesta, 'dd/MM/yyyy')}">Tu respuesta</b>
+                <span th:text="${r.respuestaPrestador}"></span>
+            </div>
+            <details style="margin-top: 12px">
+                <summary class="boton boton-borde boton-chico" style="list-style:none; display:inline-block"
+                         th:text="${r.respuestaPrestador} ? 'Editar respuesta' : 'Responder'">Responder</summary>
+                <form method="post" th:action="@{/panel/prestador/resenas/{id}/responder(id=${r.id})}" style="margin-top: 10px">
+                    <textarea name="respuesta" maxlength="1000" required th:text="${r.respuestaPrestador}"
+                              placeholder="Ej: ¡Gracias por venir! Nos alegra que te haya gustado."></textarea>
+                    <button type="submit" class="boton boton-naranja boton-chico" style="margin-top: 8px">Publicar respuesta</button>
+                </form>
+            </details>
+        </div>
+    </div>
+    <div class="tarjeta" th:if="${#lists.isEmpty(resenas)}" style="text-align:center; padding:34px; margin-top: 24px">
+        <h3>Todavía no hay reseñas</h3>
+        <p>Cuando los turistas terminen tus actividades, les vamos a pedir que dejen su opinión.</p>
+    </div>
+</main>
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+</body>
+</html>
