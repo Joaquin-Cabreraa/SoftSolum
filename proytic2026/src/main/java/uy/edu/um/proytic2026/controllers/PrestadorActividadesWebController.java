@@ -153,7 +153,33 @@ public class PrestadorActividadesWebController {
                          @RequestParam(required = false) String nuevosTipos,
                          @RequestParam(required = false) String nuevoEquipamiento,
                          HttpSession session, Model model, RedirectAttributes redirect) {
+        // Comprobar que la actividad pertenece al prestador
+        Actividad actividad = actividadService.actividadDelPrestador(
+                prestadorId(session), id
+        );
 
+        if (actividad == null) {
+            redirect.addFlashAttribute("error",
+                    "No tenés permiso para editar esta actividad.");
+            return "redirect:/panel/prestador/actividades";
+        }
+        if ("BAJA".equals(actividad.getEstado())
+                || actividadService.tieneReservas(actividad)) {
+
+            redirect.addFlashAttribute("error",
+                    "No se puede editar una actividad dada de baja o con reservas.");
+
+            return "redirect:/panel/prestador/actividades";
+        }
+        String errorDatos = actividadService.validarDatos(
+                titulo, descripcion, departamento,
+                duracionMinutos, precio, minPreviosReservar
+        );
+
+        if (errorDatos != null) {
+            redirect.addFlashAttribute("error", errorDatos);
+            return "redirect:/panel/prestador/actividades";
+        }
         // Tipos y equipamiento que escribió a mano (se crean si no existen)
         tipos = sumar(tipos, tiposService.obtenerOCrearTiposActividad(nuevosTipos));
         equipamiento = sumar(equipamiento, tiposService.obtenerOCrearTiposEquipamiento(nuevoEquipamiento));

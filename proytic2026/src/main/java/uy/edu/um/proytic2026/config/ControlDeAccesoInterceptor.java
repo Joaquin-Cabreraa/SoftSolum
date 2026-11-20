@@ -18,10 +18,21 @@ public class ControlDeAccesoInterceptor implements HandlerInterceptor {
         String ruta = request.getRequestURI();
 
         boolean permitido;
-        if (ruta.startsWith("/panel/prestador")) {
-            permitido = "EMPRESA".equals(rol) || "PARTICULAR".equals(rol) || "PRESTADOR".equals(rol);
+
+        if (ruta.equals("/emprendimientos")
+                || ruta.startsWith("/emprendimientos/")) {
+            permitido = "EMPRESA".equals(rol)
+                    || "PARTICULAR".equals(rol)
+                    || "PRESTADOR".equals(rol);
+
+        } else if (ruta.startsWith("/panel/prestador")) {
+            permitido = "EMPRESA".equals(rol)
+                    || "PARTICULAR".equals(rol)
+                    || "PRESTADOR".equals(rol);
+
         } else if (ruta.startsWith("/panel/turista")) {
             permitido = "TURISTA".equals(rol);
+
         } else {
             permitido = "ADMINISTRADOR".equals(rol);
         }
