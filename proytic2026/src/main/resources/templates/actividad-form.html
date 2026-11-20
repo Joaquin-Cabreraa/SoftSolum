@@ -11,25 +11,41 @@
     <link rel="stylesheet" href="/css/umnatural.css">
 
     <style>
-        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
         .volver:hover { color: var(--orange); }
         form.formulario { max-width: 720px; margin-top: 26px; }
         .campo { margin-bottom: 18px; }
-        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 7px; display: block; }
+        .campo label { font-size: 15px; font-weight: 600; margin-bottom: 7px; display: block; }
         .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
         .tres { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; }
-        .ayuda { font-size: 12px; color: var(--muted); margin-top: 5px; }
+        .ayuda { font-size: 14px; color: var(--muted); margin-top: 5px; }
         fieldset { border: 1px solid var(--borde); border-radius: 6px; padding: 16px 18px; margin: 0 0 18px; background: white; }
-        legend { font-size: 13px; font-weight: 700; padding: 0 6px; }
+        legend { font-size: 15px; font-weight: 700; padding: 0 6px; }
         .opciones { display: flex; flex-wrap: wrap; gap: 8px; }
-        .opcion { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 500;
+        .opcion { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 500;
                   border: 1px solid var(--borde); border-radius: 20px; padding: 7px 13px; cursor: pointer; margin: 0; }
         .opcion input { width: auto; margin: 0; }
         .opcion:has(input:checked) { border-color: var(--orange); background: #fdeee5; color: var(--orange); }
         .otro { margin-top: 14px; }
-        .otro label { font-size: 12px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
+        fieldset.incluido { border-color: #b9dcc8; background: #f5fbf7; }
+        fieldset.incluido .opcion:has(input:checked) { border-color: #2f7d5b; background: #e3f1ea; color: #2f7d5b; }
+        .otro label { font-size: 14px; font-weight: 600; color: var(--muted); margin-bottom: 6px; display: block; }
         .otro input { padding: 10px 12px; border-radius: 6px; }
-        .mensaje.error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        /* Fotos */
+        .fotos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; margin-bottom: 12px; }
+        .foto { position: relative; aspect-ratio: 4 / 3; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: #eee; }
+        .foto img { width: 100%; height: 100%; object-fit: cover; display: block; }
+        .foto .quitar { position: absolute; left: 6px; bottom: 6px; display: flex; align-items: center; gap: 5px;
+                        background: rgba(255,255,255,.92); border-radius: 14px; padding: 3px 9px; font-size: 14px; font-weight: 600; cursor: pointer; margin: 0; }
+        .foto .quitar input { width: auto; margin: 0; }
+        .foto:has(.quitar input:checked) img { opacity: .3; }
+        .foto .nueva { position: absolute; right: 6px; top: 6px; background: var(--orange); color: white; font-size: 12px;
+                       font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+        .subir { display: flex; align-items: center; justify-content: center; gap: 10px; border: 2px dashed var(--line);
+                 border-radius: 8px; padding: 22px; cursor: pointer; font-weight: 600; color: var(--muted); margin: 0; background: #fcfbf8; }
+        .subir:hover { border-color: var(--orange); color: var(--orange); }
+        .subir input { display: none; }
         @media (max-width: 760px) { .dos, .tres { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -41,6 +57,7 @@
         <a href="/panel/prestador">Mi panel</a>
         <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
         <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/panel/prestador/resenas">Reseñas</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -53,7 +70,7 @@
 
     <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
 
-    <form class="formulario" method="post"
+    <form class="formulario" method="post" enctype="multipart/form-data"
           th:action="${edicion} ? @{/panel/prestador/actividades/{id}/editar(id=${actividad.id})} : @{/panel/prestador/actividades/nueva}">
 
         <div class="campo">
@@ -83,14 +100,10 @@
             </div>
         </div>
 
-        <div class="tres">
+        <div class="dos">
             <div class="campo">
-                <label for="precio">Precio por persona ($)</label>
+                <label for="precio">Precio por persona (pesos uruguayos, $U)</label>
                 <input type="number" id="precio" name="precio" min="0" step="1" required th:value="${actividad.precio}">
-            </div>
-            <div class="campo">
-                <label for="duracionMinutos">Duración (minutos)</label>
-                <input type="number" id="duracionMinutos" name="duracionMinutos" min="1" required th:value="${actividad.duracionMinutos}">
             </div>
             <div class="campo">
                 <label for="minPreviosReservar">Cierre de reservas (min antes)</label>
@@ -98,6 +111,7 @@
                 <p class="ayuda">0 = se puede reservar hasta la hora de inicio.</p>
             </div>
         </div>
+        <p class="ayuda" style="margin: -6px 0 18px">⏱ La duración no se carga acá: sale de la hora de inicio y de fin de cada horario que agregues.</p>
 
         <div class="campo">
             <label for="requisitosEdad">Requisitos de edad (opcional)</label>
@@ -118,8 +132,23 @@
             </div>
         </fieldset>
 
+        <fieldset class="incluido">
+            <legend>✔ Equipamiento que proveés vos (va incluido)</legend>
+            <p class="ayuda" style="margin: 0 0 12px">Lo que el turista recibe al llegar: no tiene que traerlo.</p>
+            <div class="opciones">
+                <label class="opcion" th:each="e : ${equipamientos}">
+                    <input type="checkbox" name="incluido" th:value="${e.id}" th:checked="${#lists.contains(incluidoElegido, e.id)}">
+                    <span th:text="${e.nombre}">Kayak</span>
+                </label>
+            </div>
+            <div class="otro">
+                <label for="nuevoIncluido">¿Proveés algo más? Escribilo (separá con comas)</label>
+                <input type="text" id="nuevoIncluido" name="nuevoIncluido" maxlength="200" placeholder="Ej: Kayak doble, Remo, Mate y bizcochos">
+            </div>
+        </fieldset>
+
         <fieldset>
-            <legend>Equipamiento necesario (opcional)</legend>
+            <legend>🎒 Equipamiento que tiene que traer el turista (opcional)</legend>
             <div class="opciones">
                 <label class="opcion" th:each="e : ${equipamientos}">
                     <input type="checkbox" name="equipamiento" th:value="${e.id}" th:checked="${#lists.contains(equipamientoElegido, e.id)}">
@@ -127,15 +156,60 @@
                 </label>
             </div>
             <div class="otro">
-                <label for="nuevoEquipamiento">¿Hace falta otro equipamiento? Escribilo (separá con comas)</label>
+                <label for="nuevoEquipamiento">¿Tiene que traer otra cosa? Escribilo (separá con comas)</label>
                 <input type="text" id="nuevoEquipamiento" name="nuevoEquipamiento" maxlength="200" placeholder="Ej: Linterna, Protector solar">
             </div>
+        </fieldset>
+
+        <fieldset>
+            <legend>Fotos (hasta <span th:text="${maxImagenes}">6</span>, la primera es la portada)</legend>
+
+            <!-- Las que ya tiene (solo al editar) -->
+            <div class="fotos" th:if="${!#lists.isEmpty(imagenes)}">
+                <div class="foto" th:each="imgId : ${imagenes}">
+                    <img th:src="@{/imagenes/{id}(id=${imgId})}" alt="Foto de la actividad">
+                    <label class="quitar"><input type="checkbox" name="eliminarImagenes" th:value="${imgId}"> Quitar</label>
+                </div>
+            </div>
+
+            <!-- Vista previa de las nuevas -->
+            <div class="fotos" id="previas"></div>
+
+            <label class="subir">
+                <input type="file" id="imagenes" name="imagenes" multiple accept="image/jpeg,image/png,image/webp">
+                <span id="textoSubir">📷 Elegí fotos de tu actividad (JPG, PNG o WEBP, hasta 5 MB cada una)</span>
+            </label>
+            <p class="ayuda" th:if="${error}">Si había elegido fotos, volvé a elegirlas.</p>
         </fieldset>
 
         <button type="submit" class="boton boton-naranja" style="width:100%"
                 th:text="${edicion} ? 'Guardar cambios' : 'Crear actividad'">Crear actividad</button>
     </form>
 </main>
+
+<script>
+    // Muestra las fotos elegidas antes de subirlas
+    const entrada = document.getElementById('imagenes');
+    const previas = document.getElementById('previas');
+    entrada.addEventListener('change', () => {
+        previas.innerHTML = '';
+        for (const archivo of entrada.files) {
+            const caja = document.createElement('div');
+            caja.className = 'foto';
+            const img = document.createElement('img');
+            img.src = URL.createObjectURL(archivo);
+            img.alt = archivo.name;
+            const marca = document.createElement('span');
+            marca.className = 'nueva';
+            marca.textContent = archivo.size > 5 * 1024 * 1024 ? 'Pesa más de 5 MB' : 'Nueva';
+            caja.append(img, marca);
+            previas.append(caja);
+        }
+        document.getElementById('textoSubir').textContent = entrada.files.length
+            ? entrada.files.length + ' foto(s) elegida(s) · tocá para cambiarlas'
+            : '📷 Elegí fotos de tu actividad (JPG, PNG o WEBP, hasta 5 MB cada una)';
+    });
+</script>
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 </body>

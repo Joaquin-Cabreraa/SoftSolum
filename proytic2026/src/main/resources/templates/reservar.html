@@ -11,27 +11,28 @@
     <link rel="stylesheet" href="/css/umnatural.css">
 
     <style>
-        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
         .volver:hover { color: var(--orange); }
 
         .columnas { display: grid; grid-template-columns: 1fr 300px; gap: 36px; align-items: start; margin-top: 30px; }
 
         .resumen h3 { margin-bottom: 4px; }
-        .resumen .linea { display: flex; justify-content: space-between; font-size: 14px; padding: 9px 0; border-top: 1px solid var(--borde); }
+        .resumen .linea { display: flex; justify-content: space-between; font-size: 17px; padding: 9px 0; border-top: 1px solid var(--borde); }
         .resumen .linea > span:first-child { color: var(--muted); }
-        .resumen .total { font-family: 'Manrope', sans-serif; font-size: 22px; font-weight: 800; }
+        .resumen .total { font-family: 'Manrope', sans-serif; font-size: 24px; font-weight: 800; }
 
         .bloque { margin-bottom: 26px; }
         .bloque > label, .persona h3 { font-weight: 700; }
         .campo { margin-bottom: 14px; }
-        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .campo label { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: block; }
         .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
         .persona { margin-bottom: 14px; }
-        .persona h3 { font-size: 15px; margin: 0 0 14px; }
+        .persona h3 { font-size: 18px; margin: 0 0 14px; }
 
-        .mensaje-error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
-        .ayuda { font-size: 13px; color: var(--muted); margin-top: 6px; }
+        .mensaje-error { background: #f7e4e1; color: #b9483a; padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        .ayuda { font-size: 15px; color: var(--muted); margin-top: 6px; }
+        .aviso-espera { background: #fff6e0; border: 1px solid #f1d58a; color: #6b5215; padding: 14px 18px; border-radius: 6px; margin-top: 20px; line-height: 1.6; }
 
         @media (max-width: 850px) {
             .columnas { grid-template-columns: 1fr; }
@@ -55,10 +56,15 @@
 <main class="pagina">
     <a th:href="@{/actividades/{id}(id=${actividad.id})}" href="#" class="volver">← Volver a la actividad</a>
 
-    <span class="eyebrow">Reservar</span>
+    <span class="eyebrow" th:text="${listaDeEspera} ? 'Lista de espera' : 'Reservar'">Reservar</span>
     <h1 th:text="${actividad.titulo != null and !#strings.isEmpty(actividad.titulo)} ? ${actividad.titulo} : 'Actividad #' + ${actividad.id}">Título</h1>
 
     <div class="mensaje-error" th:if="${error}" th:text="${error}">Error</div>
+    <div class="aviso-espera" th:if="${listaDeEspera}">
+        <b>Este horario está completo.</b> Dejá tus datos y te anotamos en la lista de espera: no pagás nada ahora.
+        Si alguien cancela o no paga a tiempo, el lugar se te asigna solo (por orden de llegada)
+        y tenés <span th:text="${T(uy.edu.um.proytic2026.services.ReservaService).HORAS_PARA_PAGAR}">2</span> horas para pagarlo.
+    </div>
 
     <div class="columnas">
         <!-- Formulario -->
@@ -67,16 +73,18 @@
             <input type="hidden" name="actividadId" th:value="${actividad.id}">
             <input type="hidden" name="fecha" th:value="${horario.fecha}">
             <input type="hidden" name="hora" th:value="${horario.horaInicio}">
+            <input type="hidden" name="listaDeEspera" th:value="${listaDeEspera}">
 
             <div class="bloque">
                 <label for="cantidad">¿Cuántas personas van?</label>
                 <select id="cantidad" name="cantidad" style="max-width: 200px; margin-top: 8px">
                     <!-- Hasta los cupos disponibles (máximo 10 por reserva en el formulario) -->
-                    <option th:each="n : ${#numbers.sequence(1, horario.cuposDisponibles > 10 ? 10 : horario.cuposDisponibles)}"
+                    <option th:each="n : ${#numbers.sequence(1, listaDeEspera ? (horario.cuposTotales > 10 ? 10 : horario.cuposTotales) : (horario.cuposDisponibles > 10 ? 10 : horario.cuposDisponibles))}"
                             th:value="${n}" th:text="${n}"
                             th:selected="${cantidad != null and n == cantidad}">1</option>
                 </select>
-                <p class="ayuda" th:text="'Quedan ' + ${horario.cuposDisponibles} + ' lugares en este horario.'">Quedan 10 lugares.</p>
+                <p class="ayuda" th:unless="${listaDeEspera}" th:text="'Quedan ' + ${horario.cuposDisponibles} + ' lugares en este horario.'">Quedan 10 lugares.</p>
+                <p class="ayuda" th:if="${listaDeEspera}" th:text="'Sin lugares libres ahora (' + ${horario.cuposTotales} + ' en total).'">Completo.</p>
             </div>
 
             <div class="bloque">
@@ -93,8 +101,9 @@
                           th:text="${observacion}"></textarea>
             </div>
 
-            <button type="submit" class="boton boton-naranja" style="width: 100%">Confirmar reserva</button>
-            <p class="ayuda" style="text-align:center">Los lugares quedan guardados por 2 horas mientras completás el pago.</p>
+            <button type="submit" class="boton boton-naranja" style="width: 100%"
+                    th:text="${listaDeEspera} ? 'Anotarme en la lista de espera' : 'Confirmar y pasar al pago'">Confirmar y pasar al pago</button>
+            <p class="ayuda" style="text-align:center" th:unless="${listaDeEspera}">Los lugares quedan guardados por 2 horas mientras completás el pago.</p>
         </form>
 
         <!-- Resumen -->
@@ -104,9 +113,13 @@
             <div class="linea"><span>Fecha</span><span th:text="${#temporals.format(horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span></div>
             <div class="linea"><span>Horario</span>
                 <span th:text="${#temporals.format(horario.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(horario.horaFin, 'HH:mm')}">09:00 a 11:00</span></div>
-            <div class="linea"><span>Precio por persona</span><span>$ <span id="precio" th:text="${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}" th:attr="data-precio=${actividad.precio}">0</span></span></div>
+            <div class="linea" th:if="${conDescuento}"><span>Precio normal</span>
+                <span style="text-decoration: line-through" th:text="'$U ' + ${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">$U 0</span></div>
+            <div class="linea"><span th:text="${conDescuento} ? '⏱ Precio última hora' : 'Precio por persona'">Precio por persona</span><span>$U <span id="precio" th:text="${#numbers.formatDecimal(precioPorPersona, 1, 'POINT', 0, 'COMMA')}" th:attr="data-precio=${precioPorPersona}">0</span></span></div>
+            <div class="linea"><span>Cancelación</span><span th:text="${horario.textoPoliticaCancelacion()}" style="text-align:right; max-width: 60%">No admite</span></div>
+            <div class="linea"><span>Si el prestador cancela</span><span style="text-align:right">Te devolvemos el 100 %</span></div>
             <div class="linea"><span>Personas</span><span id="personas-resumen">1</span></div>
-            <div class="linea"><span>Total</span><span class="total">$ <span id="total">0</span></span></div>
+            <div class="linea"><span th:text="${listaDeEspera} ? 'Total estimado' : 'Total'">Total</span><span class="total">$U <span id="total">0</span></span></div>
         </aside>
     </div>
 </main>
@@ -122,6 +135,9 @@
         ci: /*[[${cis}]]*/ [],
         fechaNacimiento: /*[[${fechasNacimiento}]]*/ []
     };
+
+    // Datos del turista que tiene la cuenta: completan solos la "Persona 1"
+    const titular = /*[[${titular}]]*/ {};
 
     const selectCantidad = document.getElementById('cantidad');
     const contenedor = document.getElementById('personas');
@@ -157,7 +173,14 @@
         const escritos = {};
         for (const campo of ['nombre', 'apellido', 'ci', 'fechaNacimiento']) {
             const inputs = contenedor.querySelectorAll('input[name="' + campo + '"]');
-            escritos[campo] = inputs.length ? Array.from(inputs).map(i => i.value) : (anteriores[campo] || []);
+            if (inputs.length) {
+                escritos[campo] = Array.from(inputs).map(i => i.value);
+            } else if (anteriores[campo] && anteriores[campo].length) {
+                escritos[campo] = anteriores[campo];
+            } else {
+                // Primera vez que se abre el formulario: la persona 1 es el titular de la cuenta
+                escritos[campo] = titular && titular[campo] ? [titular[campo]] : [];
+            }
         }
 
         contenedor.innerHTML = '';

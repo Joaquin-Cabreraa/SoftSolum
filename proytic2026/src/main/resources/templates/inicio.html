@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -30,7 +30,7 @@
         }
 
         .hero-texto p.chico {
-            font-size: 13px;
+            font-size: 15px;
             letter-spacing: 2px;
             text-transform: uppercase;
             margin-bottom: 15px;
@@ -45,7 +45,7 @@
         }
 
         .hero-texto p.bajada {
-            font-size: 17px;
+            font-size: 20px;
             line-height: 1.7;
             opacity: 0.9;
             margin: 0 0 32px;
@@ -59,7 +59,7 @@
 
         .prestadores {
             margin: 22px 0 0;
-            font-size: 14px;
+            font-size: 17px;
             opacity: 0.9;
         }
 
@@ -69,20 +69,20 @@
         }
 
         .seccion {
-            max-width: 1000px;
+            max-width: 1180px;
             margin: 0 auto;
-            padding: 80px 6%;
+            padding: 80px clamp(18px, 4vw, 48px);
         }
 
         .seccion h2 {
-            font-size: clamp(26px, 2.6vw, 36px);
+            font-size: clamp(29px, 2.6vw, 36px);
             letter-spacing: -1px;
             margin: 14px 0 40px;
         }
 
         .numero {
             font-family: 'Manrope', sans-serif;
-            font-size: 28px;
+            font-size: 31px;
             font-weight: 800;
             color: var(--orange);
             margin-bottom: 12px;
@@ -101,8 +101,17 @@
         <div class="nav-links">
             <a href="/" class="activo">Inicio</a>
             <a href="/actividades">Actividades</a>
-            <a href="/registro/turista">Registrarse</a>
-            <a href="/login">Iniciar sesión</a>
+            <!-- Sin sesión -->
+            <th:block th:if="${rol == null}">
+                <a href="/registro/turista">Registrarse</a>
+                <a href="/login">Iniciar sesión</a>
+            </th:block>
+            <!-- Con sesión iniciada -->
+            <th:block th:if="${rol != null}">
+                <a th:if="${rol == 'TURISTA'}" href="/panel/turista/reservas">Mis reservas</a>
+                <a th:href="${urlPanel}" href="#">Mi panel</a>
+                <a href="/logout">Cerrar sesión</a>
+            </th:block>
         </div>
     </nav>
 
@@ -115,9 +124,10 @@
         </p>
         <div class="hero-botones">
             <a href="/actividades" class="boton boton-naranja">Explorar actividades</a>
-            <a href="/registro/turista" class="boton boton-blanco">Crear cuenta</a>
+            <a th:if="${rol == null}" href="/registro/turista" class="boton boton-blanco">Crear cuenta</a>
+            <a th:if="${rol != null}" th:href="${urlPanel}" href="#" class="boton boton-blanco">Ir a mi panel</a>
         </div>
-        <p class="prestadores">
+        <p class="prestadores" th:if="${rol == null}">
             ¿Tenés un emprendimiento turístico? <a href="/registro/prestador">Registralo acá</a>
         </p>
     </div>
@@ -151,5 +161,6 @@
     © 2026 UMnatural · Desarrollado por SoftSolum
 </footer>
 
+<div th:replace="~{fragments/aviso-resena :: aviso}"></div>
 </body>
 </html>

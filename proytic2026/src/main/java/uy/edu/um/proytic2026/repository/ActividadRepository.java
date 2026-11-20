@@ -15,4 +15,7 @@ public interface ActividadRepository extends JpaRepository<Actividad, Long> {
     boolean existsByTipoActividad_Id(Long tipoActividadId);
 
     boolean existsByTiposEquipamiento_Id(Long tipoEquipamientoId);
+
+    // ¿Alguna actividad lo tiene como equipamiento incluido?
+    boolean existsByEquipamientoIncluido_Id(Long tipoEquipamientoId);
 }

@@ -19,7 +19,7 @@
         }
 
         .encabezado-lista h2 {
-            font-size: 20px;
+            font-size: 24px;
             margin: 0;
         }
 
@@ -37,7 +37,7 @@
         }
 
         .emprendimiento .datos {
-            font-size: 13px;
+            font-size: 15px;
             color: var(--muted);
             margin-top: 6px;
         }
@@ -51,12 +51,12 @@
         .vacio {
             text-align: center;
             color: var(--muted);
-            font-size: 14px;
+            font-size: 17px;
             padding: 40px 26px;
         }
 
         #mensaje {
-            font-size: 14px;
+            font-size: 17px;
             font-weight: 600;
             min-height: 20px;
         }
@@ -75,7 +75,10 @@
 <nav class="nav">
     <a href="/" class="logo">UM<span>natural</span></a>
     <div class="nav-links">
-        <a href="/panel/admin" class="activo">Emprendimientos</a>
+        <a href="/panel/admin" class="activo">Pendientes</a>
+        <a href="/panel/admin/emprendimientos">Emprendimientos</a>
+        <a href="/panel/admin/actividades">Actividades</a>
+        <a href="/panel/admin/resenas">Reseñas</a>
         <a href="/panel/admin/tipos">Tipos</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
@@ -89,6 +92,14 @@
         Revisá los datos de cada emprendimiento nuevo y decidí si se acepta o se rechaza.
         Solo los emprendimientos aceptados pueden publicar actividades.
     </p>
+
+    <!-- Resumen del portal -->
+    <div class="stats">
+        <div class="stat"><span class="num" th:text="${statPendientes}">0</span><span class="lbl">Emprendimientos por revisar</span></div>
+        <div class="stat verde"><span class="num" th:text="${statAceptados}">0</span><span class="lbl">Emprendimientos aceptados</span><a href="/panel/admin/emprendimientos?estado=ACEPTADO"></a></div>
+        <div class="stat azul"><span class="num" th:text="${statActividades}">0</span><span class="lbl">Actividades publicadas</span><a href="/panel/admin/actividades?estado=ACTIVA"></a></div>
+        <div class="stat gris"><span class="num" th:text="${statReservas}">0</span><span class="lbl">Reservas en total</span></div>
+    </div>
 
     <div class="encabezado-lista">
         <h2>Pendientes <span id="contador" class="estado estado-pendiente">0</span></h2>

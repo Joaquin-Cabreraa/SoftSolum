@@ -36,22 +36,79 @@
     Desde acá buscás actividades, reservás y seguís tus reservas.
   </p>
 
-  <div class="grilla" style="margin-top: 35px">
+  <!-- Próxima actividad -->
+  <div class="destacado" th:if="${proxima != null}" style="margin-top: 32px">
+    <div>
+      <p class="chico">Tu próxima actividad</p>
+      <h3 th:text="${proxima.horario.actividad.titulo}">Actividad</h3>
+      <p th:text="${#temporals.format(proxima.horario.fecha, 'dd/MM/yyyy')} + ' · ' + ${#temporals.format(proxima.horario.horaInicio, 'HH:mm')} + ' hs · ' + ${proxima.horario.actividad.emprendimiento.nombre}">01/12 · 18:00</p>
+    </div>
+    <a th:if="${proxima.estado.name() == 'PENDIENTE_PAGO'}" class="boton boton-naranja" th:href="@{/panel/turista/reservas/{id}/pagar(id=${proxima.id})}">Falta pagar · Pagar ahora</a>
+    <a th:if="${proxima.estado.name() == 'CONFIRMADA'}" class="boton boton-blanco" th:href="@{/reserva/{c}(c=${proxima.codigo})}">▦ Ver mi QR</a>
+  </div>
+
+  <div class="stats">
+    <div class="stat verde"><span class="num" th:text="${confirmadas}">0</span><span class="lbl">Reservas confirmadas</span><a href="/panel/turista/reservas"></a></div>
+    <div class="stat"><span class="num" th:text="${pendientes}">0</span><span class="lbl">Pendientes de pago</span><a href="/panel/turista/reservas"></a></div>
+    <div class="stat azul"><span class="num" th:text="${enEspera}">0</span><span class="lbl">En lista de espera</span><a href="/panel/turista/reservas"></a></div>
+  </div>
+
+  <div class="grilla">
     <div class="tarjeta">
+      <div class="icono">🧭</div>
       <h3>Explorar actividades</h3>
       <p>Buscá experiencias por departamento, tipo de actividad, fecha o precio.</p>
       <a href="/actividades" class="boton boton-naranja boton-chico">Ver actividades</a>
     </div>
 
     <div class="tarjeta">
+      <div class="icono azul">👤</div>
+      <h3>Mis datos</h3>
+      <p>
+        <span th:text="${turista.name} + ' ' + ${turista.lastName != null ? turista.lastName : ''}">Nombre Apellido</span><br>
+        <span th:text="${turista.userEmail}">correo</span><br>
+        <span th:text="${turista.telefono}">099...</span><br>
+        Documento: <span th:text="${turista.documento != null ? turista.documento : '—'}">—</span><br>
+        Nacimiento: <span th:text="${turista.fechaNacimiento != null ? #temporals.format(turista.fechaNacimiento, 'dd/MM/yyyy') : '—'}">—</span>
+      </p>
+      <a href="/panel/turista/datos" class="boton boton-borde boton-chico">Editar mis datos</a>
+    </div>
+
+    <div class="tarjeta">
+      <div class="icono verde">🎟</div>
       <h3>Mis reservas</h3>
       <p>Consultá tus reservas y el estado de cada una.</p>
       <a href="/panel/turista/reservas" class="boton boton-borde boton-chico">Ver reservas</a>
     </div>
   </div>
+
+  <!-- Actividades para vos -->
+  <div class="titulo-seccion" th:if="${!#lists.isEmpty(sugeridas)}">
+    <h2>Actividades para vos</h2>
+    <a href="/actividades">Ver todas →</a>
+  </div>
+  <div class="mini-actividades" th:if="${!#lists.isEmpty(sugeridas)}">
+    <a class="mini-actividad" th:each="a : ${sugeridas}" th:href="@{/actividades/{id}(id=${a.id})}">
+      <div class="foto">
+        <img th:if="${portadas[a.id] != null}" th:src="@{/imagenes/{id}(id=${portadas[a.id]})}" alt="" loading="lazy">
+        <span th:if="${portadas[a.id] == null}">UMnatural</span>
+      </div>
+      <div class="cuerpo">
+        <h3 th:text="${a.titulo}">Actividad</h3>
+        <div class="chico" th:text="${(a.localidad != null ? a.localidad + ', ' : '') + a.departamento}">Rocha</div>
+        <div class="estrellas" th:if="${valoraciones[a.id] != null}"
+             th:text="'★ ' + ${#numbers.formatDecimal(valoraciones[a.id][0], 1, 1, 'COMMA')} + ' (' + ${#numbers.formatInteger(valoraciones[a.id][1], 1)} + ')'">★ 4,8</div>
+        <div class="pie">
+          <span class="precio" th:text="'$U ' + ${#numbers.formatDecimal(a.precio, 1, 'POINT', 0, 'COMMA')}">$U 1.200</span>
+          <span class="chico" th:if="${a.textoDuracion() != null}" th:text="'⏱ ' + ${a.textoDuracion()}">2 h</span>
+        </div>
+      </div>
+    </a>
+  </div>
 </main>
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
+<div th:replace="~{fragments/aviso-resena :: aviso}"></div>
 </body>
 </html>

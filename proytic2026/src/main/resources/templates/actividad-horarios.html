@@ -11,25 +11,46 @@
     <link rel="stylesheet" href="/css/umnatural.css">
 
     <style>
-        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
         .volver:hover { color: var(--orange); }
         .columnas { display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; margin-top: 26px; }
         .lista { display: flex; flex-direction: column; gap: 10px; }
         .horario { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 18px 22px; }
         .horario .cuando { font-family: 'Manrope', sans-serif; font-weight: 700; }
-        .horario .detalle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+        .horario .detalle { font-size: 15px; color: var(--muted); margin-top: 4px; }
         .horario form { margin: 0; }
         .pasado { opacity: .55; }
         .campo { margin-bottom: 14px; }
-        .campo label { font-size: 13px; font-weight: 600; margin-bottom: 6px; display: block; }
+        .campo label { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: block; }
         .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .check { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600; margin: 4px 0 14px; }
+        .check { display: flex; align-items: center; gap: 8px; font-size: 17px; font-weight: 600; margin: 4px 0 14px; }
         .check input { width: auto; margin: 0; }
         #politica { border-left: 3px solid var(--orange); padding-left: 12px; margin-bottom: 14px; }
-        .ayuda { font-size: 12px; color: var(--muted); margin-top: 4px; }
-        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 14px; margin-top: 20px; }
+        .ayuda { font-size: 14px; color: var(--muted); margin-top: 4px; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
         .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
         .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .politicas { display: flex; flex-direction: column; gap: 8px; }
+        .campo .politica, .politica { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--borde); border-radius: 8px;
+                    padding: 10px 12px; cursor: pointer; margin: 0; font-weight: 400; }
+        .politica input { width: auto; margin: 4px 0 0; }
+        .politica b { display: block; font-size: 15px; }
+        .politica small { font-weight: 400; display: block; color: var(--muted); font-size: 14px; }
+        .politica:has(input:checked) { border-color: var(--orange); background: #fdf3ec; }
+        .horario { flex-wrap: wrap; }
+        .horario .dur { font-weight: 400; color: var(--muted); font-size: 15px; }
+        .horario.cancelado { opacity: .7; }
+        .sello-cancelado { display: inline-block; background: #f7e4e1; color: #b9483a; font-weight: 700; font-size: 13px;
+                           padding: 2px 8px; border-radius: 10px; margin-right: 6px; }
+        .cancelar-salida summary { list-style: none; cursor: pointer; }
+        .cancelar-salida summary::-webkit-details-marker { display: none; }
+        .cancelar-salida[open] { flex-basis: 100%; background: #fff7f5; border: 1px solid #f1d2cb; border-radius: 8px; padding: 12px; }
+        .cancelar-salida[open] summary { display: none; }
+        .cancelar-salida textarea { width: 100%; min-height: 64px; }
+        .regla-salidas { margin-top: 14px; font-size: 15px; color: var(--muted); background: white; border: 1px dashed #e2ddd3; border-radius: 8px; padding: 12px 14px; }
+        .lateral { display: flex; flex-direction: column; gap: 20px; }
+        .activo-ya { background: #fdeee5; color: var(--orange-dark, #c95f2b); border-radius: 6px; padding: 10px 12px; margin-bottom: 14px; font-size: 15px; }
+        .etiqueta-uh { display: inline-block; margin-left: 8px; font-size: 13px; font-weight: 700; color: white; background: var(--orange); padding: 2px 8px; border-radius: 10px; }
         @media (max-width: 850px) { .columnas { grid-template-columns: 1fr; } }
     </style>
 </head>
@@ -41,6 +62,7 @@
         <a href="/panel/prestador">Mi panel</a>
         <a href="/panel/prestador/actividades" class="activo">Mis actividades</a>
         <a href="/panel/prestador/reservas">Reservas</a>
+        <a href="/panel/prestador/resenas">Reseñas</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -50,6 +72,9 @@
     <span class="eyebrow">Fechas y horarios</span>
     <h1 th:text="${actividad.titulo}">Actividad</h1>
     <p class="descripcion">Cada fecha se carga a mano. Los turistas pueden reservar mientras queden lugares.</p>
+    <p class="regla-salidas">🛡 <b>Regla de UMnatural:</b> si tenés que cancelar una salida que ya tiene reservas
+        (mal tiempo, un imprevisto), lo podés hacer hasta <b th:text="${horasCancelarSalida} + ' h antes'">24 h antes</b>
+        del inicio y a todos los turistas que pagaron se les devuelve el <b>100 %</b>. Los turistas conocen esta regla al reservar.</p>
 
     <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
     <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
@@ -58,26 +83,49 @@
         <!-- Horarios cargados -->
         <div>
             <div class="lista">
-                <div class="tarjeta horario" th:each="h : ${horarios}" th:classappend="${h.fecha.isBefore(hoy)} ? 'pasado' : ''">
+                <div class="tarjeta horario" th:each="h : ${horarios}" th:classappend="(${h.fecha.isBefore(hoy)} ? 'pasado' : '') + (${h.estaCancelado()} ? ' cancelado' : '')">
                     <div>
                         <div class="cuando">
                             <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
                             <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')} + ' a ' + ${#temporals.format(h.horaFin, 'HH:mm')}">09:00 a 11:00</span>
+                            <span class="dur" th:text="'(' + ${h.textoDuracion()} + ')'">(2 h)</span>
+                            <span class="etiqueta-uh" th:if="${h.cuposDisponibles > 0 and h.enDescuentoUltimaHora()}">Última hora</span>
                         </div>
-                        <div class="detalle">
+                        <div class="detalle" th:unless="${h.estaCancelado()}">
                             <span th:text="${h.cuposDisponibles} + ' de ' + ${h.cuposTotales} + ' lugares libres'">10 de 10</span>
-                            <span th:if="${h.cancelable}" th:text="' · Cancelable hasta ' + ${h.minMinutosCancelacion} + ' min antes, reembolso ' + ${h.porcentajeReembolso} + '%'"></span>
-                            <span th:unless="${h.cancelable}"> · Sin cancelación</span>
+                            · <span th:text="${h.textoPoliticaCancelacion()}">No admite cancelación</span>
+                        </div>
+                        <div class="detalle" th:if="${h.estaCancelado()}">
+                            <span class="sello-cancelado">SALIDA CANCELADA</span>
+                            <span th:text="'Motivo: ' + ${h.motivoCancelacion}">Motivo</span>
                         </div>
                     </div>
                     <!-- Solo se puede borrar si nadie reservó (RNE #6) -->
-                    <form method="post" th:if="${h.cuposDisponibles == h.cuposTotales}"
+                    <form method="post" th:if="${!h.estaCancelado() and h.cuposDisponibles == h.cuposTotales}"
                           th:action="@{/panel/prestador/actividades/{id}/horarios/eliminar(id=${actividad.id})}"
                           onsubmit="return confirm('¿Eliminar este horario?');">
                         <input type="hidden" name="fecha" th:value="${h.fecha}">
                         <input type="hidden" name="horaInicio" th:value="${h.horaInicio}">
                         <button type="submit" class="boton boton-rojo boton-chico">Eliminar</button>
                     </form>
+
+                    <!-- Con reservas: el prestador puede cancelar la salida hasta 24 h antes (100 % de reembolso) -->
+                    <th:block th:if="${!h.estaCancelado() and h.cuposDisponibles < h.cuposTotales}">
+                        <details class="cancelar-salida" th:if="${ahora.isBefore(h.limiteCancelacionPrestador())}">
+                            <summary class="boton boton-borde boton-chico">Cancelar salida</summary>
+                            <form method="post" th:action="@{/panel/prestador/actividades/{id}/horarios/cancelar(id=${actividad.id})}"
+                                  onsubmit="return confirm('¿Cancelar esta salida? A todos los que pagaron se les devuelve el 100 %. No se puede deshacer.');">
+                                <input type="hidden" name="fecha" th:value="${h.fecha}">
+                                <input type="hidden" name="horaInicio" th:value="${h.horaInicio}">
+                                <p class="ayuda" th:text="'Se cancelan las ' + (${h.cuposTotales} - ${h.cuposDisponibles}) + ' plazas reservadas y a todos los que pagaron se les devuelve el 100 %. Los turistas ven el motivo en Mis reservas.'"></p>
+                                <label class="ayuda" style="font-weight:600">Motivo (lo ven los turistas)</label>
+                                <textarea name="motivo" maxlength="300" required placeholder="Ej: pronóstico de tormenta fuerte, el río está crecido"></textarea>
+                                <button type="submit" class="boton boton-rojo boton-chico" style="margin-top: 8px">Confirmar cancelación</button>
+                            </form>
+                        </details>
+                        <span class="ayuda" th:unless="${ahora.isBefore(h.limiteCancelacionPrestador())}"
+                              th:text="'Faltan menos de ' + ${horasCancelarSalida} + ' h: ya no se puede cancelar desde la app'"></span>
+                    </th:block>
                 </div>
             </div>
             <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
@@ -86,6 +134,7 @@
             </div>
         </div>
 
+        <div class="lateral">
         <!-- Formulario para agregar un horario (CU-P09) -->
         <form class="tarjeta" method="post" th:action="@{/panel/prestador/actividades/{id}/horarios(id=${actividad.id})}"
               th:if="${actividad.estado != 'BAJA'}">
@@ -104,41 +153,148 @@
                     <input type="time" id="horaFin" name="horaFin" required>
                 </div>
             </div>
+            <p class="ayuda" id="duracionCalculada" style="margin: -6px 0 12px"></p>
             <div class="campo">
                 <label for="cupos">Cupos (personas)</label>
                 <input type="number" id="cupos" name="cupos" min="1" required>
             </div>
 
-            <!-- Política de cancelación (acta P8-P9) -->
-            <label class="check"><input type="checkbox" id="cancelable" name="cancelable" value="true"> Admite cancelación</label>
-            <div id="politica" style="display:none">
-                <div class="campo">
-                    <label for="minMinutosCancelacion">Hasta cuántos minutos antes</label>
-                    <input type="number" id="minMinutosCancelacion" name="minMinutosCancelacion" min="0">
+            <!-- Política de cancelación (acta P8-P9): la elige el prestador para cada horario -->
+            <div class="campo">
+                <label>Si un turista que ya pagó quiere cancelar…</label>
+                <div class="politicas">
+                    <label class="politica"><input type="radio" name="politica" value="NO" checked>
+                        <span><b>No admite cancelación</b><small>Una vez pagada, la reserva no se puede cancelar.</small></span></label>
+                    <label class="politica"><input type="radio" name="politica" value="REEMBOLSO">
+                        <span><b>Puede cancelar y se le devuelve plata</b><small>Elegís hasta cuándo y qué porcentaje.</small></span></label>
+                    <label class="politica"><input type="radio" name="politica" value="SIN_REEMBOLSO">
+                        <span><b>Puede cancelar, sin reembolso</b><small>Libera su lugar para otro, pero no se le devuelve nada.</small></span></label>
                 </div>
-                <div class="campo">
-                    <label for="porcentajeReembolso">Reembolso (%)</label>
-                    <input type="number" id="porcentajeReembolso" name="porcentajeReembolso" min="0" max="100">
+            </div>
+            <div id="detallePolitica" hidden>
+                <div class="dos">
+                    <div class="campo">
+                        <label for="horasCancelacion">Hasta cuántas horas antes</label>
+                        <input type="number" id="horasCancelacion" name="horasCancelacion" min="0" max="720" placeholder="24">
+                    </div>
+                    <div class="campo" id="campoPorcentaje">
+                        <label for="porcentajeReembolso">Se devuelve (%)</label>
+                        <input type="number" id="porcentajeReembolso" name="porcentajeReembolso" min="1" max="100" placeholder="100">
+                    </div>
                 </div>
+                <p class="ayuda" id="resumenPolitica" style="margin: -4px 0 14px"></p>
             </div>
 
             <button type="submit" class="boton boton-naranja" style="width:100%">Agregar horario</button>
         </form>
+
+        <!-- Descuento de última hora (diferenciador) -->
+        <form class="tarjeta ultima-hora" method="post" th:if="${actividad.estado != 'BAJA'}"
+              th:action="@{/panel/prestador/actividades/{id}/ultima-hora(id=${actividad.id})}">
+            <h3 style="margin-bottom: 6px">⏱ Descuento de última hora</h3>
+            <p class="ayuda" style="margin-bottom: 14px">
+                Si quedan lugares libres poco antes de la salida, el precio baja solo.
+                Vale para todos los horarios de esta actividad.
+            </p>
+            <div class="activo-ya" id="uhActivo" th:hidden="${!actividad.tieneDescuentoUltimaHora()}">
+                Activo: <b id="uhPorcentaje" th:text="${actividad.descuentoUltimaHora} + ' %'">20 %</b> de descuento en las
+                <b id="uhHoras" th:text="${actividad.horasUltimaHora}">3</b> horas previas.
+            </div>
+            <div class="mensaje" id="uhMensaje" hidden style="margin: 0 0 14px; font-size: 15px"></div>
+            <div class="dos">
+                <div class="campo">
+                    <label for="descuento">Descuento (%)</label>
+                    <input type="number" id="descuento" name="descuento" min="1" max="90" required
+                           th:value="${actividad.descuentoUltimaHora}" placeholder="20">
+                </div>
+                <div class="campo">
+                    <label for="horas">Horas antes</label>
+                    <input type="number" id="horas" name="horas" min="1" max="72" required
+                           th:value="${actividad.horasUltimaHora}" placeholder="3">
+                </div>
+            </div>
+            <button type="submit" id="uhGuardar" class="boton boton-naranja" style="width:100%"
+                    th:text="${actividad.tieneDescuentoUltimaHora()} ? 'Actualizar descuento' : 'Activar descuento'">Activar descuento</button>
+            <button type="submit" id="uhQuitar" name="quitar" value="true" formnovalidate class="boton boton-borde"
+                    style="width:100%; margin-top: 8px" th:hidden="${!actividad.tieneDescuentoUltimaHora()}">Quitar descuento</button>
+        </form>
+        </div>
     </div>
 </main>
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
 <script>
-    // Muestra los campos de la política de cancelación solo si se marca "Admite cancelación"
-    const cancelable = document.getElementById('cancelable');
-    const politica = document.getElementById('politica');
-    if (cancelable) {
-        cancelable.addEventListener('change', () => {
-            politica.style.display = cancelable.checked ? 'block' : 'none';
-            politica.querySelectorAll('input').forEach(i => i.required = cancelable.checked);
+    // Descuento de última hora: se guarda sin recargar la página (fetch),
+    // así NO se borra lo que estabas escribiendo en "Agregar horario".
+    const formUH = document.querySelector('form.ultima-hora');
+    if (formUH) {
+        formUH.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const datos = new FormData(formUH);
+            if (e.submitter && e.submitter.name === 'quitar') datos.set('quitar', 'true');
+            const caja = document.getElementById('uhMensaje');
+            try {
+                const resp = await fetch(formUH.action + '?ajax=1', { method: 'POST', body: new URLSearchParams(datos) });
+                const r = await resp.json();
+                caja.hidden = false;
+                caja.className = 'mensaje ' + (r.ok ? 'ok' : 'error');
+                caja.textContent = r.mensaje;
+                if (r.ok) {
+                    document.getElementById('uhActivo').hidden = !r.activo;
+                    document.getElementById('uhQuitar').hidden = !r.activo;
+                    document.getElementById('uhGuardar').textContent = r.activo ? 'Actualizar descuento' : 'Activar descuento';
+                    if (r.activo) {
+                        document.getElementById('uhPorcentaje').textContent = r.descuento + ' %';
+                        document.getElementById('uhHoras').textContent = r.horas;
+                    } else {
+                        formUH.querySelector('#descuento').value = '';
+                        formUH.querySelector('#horas').value = '';
+                    }
+                }
+            } catch (err) {
+                formUH.submit();   // si falla el fetch, se manda de la forma normal
+            }
         });
     }
+
+    // Muestra la duración de la salida a medida que se completan las horas
+    const horaInicio = document.getElementById('horaInicio');
+    const horaFin = document.getElementById('horaFin');
+    function mostrarDuracion() {
+        const caja = document.getElementById('duracionCalculada');
+        if (!horaInicio.value || !horaFin.value) { caja.textContent = ''; return; }
+        const [h1, m1] = horaInicio.value.split(':').map(Number);
+        const [h2, m2] = horaFin.value.split(':').map(Number);
+        const min = (h2 * 60 + m2) - (h1 * 60 + m1);
+        if (min <= 0) { caja.textContent = 'La hora de fin tiene que ser después de la de inicio.'; return; }
+        const h = Math.floor(min / 60), m = min % 60;
+        caja.textContent = '⏱ Duración de la salida: ' + (h ? h + ' h' : '') + (h && m ? ' ' : '') + (m ? m + ' min' : '');
+    }
+    [horaInicio, horaFin].forEach(i => i && i.addEventListener('input', mostrarDuracion));
+
+    // Política de cancelación: muestra los campos según lo que elija y un resumen en palabras
+    const detallePolitica = document.getElementById('detallePolitica');
+    const horasCancelacion = document.getElementById('horasCancelacion');
+    const porcentaje = document.getElementById('porcentajeReembolso');
+    const campoPorcentaje = document.getElementById('campoPorcentaje');
+    const resumenPolitica = document.getElementById('resumenPolitica');
+    function actualizarPolitica() {
+        const elegida = document.querySelector('input[name=politica]:checked');
+        if (!elegida) return;
+        const valor = elegida.value;
+        detallePolitica.hidden = valor === 'NO';
+        campoPorcentaje.hidden = valor !== 'REEMBOLSO';
+        horasCancelacion.required = valor !== 'NO';
+        porcentaje.required = valor === 'REEMBOLSO';
+        const h = horasCancelacion.value || '…';
+        resumenPolitica.textContent = valor === 'REEMBOLSO'
+            ? 'El turista va a ver: "Podés cancelar hasta ' + h + ' h antes y te devolvemos el ' + (porcentaje.value || '…') + ' %".'
+            : valor === 'SIN_REEMBOLSO' ? 'El turista va a ver: "Podés cancelar hasta ' + h + ' h antes, sin reembolso".' : '';
+    }
+    document.querySelectorAll('input[name=politica]').forEach(r => r.addEventListener('change', actualizarPolitica));
+    [horasCancelacion, porcentaje].forEach(i => i && i.addEventListener('input', actualizarPolitica));
+    actualizarPolitica();
 </script>
 </body>
 </html>

@@ -17,6 +17,7 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
 // Tests unitarios de ActividadService (CU-P06 a CU-P09).
@@ -29,6 +30,8 @@ class ActividadServiceTest {
     @Mock private ReservaRepository reservaRepository;
     @Mock private TipoActividadRepository tipoActividadRepository;
     @Mock private TipoEquipamientoRepository tipoEquipamientoRepository;
+    @Mock private ReservaService reservaService;
+    @Mock private ImagenActividadRepository imagenActividadRepository;
 
     @InjectMocks private ActividadService actividadService;
 
@@ -53,7 +56,7 @@ class ActividadServiceTest {
 
     private Actividad crearConDatosValidos() {
         return actividadService.crearActividad(PRESTADOR_ID, "Kayak al atardecer", "Remada guiada.", "Rocha",
-                "La Paloma", 120, new BigDecimal("1500"), "Mayores de 12", 60, null, null);
+                "La Paloma", new BigDecimal("1500"), "Mayores de 12", 60, null, null);
     }
 
     private Actividad actividadPropia() {
@@ -90,12 +93,12 @@ class ActividadServiceTest {
     @Test
     void validaLosDatosObligatorios() {
         assertEquals("Completá el título, la descripción y el departamento.",
-                actividadService.validarDatos("", "x", "Rocha", 60, BigDecimal.TEN, 0));
+                actividadService.validarDatos("", "x", "Rocha", BigDecimal.TEN, 0));
         assertEquals("Elegí un departamento de la lista.",
-                actividadService.validarDatos("Título", "x", "Narnia", 60, BigDecimal.TEN, 0));
+                actividadService.validarDatos("Título", "x", "Narnia", BigDecimal.TEN, 0));
         assertEquals("Ingresá un precio válido (0 o más).",
-                actividadService.validarDatos("Título", "x", "Rocha", 60, new BigDecimal("-1"), 0));
-        assertNull(actividadService.validarDatos("Título", "x", "Rocha", 60, BigDecimal.ZERO, 0));
+                actividadService.validarDatos("Título", "x", "Rocha", new BigDecimal("-1"), 0));
+        assertNull(actividadService.validarDatos("Título", "x", "Rocha", BigDecimal.ZERO, 0));
     }
 
     @Test
@@ -103,12 +106,12 @@ class ActividadServiceTest {
         prestadorLogueado();
         Actividad actividad = actividadPropia();
         when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
-        when(reservaRepository.actividadTieneReservas(10L)).thenReturn(true);
+        when(reservaRepository.actividadTieneReservasVigentes(eq(10L), eq(EstadoReserva.CANCELADA), any())).thenReturn(true);
 
         String error = actividadService.editarActividad(PRESTADOR_ID, 10L, "Nuevo", "x", "Rocha", null,
-                60, BigDecimal.TEN, null, 0, null, null);
+                BigDecimal.TEN, null, 0, null, null);
 
-        assertEquals("La actividad ya tiene reservas: no se puede modificar. Podés darla de baja o agregarle horarios.", error);
+        assertEquals("La actividad tiene reservas vigentes: no se puede modificar hasta que pasen esas salidas. Sí podés agregarle horarios.", error);
         verify(actividadRepository, never()).save(any());
     }
 
@@ -122,7 +125,7 @@ class ActividadServiceTest {
         when(actividadRepository.findById(10L)).thenReturn(Optional.of(ajena));
 
         assertEquals("La actividad no existe.", actividadService.editarActividad(PRESTADOR_ID, 10L, "Nuevo", "x",
-                "Rocha", null, 60, BigDecimal.TEN, null, 0, null, null));
+                "Rocha", null, BigDecimal.TEN, null, 0, null, null));
     }
 
     @Test
@@ -142,7 +145,7 @@ class ActividadServiceTest {
         prestadorLogueado();
         Actividad actividad = actividadPropia();
         when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
-        when(horarioRepository.existsById(any(HorarioId.class))).thenReturn(false);
+        when(horarioRepository.findById(any(HorarioId.class))).thenReturn(Optional.empty());
         when(horarioRepository.save(any(Horario.class))).thenAnswer(inv -> inv.getArgument(0));
         LocalDate fecha = LocalDate.now().plusDays(5);
 
@@ -172,12 +175,30 @@ class ActividadServiceTest {
         LocalDate fecha = LocalDate.now().plusDays(2);
         LocalTime hora = LocalTime.of(9, 0);
         when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
-        when(horarioRepository.existsById(new HorarioId(10L, fecha, hora))).thenReturn(true);
-        when(reservaRepository.horarioTieneReservas(10L, fecha, hora)).thenReturn(true);
+        when(horarioRepository.findById(new HorarioId(10L, fecha, hora))).thenReturn(Optional.of(new Horario()));
+        when(reservaRepository.horarioTieneReservasActivas(10L, fecha, hora, EstadoReserva.CANCELADA)).thenReturn(true);
 
-        assertEquals("Ese horario ya tiene reservas: no se puede eliminar.",
-                actividadService.eliminarHorario(PRESTADOR_ID, 10L, fecha, hora));
+        assertTrue(actividadService.eliminarHorario(PRESTADOR_ID, 10L, fecha, hora).startsWith("Ese horario tiene reservas vigentes"));
         verify(horarioRepository, never()).deleteById(any());
+    }
+
+    @Test
+    void unHorarioConSoloReservasCanceladasSeOcultaEnVezDeBorrarse() {
+        prestadorLogueado();
+        Actividad actividad = actividadPropia();
+        LocalDate fecha = LocalDate.now().plusDays(2);
+        LocalTime hora = LocalTime.of(9, 0);
+        Horario horario = new Horario();
+        horario.setCuposTotales(40);
+        horario.setCuposDisponibles(40);
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
+        when(horarioRepository.findById(new HorarioId(10L, fecha, hora))).thenReturn(Optional.of(horario));
+        when(reservaRepository.horarioTieneReservasActivas(10L, fecha, hora, EstadoReserva.CANCELADA)).thenReturn(false);
+        when(reservaRepository.horarioTieneReservas(10L, fecha, hora)).thenReturn(true);   // una cancelada
+
+        assertNull(actividadService.eliminarHorario(PRESTADOR_ID, 10L, fecha, hora));
+        assertTrue(horario.estaEliminado());
+        verify(horarioRepository, never()).deleteById(any());   // no se borra: la reserva cancelada lo sigue usando
     }
 
     @Test
@@ -187,5 +208,108 @@ class ActividadServiceTest {
         when(reservaRepository.reservasDelEmprendimiento(3L)).thenReturn(reservas);
 
         assertSame(reservas, actividadService.reservasRecibidas(PRESTADOR_ID));
+    }
+
+    // ---------- El prestador cancela una salida ----------
+
+    private Horario horarioPropio(java.time.LocalDateTime inicio) {
+        Horario h = new Horario();
+        h.setActividad(actividadPropia());
+        h.setFecha(inicio.toLocalDate());
+        h.setHoraInicio(inicio.toLocalTime());
+        h.setCuposTotales(6);
+        h.setCuposDisponibles(2);
+        return h;
+    }
+
+    private void actividadYHorario(Horario h) {
+        prestadorLogueado();
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(h.getActividad()));
+        when(horarioRepository.findById(new HorarioId(10L, h.getFecha(), h.getHoraInicio()))).thenReturn(Optional.of(h));
+    }
+
+    @Test
+    void cancelarSalidaConTiempoDevuelveTodoYLaOcultaDelPortal() {
+        Horario h = horarioPropio(java.time.LocalDateTime.now().plusDays(3).withNano(0));
+        actividadYHorario(h);
+        when(reservaService.cancelarPorPrestador(h, "Tormenta")).thenReturn(0);
+
+        assertNull(actividadService.cancelarHorario(PRESTADOR_ID, 10L, h.getFecha(), h.getHoraInicio(), " Tormenta "));
+        assertTrue(h.estaCancelado());
+        assertEquals(0, h.getCuposDisponibles());           // nadie más puede reservar
+        verify(reservaService).cancelarPorPrestador(h, "Tormenta");
+    }
+
+    @Test
+    void noSePuedeCancelarLaSalidaConMenosDe24Horas() {
+        Horario h = horarioPropio(java.time.LocalDateTime.now().plusHours(10).withNano(0));
+        actividadYHorario(h);
+
+        String error = actividadService.cancelarHorario(PRESTADOR_ID, 10L, h.getFecha(), h.getHoraInicio(), "Tormenta");
+
+        assertTrue(error.startsWith("Faltan menos de 24 h"));
+        assertFalse(h.estaCancelado());
+        verifyNoInteractions(reservaService);
+    }
+
+    @Test
+    void cancelarSalidaPideMotivo() {
+        Horario h = horarioPropio(java.time.LocalDateTime.now().plusDays(3).withNano(0));
+        actividadYHorario(h);
+
+        assertNotNull(actividadService.cancelarHorario(PRESTADOR_ID, 10L, h.getFecha(), h.getHoraInicio(), "  "));
+        verifyNoInteractions(reservaService);
+    }
+
+    // ---------- Pausar y eliminar ----------
+
+    @Test
+    void noSePuedePausarSiTieneHorariosProximos() {
+        prestadorLogueado();
+        Actividad actividad = actividadPropia();
+        Horario proximo = new Horario();
+        proximo.setFecha(LocalDate.now().plusDays(3));
+        proximo.setHoraInicio(LocalTime.of(10, 0));
+        actividad.getHorarios().add(proximo);
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
+
+        assertFalse(actividadService.darDeBaja(PRESTADOR_ID, 10L));
+        assertEquals(ActividadService.ACTIVA, actividad.getEstado());
+        assertNotNull(actividadService.motivoParaNoPausar(actividad));
+    }
+
+    @Test
+    void soloSeEliminaUnaActividadPausada() {
+        prestadorLogueado();
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividadPropia()));   // ACTIVA
+
+        assertEquals("Primero pausá la actividad; después la podés eliminar.", actividadService.eliminarActividad(PRESTADOR_ID, 10L));
+        verify(actividadRepository, never()).delete(any());
+    }
+
+    @Test
+    void unaActividadPausadaConReservasViejasQuedaEliminadaSinBorrarse() {
+        prestadorLogueado();
+        Actividad actividad = actividadPropia();
+        actividad.setEstado(ActividadService.BAJA);
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
+        when(reservaRepository.actividadTieneReservas(10L)).thenReturn(true);
+
+        assertNull(actividadService.eliminarActividad(PRESTADOR_ID, 10L));
+        assertEquals(ActividadService.ELIMINADA, actividad.getEstado());
+        verify(actividadRepository, never()).delete(any());
+    }
+
+    @Test
+    void unaActividadPausadaSinReservasSeBorra() {
+        prestadorLogueado();
+        Actividad actividad = actividadPropia();
+        actividad.setEstado(ActividadService.BAJA);
+        when(actividadRepository.findById(10L)).thenReturn(Optional.of(actividad));
+        when(reservaRepository.actividadTieneReservas(10L)).thenReturn(false);
+        when(imagenActividadRepository.idsDeActividad(10L)).thenReturn(List.of());
+
+        assertNull(actividadService.eliminarActividad(PRESTADOR_ID, 10L));
+        verify(actividadRepository).delete(actividad);
     }
 }

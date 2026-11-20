@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>UMnatural | Dejar reseña</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/umnatural.css">
+    <style>
+        .estrellas-fijas { color: #f2b01e; letter-spacing: 2px; }
+        .estrellas-fijas .apagada { color: #ddd6c8; }
+        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
+        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
+        .mensaje.error { background: #f7e4e1; color: #b9483a; }
+        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+        .resena .cabeza { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+        .resena .quien { font-weight: 700; }
+        .resena .cuando { font-size: 14px; color: var(--muted); }
+        .resena .texto { margin: 10px 0 0; line-height: 1.7; }
+        .respuesta { margin-top: 14px; background: #f6f4ef; border-left: 3px solid var(--orange); border-radius: 6px; padding: 10px 14px; font-size: 16px; }
+        .respuesta b { display: block; font-size: 14px; color: var(--muted); margin-bottom: 4px; }
+        .oculta-aviso { margin-top: 12px; font-size: 15px; background: #f7e4e1; color: #b9483a; border-radius: 6px; padding: 8px 12px; }
+        textarea { width: 100%; min-height: 80px; }
+        .estrellas { display: inline-flex; flex-direction: row-reverse; gap: 4px; margin: 6px 0 4px; }
+        .estrellas input { display: none; }
+        .estrellas label { font-size: 44px; color: #ddd6c8; cursor: pointer; transition: transform .1s, color .1s; margin: 0; }
+        .estrellas label:hover, .estrellas label:hover ~ label,
+        .estrellas input:checked ~ label { color: #f2b01e; }
+        .estrellas label:hover { transform: scale(1.12); }
+        .texto-puntaje { color: var(--muted); min-height: 24px; }
+        .caja { max-width: 640px; margin-top: 26px; }
+    </style>
+</head>
+<body>
+<nav class="nav">
+    <a href="/" class="logo">UM<span>natural</span></a>
+    <div class="nav-links">
+        <a href="/">Inicio</a>
+        <a href="/actividades">Actividades</a>
+        <a href="/panel/turista/reservas" class="activo">Mis reservas</a>
+        <a href="/panel/turista">Mi panel</a>
+        <a href="/logout">Cerrar sesión</a>
+    </div>
+</nav>
+<main class="pagina">
+    <span class="eyebrow">Tu reseña</span>
+    <h1 th:text="${reserva.horario.actividad.titulo}">Actividad</h1>
+    <p class="descripcion" th:text="'La hiciste el ' + ${#temporals.format(reserva.horario.fecha, 'dd/MM/yyyy')} + ' con ' + ${reserva.horario.actividad.emprendimiento.nombre} + '. Contales a otros turistas cómo te fue.'"></p>
+    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+
+    <form class="tarjeta caja" method="post" th:action="@{/panel/turista/reservas/{id}/resena(id=${reserva.id})}">
+        <label style="font-weight:700">¿Qué puntaje le das?</label><br>
+        <div class="estrellas">
+            <input type="radio" id="e5" name="puntaje" value="5"><label for="e5" title="Excelente">★</label>
+            <input type="radio" id="e4" name="puntaje" value="4"><label for="e4" title="Muy buena">★</label>
+            <input type="radio" id="e3" name="puntaje" value="3"><label for="e3" title="Buena">★</label>
+            <input type="radio" id="e2" name="puntaje" value="2"><label for="e2" title="Regular">★</label>
+            <input type="radio" id="e1" name="puntaje" value="1" required><label for="e1" title="Mala">★</label>
+        </div>
+        <div class="texto-puntaje" id="textoPuntaje">Tocá las estrellas</div>
+
+        <label for="comentario" style="font-weight:700; display:block; margin-top: 16px">Comentario (opcional)</label>
+        <textarea id="comentario" name="comentario" maxlength="1000" th:text="${comentario}"
+                  placeholder="¿Qué te gustó? ¿Qué mejorarías? Ej: el guía súper atento, el paisaje increíble."></textarea>
+        <p style="font-size: 14px; color: var(--muted)">Tu reseña se publica con tu nombre y la inicial de tu apellido. El prestador la puede responder.</p>
+        <button type="submit" class="boton boton-naranja" style="width: 100%; margin-top: 10px">Publicar reseña</button>
+    </form>
+</main>
+<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+<script>
+    const textos = { 1: 'Mala', 2: 'Regular', 3: 'Buena', 4: 'Muy buena', 5: '¡Excelente!' };
+    document.querySelectorAll('input[name=puntaje]').forEach(i =>
+        i.addEventListener('change', () => document.getElementById('textoPuntaje').textContent = textos[i.value]));
+</script>
+</body>
+</html>

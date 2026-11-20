@@ -13,12 +13,13 @@
     <style>
         .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 30px; }
         .reserva-encabezado { display: flex; justify-content: space-between; gap: 14px; flex-wrap: wrap; }
-        .reserva .datos { font-size: 14px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
-        table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 13px; }
+        .reserva .datos { font-size: 17px; color: var(--muted); margin-top: 4px; line-height: 1.7; }
+        table { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 15px; }
         th { text-align: left; color: var(--muted); font-weight: 600; padding: 7px 8px; border-bottom: 1px solid var(--borde); }
         td { padding: 7px 8px; border-bottom: 1px solid var(--borde); }
-        .observacion { margin-top: 12px; font-size: 13px; background: #fffaf6; border: 1px solid #f3d6c4; border-radius: 6px; padding: 9px 12px; }
+        .observacion { margin-top: 12px; font-size: 15px; background: #fffaf6; border: 1px solid #f3d6c4; border-radius: 6px; padding: 9px 12px; }
         .estado-cancelado { background: #eef0ee; color: var(--muted); }
+        .estado-espera { background: #fff6e0; color: #8a6514; }
     </style>
 </head>
 <body>
@@ -29,6 +30,7 @@
         <a href="/panel/prestador">Mi panel</a>
         <a href="/panel/prestador/actividades">Mis actividades</a>
         <a href="/panel/prestador/reservas" class="activo">Reservas</a>
+        <a href="/panel/prestador/resenas">Reseñas</a>
         <a href="/logout">Cerrar sesión</a>
     </div>
 </nav>
@@ -47,7 +49,7 @@
                         <span th:text="${#temporals.format(r.horario.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
                         <span th:text="${#temporals.format(r.horario.horaInicio, 'HH:mm')}">09:00</span> ·
                         <span th:text="${r.cantCupos == 1} ? '1 persona' : ${r.cantCupos} + ' personas'">2 personas</span> ·
-                        $ <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
+                        $U <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
                     </div>
                     <div class="datos">
                         Reservó: <strong th:text="${r.turista.name}">Ana</strong>
@@ -58,7 +60,9 @@
                 <div>
                     <span class="estado estado-pendiente" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
                     <span class="estado estado-aceptado"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
-                    <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA'}">CANCELADA</span>
+                    <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA' and !r.canceladaPorPrestador()}">CANCELADA</span>
+                    <span class="estado estado-denegado" th:if="${r.canceladaPorPrestador()}">CANCELASTE LA SALIDA</span>
+                    <span class="estado estado-espera" th:if="${r.estado.name() == 'EN_ESPERA'}">LISTA DE ESPERA</span>
                 </div>
             </div>
 

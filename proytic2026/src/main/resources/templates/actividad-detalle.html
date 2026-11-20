@@ -11,37 +11,77 @@
     <link rel="stylesheet" href="/css/umnatural.css">
 
     <style>
-        .volver { display: table; font-size: 13px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
+        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
         .volver:hover { color: var(--orange); }
 
         .encabezado { display: grid; grid-template-columns: 1fr 280px; gap: 40px; align-items: start; }
-        .emprendimiento { font-size: 15px; color: var(--muted); margin: 0 0 18px; }
-        .texto { font-size: 15px; line-height: 1.8; color: var(--navy); white-space: pre-line; }
+        .emprendimiento { font-size: 18px; color: var(--muted); margin: 0 0 18px; }
+        .texto { font-size: 18px; line-height: 1.8; color: var(--navy); white-space: pre-line; }
 
         .resumen { position: sticky; top: 20px; }
-        .resumen .precio { font-family: 'Manrope', sans-serif; font-size: 30px; font-weight: 800; }
-        .resumen .precio small { font-size: 13px; font-weight: 500; color: var(--muted); }
+        .resumen .precio { font-family: 'Manrope', sans-serif; font-size: 33px; font-weight: 800; }
+        .resumen .precio small { font-size: 15px; font-weight: 500; color: var(--muted); }
         .resumen .boton { display: block; text-align: center; margin-top: 18px; }
 
-        .datos { list-style: none; padding: 0; margin: 18px 0 0; font-size: 14px; }
+        .datos { list-style: none; padding: 0; margin: 18px 0 0; font-size: 17px; }
         .datos li { display: flex; justify-content: space-between; gap: 12px; padding: 9px 0; border-top: 1px solid var(--borde); }
         .datos li span:first-child { color: var(--muted); }
         .datos li span:last-child { font-weight: 600; text-align: right; }
 
         .etiquetas { display: flex; flex-wrap: wrap; gap: 6px; margin: 4px 0 26px; }
-        .etiqueta { font-size: 11px; font-weight: 700; padding: 4px 9px; border-radius: 20px; background: #fdeee5; color: var(--orange); }
+        .etiqueta { font-size: 13px; font-weight: 700; padding: 4px 9px; border-radius: 20px; background: #fdeee5; color: var(--orange); }
         .etiqueta.gris { background: #eef0ee; color: var(--navy); }
 
-        h2 { font-size: 20px; margin: 44px 0 14px; }
+        h2 { font-size: 24px; margin: 44px 0 14px; }
+        .equipamiento { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 30px; }
+        .caja-equipo { border-radius: 10px; padding: 18px 20px; border: 1px solid var(--line); background: white; }
+        .caja-equipo h3 { font-size: 18px; margin: 0 0 2px; }
+        .caja-equipo p { font-size: 14px; color: var(--muted); margin: 0 0 10px; }
+        .caja-equipo ul { margin: 0; padding-left: 20px; line-height: 1.8; }
+        .caja-equipo.incluido { background: #f2faf5; border-color: #b9dcc8; }
+        .caja-equipo.incluido h3 { color: #2f7d5b; }
+        .caja-equipo.traer { background: #fbf7f1; border-color: #eadfcf; }
+
+        /* ---------- Galería de fotos ---------- */
+        .galeria { margin: 0 0 34px; }
+        .galeria .principal { width: 100%; aspect-ratio: 16 / 7; max-height: 480px; object-fit: cover; border-radius: 8px; display: block; background: #eee; }
+        .galeria .miniaturas { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; }
+        .galeria .miniaturas img { width: 110px; height: 76px; object-fit: cover; border-radius: 6px; cursor: pointer;
+                                   opacity: .65; border: 2px solid transparent; transition: opacity .2s; flex: none; }
+        .galeria .miniaturas img.elegida, .galeria .miniaturas img:hover { opacity: 1; border-color: var(--orange); }
 
         /* ---------- Horarios ---------- */
+        .precio-horario { font-family: 'Manrope', sans-serif; font-weight: 800; font-size: 19px; margin-right: 6px; }
+        .precio-viejo { text-decoration: line-through; color: var(--muted); font-size: 15px; margin-right: 6px; }
+        .cinta-uh { display: inline-block; background: var(--orange); color: white; font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 12px; }
+        .completo { color: #b9483a; font-weight: 700; }
+        .politica-cancelacion { font-size: 14px; margin-top: 4px; }
+        .horario .dur { font-weight: 500; color: var(--muted); font-size: 16px; }
+        .valoracion { display: inline-flex; gap: 6px; align-items: baseline; text-decoration: none; color: var(--navy); margin: -8px 0 16px; }
+        .valoracion .estrella, .estrellas-fijas { color: #f2b01e; }
+        .valoracion span:last-child { color: var(--muted); }
+        .estrellas-fijas .apagada { color: #ddd6c8; }
+        .seccion-resenas { margin-top: 20px; }
+        .resenas { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 14px; }
+        .resena .cabeza { display: flex; justify-content: space-between; gap: 10px; }
+        .resena .quien { font-weight: 700; }
+        .resena .cuando { font-size: 14px; color: var(--muted); }
+        .resena .texto { margin: 10px 0 0; line-height: 1.7; }
+        .resena .respuesta { margin-top: 12px; background: #f6f4ef; border-left: 3px solid var(--orange); border-radius: 6px; padding: 8px 12px; font-size: 15px; }
+        .resena .respuesta b { display: block; font-size: 13px; color: var(--muted); }
+        .sin-resenas { color: var(--muted); }
+        .garantia { display: flex; gap: 8px; margin-top: 16px; font-size: 15px; color: #23446b; background: #eef4fb; border-radius: 8px; padding: 10px 12px; line-height: 1.5; }
+        .politica-cancelacion.si { color: var(--verde, #2f7d5b); }
+        .politica-cancelacion.no { color: var(--muted); }
+        .aviso-uh { margin-top: 16px; background: #fdeee5; color: var(--orange-dark, #c95f2b); border-radius: 6px; padding: 10px 12px; font-size: 15px; }
+        .lado-derecho { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; justify-content: flex-end; }
         .horarios { display: flex; flex-direction: column; gap: 10px; }
         .horario { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 22px; }
-        .horario .cuando { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 16px; }
-        .horario .detalle { font-size: 13px; color: var(--muted); margin-top: 4px; }
+        .horario .cuando { font-family: 'Manrope', sans-serif; font-weight: 700; font-size: 19px; }
+        .horario .detalle { font-size: 15px; color: var(--muted); margin-top: 4px; }
         .cupos-pocos { color: var(--orange); font-weight: 700; }
 
-        .aviso-login { font-size: 13px; color: var(--muted); }
+        .aviso-login { font-size: 15px; color: var(--muted); }
         .aviso-login a { color: var(--navy); font-weight: 700; }
 
         @media (max-width: 850px) {
@@ -77,12 +117,26 @@
 <main class="pagina">
     <a href="/actividades" class="volver">← Volver a actividades</a>
 
+    <!-- Fotos de la actividad -->
+    <div class="galeria" th:if="${!#lists.isEmpty(imagenes)}">
+        <img class="principal" id="fotoPrincipal" th:src="@{/imagenes/{id}(id=${imagenes[0]})}" alt="Foto de la actividad">
+        <div class="miniaturas" th:if="${#lists.size(imagenes) > 1}">
+            <img th:each="imgId, i : ${imagenes}" th:src="@{/imagenes/{id}(id=${imgId})}" alt="Foto"
+                 th:classappend="${i.first} ? 'elegida' : ''" onclick="elegirFoto(this)">
+        </div>
+    </div>
+
     <div class="encabezado">
         <!-- Columna izquierda: información de la actividad -->
         <div>
             <span class="eyebrow" th:text="${actividad.departamento != null ? actividad.departamento : 'Actividad'}">Departamento</span>
             <h1 th:text="${actividad.titulo != null and !#strings.isEmpty(actividad.titulo)} ? ${actividad.titulo} : 'Actividad #' + ${actividad.id}">Título</h1>
             <p class="emprendimiento">Ofrecida por <strong th:text="${actividad.emprendimiento.nombre}">Emprendimiento</strong></p>
+            <a href="#resenas" class="valoracion" th:if="${valoracion != null}">
+                <span class="estrella">★</span>
+                <b th:text="${#numbers.formatDecimal(valoracion[0], 1, 1, 'COMMA')}">4,8</b>
+                <span th:text="'(' + ${#numbers.formatInteger(valoracion[1], 1)} + (${valoracion[1] == 1} ? ' reseña)' : ' reseñas)')">(12 reseñas)</span>
+            </a>
 
             <div class="etiquetas" th:if="${!#lists.isEmpty(actividad.tipoActividad)}">
                 <span class="etiqueta" th:each="t : ${actividad.tipoActividad}" th:text="${t.nombre}">Tipo</span>
@@ -91,31 +145,43 @@
             <p class="texto" th:if="${actividad.descripcion}" th:text="${actividad.descripcion}">Descripción</p>
             <p class="texto" th:unless="${actividad.descripcion}" style="color: var(--muted)">El prestador todavía no cargó una descripción.</p>
 
-            <th:block th:if="${!#lists.isEmpty(actividad.tiposEquipamiento)}">
-                <h2>Equipamiento necesario</h2>
-                <div class="etiquetas">
-                    <span class="etiqueta gris" th:each="e : ${actividad.tiposEquipamiento}" th:text="${e.nombre}">Casco</span>
+            <div class="equipamiento" th:if="${!#lists.isEmpty(actividad.equipamientoIncluido) or !#lists.isEmpty(actividad.tiposEquipamiento)}">
+                <div class="caja-equipo incluido" th:if="${!#lists.isEmpty(actividad.equipamientoIncluido)}">
+                    <h3>✔ Incluido en la actividad</h3>
+                    <p>Te lo da el prestador al llegar.</p>
+                    <ul><li th:each="e : ${actividad.equipamientoIncluido}" th:text="${e.nombre}">Kayak</li></ul>
                 </div>
-            </th:block>
+                <div class="caja-equipo traer" th:if="${!#lists.isEmpty(actividad.tiposEquipamiento)}">
+                    <h3>🎒 Tenés que traer</h3>
+                    <p>No lo provee el prestador.</p>
+                    <ul><li th:each="e : ${actividad.tiposEquipamiento}" th:text="${e.nombre}">Protector solar</li></ul>
+                </div>
+            </div>
         </div>
 
         <!-- Columna derecha: resumen -->
         <aside class="tarjeta resumen">
-            <div class="precio">$ <span th:text="${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
+            <div class="precio">$U <span th:text="${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">0</span>
                 <small>por persona</small></div>
             <ul class="datos">
-                <li th:if="${actividad.duracionMinutos}"><span>Duración</span><span th:text="${actividad.duracionMinutos} + ' min'">60 min</span></li>
+                <li th:if="${actividad.textoDuracion() != null}"><span>Duración</span><span th:text="${actividad.textoDuracion()}">2 h</span></li>
                 <li th:if="${actividad.requisitosEdad}"><span>Edad</span><span th:text="${actividad.requisitosEdad}">+12</span></li>
                 <li th:if="${actividad.localidad}"><span>Localidad</span><span th:text="${actividad.localidad}">Localidad</span></li>
                 <li th:if="${actividad.departamento}"><span>Departamento</span><span th:text="${actividad.departamento}">Rocha</span></li>
                 <li><span>Reservas hasta</span>
                     <span th:text="${actividad.minPreviosReservar == null or actividad.minPreviosReservar == 0} ? 'la hora de inicio' : ${actividad.minPreviosReservar} + ' min antes'">30 min antes</span></li>
             </ul>
-            <a href="#horarios" class="boton boton-naranja">Ver fechas disponibles</a>
+            <div class="aviso-uh" th:if="${actividad.tieneDescuentoUltimaHora()}">
+                ⏱ <b>Última hora:</b> <span th:text="${actividad.descuentoUltimaHora} + ' % de descuento en los lugares libres de las ' + ${actividad.horasUltimaHora} + ' horas antes de cada salida.'"></span>
+            </div>
+            <div class="garantia">🛡 <span>Si el prestador tiene que cancelar la salida (puede hacerlo hasta 24 h antes), te devolvemos el <b>100 %</b>.</span></div>
+            <a href="#horarios" id="botonFechas" class="boton boton-naranja" onclick="mostrarFechas(event)">Ver fechas disponibles</a>
         </aside>
     </div>
 
     <!-- Próximas fechas (entidad Horario) -->
+    <!-- Las fechas quedan ocultas hasta tocar "Ver fechas disponibles" -->
+    <section id="seccionHorarios" hidden>
     <h2 id="horarios">Próximas fechas</h2>
 
     <p class="aviso-login" th:if="${rol == null}">
@@ -130,28 +196,88 @@
                     <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
                     <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">09:00</span> a
                     <span th:text="${#temporals.format(h.horaFin, 'HH:mm')}">11:00</span>
+                    <span class="dur" th:text="'· ' + ${h.textoDuracion()}">· 2 h</span>
                 </div>
                 <div class="detalle">
-                    <span th:class="${h.cuposDisponibles <= 3} ? 'cupos-pocos' : ''"
-                          th:text="${h.cuposDisponibles == 1} ? 'Queda 1 lugar' : 'Quedan ' + ${h.cuposDisponibles} + ' lugares'">Quedan 10 lugares</span>
-                    <span th:if="${h.cancelable}"> · Admite cancelación</span>
+                    <th:block th:if="${h.cuposDisponibles > 0}">
+                        <span th:class="${h.cuposDisponibles <= 3} ? 'cupos-pocos' : ''"
+                              th:text="${h.cuposDisponibles == 1} ? 'Queda 1 lugar' : 'Quedan ' + ${h.cuposDisponibles} + ' lugares'">Quedan 10 lugares</span>
+                    </th:block>
+                    <span class="completo" th:if="${h.cuposDisponibles <= 0}">Completo · podés anotarte en la lista de espera</span>
+                    <div class="politica-cancelacion" th:classappend="${h.cancelable} ? 'si' : 'no'"
+                         th:text="(${h.cancelable} ? '↺ ' : '✕ ') + ${h.textoPoliticaCancelacion()}">No admite cancelación</div>
                 </div>
             </div>
 
-            <!-- Solo un turista puede reservar -->
-            <a th:if="${rol == 'TURISTA'}" class="boton boton-naranja boton-chico"
-               th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Reservar</a>
-            <a th:if="${rol == null}" class="boton boton-borde boton-chico" href="/login">Iniciar sesión para reservar</a>
+            <div class="lado-derecho">
+                <!-- Precio de este horario (con descuento de última hora si corresponde) -->
+                <div th:with="uh=${h.cuposDisponibles > 0 and h.enDescuentoUltimaHora()}">
+                    <span class="cinta-uh" th:if="${uh}" th:text="'⏱ -' + ${actividad.descuentoUltimaHora} + ' %'">-20 %</span>
+                    <span class="precio-viejo" th:if="${uh}" th:text="'$U ' + ${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">$U 1.500</span>
+                    <span class="precio-horario" th:text="'$U ' + ${#numbers.formatDecimal(h.precioActual(), 1, 'POINT', 0, 'COMMA')}">$U 1.200</span>
+                </div>
+
+                <!-- Solo un turista puede reservar -->
+                <th:block th:if="${rol == 'TURISTA'}">
+                    <a th:if="${h.cuposDisponibles > 0}" class="boton boton-naranja boton-chico"
+                       th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Reservar</a>
+                    <a th:if="${h.cuposDisponibles <= 0}" class="boton boton-borde boton-chico"
+                       th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Anotarme en lista de espera</a>
+                </th:block>
+                <a th:if="${rol == null}" class="boton boton-borde boton-chico" href="/login">Iniciar sesión para reservar</a>
+            </div>
         </div>
     </div>
 
     <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
         <h3>No hay fechas disponibles por ahora</h3>
-        <p>El prestador todavía no cargó próximas fechas, o ya no quedan lugares.</p>
+        <p>El prestador todavía no cargó próximas fechas.</p>
     </div>
+    </section>
+
+    <!-- Reseñas de turistas que ya hicieron la actividad -->
+    <section id="resenas" class="seccion-resenas">
+        <h2>Lo que dicen los turistas</h2>
+        <p class="sin-resenas" th:if="${#lists.isEmpty(resenas)}">Todavía no hay reseñas. Las dejan los turistas cuando terminan la actividad.</p>
+        <div class="resenas">
+            <div class="tarjeta resena" th:each="r : ${resenas}">
+                <div class="cabeza">
+                    <span class="quien" th:text="${r.autor()}">Ana P.</span>
+                    <span class="estrellas-fijas"><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i > r.puntaje} ? 'apagada' : ''">★</span></span>
+                </div>
+                <div class="cuando" th:text="${#temporals.format(r.fecha, 'dd/MM/yyyy')}">01/12/2026</div>
+                <p class="texto" th:if="${r.comentario}" th:text="${r.comentario}"></p>
+                <div class="respuesta" th:if="${r.respuestaPrestador}">
+                    <b th:text="'Respuesta de ' + ${actividad.emprendimiento.nombre}">Respuesta</b>
+                    <span th:text="${r.respuestaPrestador}"></span>
+                </div>
+            </div>
+        </div>
+    </section>
 </main>
 
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 
+<script>
+    // Muestra las fechas y baja hasta ellas
+    function mostrarFechas(evento) {
+        if (evento) evento.preventDefault();
+        const seccion = document.getElementById('seccionHorarios');
+        seccion.hidden = false;
+        document.getElementById('botonFechas').textContent = 'Ver fechas disponibles ↓';
+        seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    // Si se llega con el link .../actividades/5#horarios, se muestran directamente
+    if (location.hash === '#horarios') mostrarFechas();
+
+    // Galería: al tocar una miniatura, se muestra grande
+    function elegirFoto(miniatura) {
+        document.getElementById('fotoPrincipal').src = miniatura.src;
+        document.querySelectorAll('.miniaturas img').forEach(img => img.classList.remove('elegida'));
+        miniatura.classList.add('elegida');
+    }
+</script>
+
+<div th:replace="~{fragments/aviso-resena :: aviso}"></div>
 </body>
 </html>
