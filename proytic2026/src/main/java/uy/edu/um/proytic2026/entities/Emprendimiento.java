@@ -9,6 +9,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.time.LocalDateTime;
 
 
 // emprendimiento asociado a un prestador
@@ -40,4 +41,17 @@ public class Emprendimiento {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EstadoEmprendimiento estado = EstadoEmprendimiento.PENDIENTE;
+    // Administrador que realizó la última verificación
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "administrador_verificador_id")
+    private Administrador administradorVerificador;
+
+    // Fecha y hora de la última verificación
+    @Column(name = "fecha_verificacion")
+    private LocalDateTime fechaVerificacion;
+
+    // Motivo del rechazo
+    @Column(name = "motivo_rechazo", length = 500)
+    private String motivoRechazo;
+
 }

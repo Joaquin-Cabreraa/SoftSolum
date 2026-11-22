@@ -14,6 +14,7 @@ import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
+import java.time.LocalDateTime;
 
 
 @Entity
@@ -50,6 +51,15 @@ public class Usuario {
 
     @Column(name = "contrasena")
     private String passwordHash;
+
+    // Cantidad de intentos fallidos de inicio de sesión
+    @Builder.Default
+    @Column(name = "intentos_fallidos", nullable = false)
+    private int intentosFallidos = 0;
+
+    // Fecha y hora hasta la que está bloqueada la cuenta
+    @Column(name = "bloqueado_hasta")
+    private LocalDateTime bloqueadoHasta;
 
 
 }

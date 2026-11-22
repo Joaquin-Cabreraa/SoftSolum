@@ -1,37 +1,222 @@
+
+
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>UMnatural | Emprendimientos</title>
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/umnatural.css">
+
     <style>
-        .filtros { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 24px; }
-        .filtro { padding: 8px 16px; border-radius: 20px; border: 1px solid var(--line); text-decoration: none; color: var(--navy); font-weight: 600; background: white; }
-        .filtro.activo { background: var(--navy); color: white; border-color: var(--navy); }
-        .lista { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
-        .emp { display: grid; grid-template-columns: 1fr auto; gap: 20px; align-items: start; }
-        .emp h3 { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-        .datos { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 24px; font-size: 16px; color: var(--muted); margin-top: 8px; }
-        .datos strong { color: var(--navy); font-weight: 600; }
-        .acciones { display: flex; flex-direction: column; gap: 8px; min-width: 170px; }
-        .acciones form { margin: 0; }
-        .acciones .boton { width: 100%; }
-        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
-        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
-        .mensaje.error { background: #f7e4e1; color: #b9483a; }
-        @media (max-width: 760px) { .emp, .datos { grid-template-columns: 1fr; } }
+        .filtros {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 24px;
+        }
+
+        .filtro {
+            padding: 8px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            text-decoration: none;
+            color: var(--navy);
+            font-weight: 600;
+            background: white;
+        }
+
+        .filtro.activo {
+            background: var(--navy);
+            color: white;
+            border-color: var(--navy);
+        }
+
+        .lista {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            margin-top: 22px;
+        }
+
+        .emp {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 20px;
+            align-items: start;
+        }
+
+        .emp h3 {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .datos {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4px 24px;
+            font-size: 16px;
+            color: var(--muted);
+            margin-top: 8px;
+        }
+
+        .datos strong {
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .acciones {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 230px;
+            max-width: 280px;
+        }
+
+        .acciones form {
+            margin: 0;
+        }
+
+        .acciones .boton {
+            width: 100%;
+        }
+
+        .campo-motivo {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 10px;
+        }
+
+        .campo-motivo label {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .campo-motivo textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid var(--line);
+            border-radius: 6px;
+            resize: vertical;
+            font: inherit;
+            font-size: 14px;
+        }
+
+        .mensaje {
+            padding: 12px 16px;
+            border-radius: 6px;
+            font-size: 17px;
+            margin-top: 20px;
+        }
+
+        .mensaje.ok {
+            background: #e3f1ea;
+            color: #2f7d5b;
+        }
+
+        .mensaje.error {
+            background: #f7e4e1;
+            color: #b9483a;
+        }
+
+        /* Historial de verificaciones */
+
+        .historial {
+            margin-top: 20px;
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            background: #fafbfc;
+            overflow: hidden;
+        }
+
+        .historial summary {
+            cursor: pointer;
+            padding: 13px 16px;
+            color: var(--navy);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .historial summary:hover {
+            background: #f0f3f6;
+        }
+
+        .historial-contenido {
+            padding: 0 16px 16px;
+        }
+
+        .historial-registro {
+            border-top: 1px solid var(--line);
+            padding: 14px 0;
+        }
+
+        .historial-registro:first-child {
+            border-top: none;
+        }
+
+        .historial-fecha {
+            color: var(--muted);
+            font-size: 13px;
+            margin-bottom: 8px;
+        }
+
+        .historial-datos {
+            display: grid;
+            gap: 6px;
+            font-size: 14px;
+        }
+
+        .historial-datos strong {
+            color: var(--navy);
+        }
+
+        .historial-motivo {
+            margin-top: 8px;
+            padding: 10px 12px;
+            border-left: 3px solid #b9483a;
+            background: #f7e4e1;
+            border-radius: 4px;
+            overflow-wrap: anywhere;
+        }
+
+        .historial-vacio {
+            padding: 12px 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        @media (max-width: 760px) {
+            .emp, .datos {
+                grid-template-columns: 1fr;
+            }
+
+            .acciones {
+                max-width: none;
+                width: 100%;
+            }
+        }
     </style>
 </head>
+
 <body>
+
 <nav class="nav">
     <a href="/" class="logo">UM<span>natural</span></a>
+
     <div class="nav-links">
         <a href="/panel/admin">Pendientes</a>
-        <a href="/panel/admin/emprendimientos" class="activo">Emprendimientos</a>
+        <a href="/panel/admin/emprendimientos" class="activo">
+            Emprendimientos
+        </a>
         <a href="/panel/admin/actividades">Actividades</a>
         <a href="/panel/admin/resenas">Reseñas</a>
         <a href="/panel/admin/tipos">Tipos</a>
@@ -40,64 +225,297 @@
 </nav>
 
 <main class="pagina">
+
     <span class="eyebrow">Panel del administrador</span>
     <h1>Emprendimientos.</h1>
-    <p class="descripcion">Todos los emprendimientos registrados. Podés cambiar la aprobación cuando quieras:
-        si un emprendimiento deja de estar aceptado, sus actividades dejan de verse en el portal (las reservas hechas se conservan).</p>
 
-    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
-    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
+    <p class="descripcion">
+        Todos los emprendimientos registrados. Podés cambiar la
+        aprobación cuando quieras: si un emprendimiento deja de
+        estar aceptado, sus actividades dejan de verse en el portal
+        (las reservas hechas se conservan).
+    </p>
+
+    <div class="mensaje ok"
+         th:if="${exito}"
+         th:text="${exito}">
+        Ok
+    </div>
+
+    <div class="mensaje error"
+         th:if="${error}"
+         th:text="${error}">
+        Error
+    </div>
+
+    <!-- Filtros -->
 
     <div class="filtros">
-        <a class="filtro" th:each="f : ${ {'TODOS','PENDIENTE','ACEPTADO','DENEGADO'} }"
-           th:href="@{/panel/admin/emprendimientos(estado=${f})}" th:classappend="${filtro == f} ? 'activo' : ''"
-           th:text="${f == 'TODOS'} ? 'Todos' : (${f == 'PENDIENTE'} ? 'Pendientes' : (${f == 'ACEPTADO'} ? 'Aceptados' : 'Denegados'))">Todos</a>
+
+        <a class="filtro"
+           th:each="f : ${ {'TODOS','PENDIENTE','ACEPTADO','DENEGADO'} }"
+           th:href="@{/panel/admin/emprendimientos(estado=${f})}"
+           th:classappend="${filtro == f} ? 'activo' : ''"
+           th:text="${f == 'TODOS'} ? 'Todos' : (${f == 'PENDIENTE'} ? 'Pendientes' : (${f == 'ACEPTADO'} ? 'Aceptados' : 'Denegados'))">
+            Todos
+        </a>
+
     </div>
+
+    <!-- Listado de emprendimientos -->
 
     <div class="lista">
-        <div class="tarjeta emp" th:each="e : ${emprendimientos}">
+
+        <div class="tarjeta emp"
+             th:each="e : ${emprendimientos}">
+
+            <!-- Información del emprendimiento -->
+
             <div>
+
                 <h3>
-                    <span th:text="${e.nombre}">Emprendimiento</span>
-                    <span class="estado estado-pendiente" th:if="${e.estado == 'PENDIENTE'}">PENDIENTE</span>
-                    <span class="estado estado-aceptado" th:if="${e.estado == 'ACEPTADO'}">ACEPTADO</span>
-                    <span class="estado estado-denegado" th:if="${e.estado == 'DENEGADO'}">DENEGADO</span>
+                    <span th:text="${e.nombre}">
+                        Emprendimiento
+                    </span>
+
+                    <span class="estado estado-pendiente"
+                          th:if="${e.estado == 'PENDIENTE'}">
+                        PENDIENTE
+                    </span>
+
+                    <span class="estado estado-aceptado"
+                          th:if="${e.estado == 'ACEPTADO'}">
+                        ACEPTADO
+                    </span>
+
+                    <span class="estado estado-denegado"
+                          th:if="${e.estado == 'DENEGADO'}">
+                        DENEGADO
+                    </span>
                 </h3>
+
                 <div class="datos">
-                    <div th:if="${e.tipo}"><strong>Tipo:</strong> <span th:text="${e.tipo}"></span></div>
-                    <div th:if="${e.titular}"><strong th:text="${e.tipo == 'Empresa'} ? 'Razón social:' : 'Responsable:'">Titular:</strong> <span th:text="${e.titular}"></span></div>
-                    <div th:if="${e.identificacion}"><strong>Identificación:</strong> <span th:text="${e.identificacion}"></span></div>
-                    <div th:if="${e.email}"><strong>Correo de la cuenta:</strong> <span th:text="${e.email}"></span></div>
-                    <div th:if="${e.telefono}"><strong>Teléfono:</strong> <span th:text="${e.telefono}"></span></div>
-                    <div th:if="${e.ubicacion}"><strong>Dirección:</strong> <span th:text="${e.ubicacion}"></span></div>
-                    <div th:if="${e.emailEmprendimiento}"><strong>Correo del emprendimiento:</strong> <span th:text="${e.emailEmprendimiento}"></span></div>
-                    <div><strong>Actividades:</strong> <span th:text="${e.actividades}">0</span></div>
+
+                    <div th:if="${e.tipo}">
+                        <strong>Tipo:</strong>
+                        <span th:text="${e.tipo}"></span>
+                    </div>
+
+                    <div th:if="${e.titular}">
+                        <strong th:text="${e.tipo == 'Empresa'} ? 'Razón social:' : 'Responsable:'">
+                            Titular:
+                        </strong>
+                        <span th:text="${e.titular}"></span>
+                    </div>
+
+                    <div th:if="${e.identificacion}">
+                        <strong>Identificación:</strong>
+                        <span th:text="${e.identificacion}"></span>
+                    </div>
+
+                    <div th:if="${e.email}">
+                        <strong>Correo de la cuenta:</strong>
+                        <span th:text="${e.email}"></span>
+                    </div>
+
+                    <div th:if="${e.telefono}">
+                        <strong>Teléfono:</strong>
+                        <span th:text="${e.telefono}"></span>
+                    </div>
+
+                    <div th:if="${e.ubicacion}">
+                        <strong>Dirección:</strong>
+                        <span th:text="${e.ubicacion}"></span>
+                    </div>
+
+                    <div th:if="${e.emailEmprendimiento}">
+                        <strong>Correo del emprendimiento:</strong>
+                        <span th:text="${e.emailEmprendimiento}"></span>
+                    </div>
+
+                    <div>
+                        <strong>Actividades:</strong>
+                        <span th:text="${e.actividades}">0</span>
+                    </div>
+
                 </div>
-                <p th:if="${e.descripcion}" th:text="${e.descripcion}" style="margin-top: 10px"></p>
+
+                <p th:if="${e.descripcion}"
+                   th:text="${e.descripcion}"
+                   style="margin-top: 10px">
+                </p>
+
+                <!-- Historial de verificaciones -->
+
+                <details class="historial"
+                         th:with="registros=${historiales.get(e.id)}">
+
+                    <summary>
+                        Ver historial de verificaciones
+                        (<span th:text="${registros != null ? #lists.size(registros) : 0}">0</span>)
+                    </summary>
+
+                    <div class="historial-contenido">
+
+                        <div class="historial-vacio"
+                             th:if="${registros == null or #lists.isEmpty(registros)}">
+                            Este emprendimiento todavía no tiene
+                            verificaciones registradas.
+                        </div>
+
+                        <div class="historial-registro"
+                             th:each="registro : ${registros}">
+
+                            <div class="historial-fecha"
+                                 th:text="${#temporals.format(registro.fecha, 'dd/MM/yyyy HH:mm')}">
+                                22/11/2026 14:30
+                            </div>
+
+                            <div class="historial-datos">
+
+                                <div>
+                                    <strong>Administrador:</strong>
+                                    <span th:text="${registro.administrador.name + ' ' + (registro.administrador.lastName == null ? '' : registro.administrador.lastName)}">
+                                        Administrador
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <strong>Estado anterior:</strong>
+                                    <span th:text="${registro.estadoAnterior}">
+                                        PENDIENTE
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <strong>Estado nuevo:</strong>
+                                    <span th:text="${registro.estadoNuevo}">
+                                        ACEPTADO
+                                    </span>
+                                </div>
+
+                                <div class="historial-motivo"
+                                     th:if="${registro.motivo != null and !registro.motivo.isBlank()}">
+                                    <strong>Motivo del rechazo:</strong>
+                                    <div th:text="${registro.motivo}">
+                                        Motivo
+                                    </div>
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </details>
+
             </div>
+
+            <!-- Acciones del administrador -->
+
             <div class="acciones">
-                <form method="post" th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}" th:if="${e.estado != 'ACEPTADO'}">
-                    <input type="hidden" name="estado" value="ACEPTADO"><input type="hidden" name="volverA" th:value="${filtro}">
-                    <button class="boton boton-chico boton-verde">Aceptar</button>
+
+                <!-- Aceptar -->
+
+                <form method="post"
+                      th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}"
+                      th:if="${e.estado != 'ACEPTADO'}">
+
+                    <input type="hidden"
+                           name="estado"
+                           value="ACEPTADO">
+
+                    <input type="hidden"
+                           name="volverA"
+                           th:value="${filtro}">
+
+                    <button type="submit"
+                            class="boton boton-chico boton-verde">
+                        Aceptar
+                    </button>
+
                 </form>
-                <form method="post" th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}" th:if="${e.estado != 'DENEGADO'}"
+
+                <!-- Denegar o revocar aprobación -->
+
+                <form method="post"
+                      th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}"
+                      th:if="${e.estado != 'DENEGADO'}"
                       th:attr="onsubmit=${e.estado == 'ACEPTADO'} ? 'return confirm(&quot;¿Denegar este emprendimiento? Sus actividades dejan de verse en el portal.&quot;)' : ''">
-                    <input type="hidden" name="estado" value="DENEGADO"><input type="hidden" name="volverA" th:value="${filtro}">
-                    <button class="boton boton-chico boton-rojo" th:text="${e.estado == 'ACEPTADO'} ? 'Revocar aprobación' : 'Denegar'">Denegar</button>
+
+                    <input type="hidden"
+                           name="estado"
+                           value="DENEGADO">
+
+                    <input type="hidden"
+                           name="volverA"
+                           th:value="${filtro}">
+
+                    <div class="campo-motivo">
+
+                        <label th:for="'motivo-' + ${e.id}">
+                            Motivo del rechazo
+                        </label>
+
+                        <textarea
+                                name="motivo"
+                                th:id="'motivo-' + ${e.id}"
+                                rows="3"
+                                maxlength="500"
+                                required
+                                placeholder="Explicá por qué se rechaza el emprendimiento..."></textarea>
+
+                    </div>
+
+                    <button type="submit"
+                            class="boton boton-chico boton-rojo"
+                            th:text="${e.estado == 'ACEPTADO'} ? 'Revocar aprobación' : 'Denegar'">
+                        Denegar
+                    </button>
+
                 </form>
-                <form method="post" th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}" th:if="${e.estado != 'PENDIENTE'}">
-                    <input type="hidden" name="estado" value="PENDIENTE"><input type="hidden" name="volverA" th:value="${filtro}">
-                    <button class="boton boton-chico boton-borde">Volver a revisar</button>
+
+                <!-- Volver a pendiente -->
+
+                <form method="post"
+                      th:action="@{/panel/admin/emprendimientos/{id}/estado(id=${e.id})}"
+                      th:if="${e.estado != 'PENDIENTE'}">
+
+                    <input type="hidden"
+                           name="estado"
+                           value="PENDIENTE">
+
+                    <input type="hidden"
+                           name="volverA"
+                           th:value="${filtro}">
+
+                    <button type="submit"
+                            class="boton boton-chico boton-borde">
+                        Volver a revisar
+                    </button>
+
                 </form>
+
             </div>
+
         </div>
+
     </div>
 
-    <div class="tarjeta" th:if="${#lists.isEmpty(emprendimientos)}" style="text-align:center; padding:34px; margin-top: 22px">
+    <!-- Sin resultados -->
+
+    <div class="tarjeta"
+         th:if="${#lists.isEmpty(emprendimientos)}"
+         style="text-align:center; padding:34px; margin-top: 22px">
         No hay emprendimientos en este estado.
     </div>
+
 </main>
 
-<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+<footer>
+    © 2026 UMnatural · Desarrollado por SoftSolum
+</footer>
+
 </body>
 </html>

@@ -1,5 +1,6 @@
+
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,6 +17,23 @@
         .tarjeta .boton { margin-top: 18px; }
         .tarjeta .estado { margin: 4px 0 14px; }
         .dato { font-size: 17px; color: var(--muted); margin-top: 6px; }
+
+        /* Aviso cuando el administrador rechaza un emprendimiento */
+        .aviso-rechazo {
+            background: #f7e4e1;
+            border-left: 4px solid #b9483a;
+            border-radius: 6px;
+            padding: 14px;
+            margin-top: 12px;
+            color: #873b32;
+        }
+
+        .aviso-rechazo p {
+            margin-top: 10px;
+            font-size: 15px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+        }
     </style>
 </head>
 <body>
@@ -33,57 +51,159 @@
 
 <main class="pagina">
     <span class="eyebrow">Panel del prestador</span>
+
     <!-- th:text reemplaza el texto por el dato que mandó el controller -->
     <h1>Hola, <span th:text="${nombre}">prestador</span>.</h1>
+
     <p class="descripcion">
         Desde acá seguís el estado de tu emprendimiento y, cuando esté aceptado, tus actividades.
     </p>
 
     <!-- Resumen -->
     <div class="stats">
-        <div class="stat"><span class="num" th:text="${publicadas}">0</span><span class="lbl">Actividades publicadas</span><a href="/panel/prestador/actividades"></a></div>
-        <div class="stat azul"><span class="num" th:text="${proximasSalidas}">0</span><span class="lbl">Próximas salidas</span><a href="/panel/prestador/actividades"></a></div>
-        <div class="stat verde"><span class="num" th:text="${reservasActivas}">0</span><span class="lbl">Reservas activas</span><a href="/panel/prestador/reservas"></a></div>
-        <div class="stat gris"><span class="num" th:text="'$U ' + ${#numbers.formatDecimal(cobrado, 1, 'POINT', 0, 'COMMA')}">$U 0</span><span class="lbl">Cobrado (reservas pagas)</span></div>
+        <div class="stat">
+            <span class="num" th:text="${publicadas}">0</span>
+            <span class="lbl">Actividades publicadas</span>
+            <a href="/panel/prestador/actividades"></a>
+        </div>
+
+        <div class="stat azul">
+            <span class="num" th:text="${proximasSalidas}">0</span>
+            <span class="lbl">Próximas salidas</span>
+            <a href="/panel/prestador/actividades"></a>
+        </div>
+
+        <div class="stat verde">
+            <span class="num" th:text="${reservasActivas}">0</span>
+            <span class="lbl">Reservas activas</span>
+            <a href="/panel/prestador/reservas"></a>
+        </div>
+
+        <div class="stat gris">
+            <span class="num"
+                  th:text="'$U ' + ${#numbers.formatDecimal(cobrado, 1, 'POINT', 0, 'COMMA')}">
+                $U 0
+            </span>
+            <span class="lbl">Cobrado (reservas pagas)</span>
+        </div>
     </div>
 
     <div class="grilla">
 
         <!-- Si el prestador tiene emprendimiento, mostramos sus datos y su estado -->
         <div class="tarjeta" th:if="${emprendimiento != null}">
+
             <div class="icono azul">🏕</div>
-            <h3 th:text="${emprendimiento.nombre}">Mi emprendimiento</h3>
-            <div class="dato" th:if="${emprendimiento.ubicacion}" th:text="${emprendimiento.ubicacion}">Ubicación</div>
 
-            <span class="estado estado-pendiente" th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">PENDIENTE</span>
-            <span class="estado estado-aceptado"  th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">ACEPTADO</span>
-            <span class="estado estado-denegado"  th:if="${emprendimiento.estado.name() == 'DENEGADO'}">DENEGADO</span>
+            <h3 th:text="${emprendimiento.nombre}">
+                Mi emprendimiento
+            </h3>
 
-            <p th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">Un administrador está revisando tus datos.</p>
-            <p th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">Tu emprendimiento fue aceptado. Ya podés publicar actividades.</p>
-            <p th:if="${emprendimiento.estado.name() == 'DENEGADO'}">Tu emprendimiento no fue aprobado.</p>
-            <a href="/panel/prestador/datos" class="boton boton-borde boton-chico">Editar mis datos</a>
+            <div class="dato"
+                 th:if="${emprendimiento.ubicacion}"
+                 th:text="${emprendimiento.ubicacion}">
+                Ubicación
+            </div>
+
+            <!-- Estado actual del emprendimiento -->
+            <span class="estado estado-pendiente"
+                  th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">
+                PENDIENTE
+            </span>
+
+            <span class="estado estado-aceptado"
+                  th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">
+                ACEPTADO
+            </span>
+
+            <span class="estado estado-denegado"
+                  th:if="${emprendimiento.estado.name() == 'DENEGADO'}">
+                DENEGADO
+            </span>
+
+            <!-- Mensajes para emprendimientos pendientes o aceptados -->
+            <p th:if="${emprendimiento.estado.name() == 'PENDIENTE'}">
+                Un administrador está revisando tus datos.
+            </p>
+
+            <p th:if="${emprendimiento.estado.name() == 'ACEPTADO'}">
+                Tu emprendimiento fue aceptado. Ya podés publicar actividades.
+            </p>
+
+            <!--
+                NUEVO: aviso de rechazo.
+                Se muestra únicamente cuando el emprendimiento está DENEGADO.
+                El motivo proviene del administrador que realizó la verificación.
+            -->
+            <div th:if="${emprendimiento.estado.name() == 'DENEGADO'}"
+                 class="aviso-rechazo">
+
+                <strong>Tu emprendimiento no fue aprobado.</strong>
+
+                <!-- Mostrar el motivo si fue registrado -->
+                <p th:if="${emprendimiento.motivoRechazo != null and !#strings.isEmpty(emprendimiento.motivoRechazo)}">
+                    <strong>Motivo del rechazo:</strong>
+                    <span th:text="${emprendimiento.motivoRechazo}"></span>
+                </p>
+
+                <!-- Compatibilidad con rechazos anteriores sin motivo -->
+                <p th:unless="${emprendimiento.motivoRechazo != null and !#strings.isEmpty(emprendimiento.motivoRechazo)}">
+                    No se especificó un motivo para esta decisión.
+                </p>
+
+            </div>
+
+            <!-- El prestador puede acceder a la edición de sus datos -->
+            <a href="/panel/prestador/datos"
+               class="boton boton-borde boton-chico">
+                Editar mis datos
+            </a>
+
         </div>
 
+        <!-- Prestador sin emprendimiento asociado -->
         <div class="tarjeta" th:if="${emprendimiento == null}">
             <h3>Sin emprendimiento</h3>
             <p>Tu cuenta no tiene un emprendimiento asociado.</p>
         </div>
 
         <!-- Habilitada solo con el emprendimiento ACEPTADO (RNE #8) -->
-        <div class="tarjeta" th:classappend="${emprendimiento == null or emprendimiento.estado.name() != 'ACEPTADO'} ? 'deshabilitada' : ''">
+        <div class="tarjeta"
+             th:classappend="${emprendimiento == null or emprendimiento.estado.name() != 'ACEPTADO'} ? 'deshabilitada' : ''">
+
             <div class="icono">🛶</div>
+
             <h3>Mis actividades</h3>
-            <p>Cargá y editá las actividades que ofrecés y sus fechas. Disponible cuando tu emprendimiento sea aceptado.</p>
-            <a href="/panel/prestador/actividades" class="boton boton-naranja boton-chico">Ver mis actividades</a>
+
+            <p>
+                Cargá y editá las actividades que ofrecés y sus fechas.
+                Disponible cuando tu emprendimiento sea aceptado.
+            </p>
+
+            <a href="/panel/prestador/actividades"
+               class="boton boton-naranja boton-chico">
+                Ver mis actividades
+            </a>
         </div>
 
+        <!-- Acceso a las reservas recibidas -->
         <div class="tarjeta">
+
             <div class="icono verde">📋</div>
+
             <h3>Reservas</h3>
-            <p>Consultá las reservas que hicieron los turistas en tus actividades, con los datos de cada persona.</p>
-            <a href="/panel/prestador/reservas" class="boton boton-borde boton-chico">Ver reservas</a>
+
+            <p>
+                Consultá las reservas que hicieron los turistas en tus actividades,
+                con los datos de cada persona.
+            </p>
+
+            <a href="/panel/prestador/reservas"
+               class="boton boton-borde boton-chico">
+                Ver reservas
+            </a>
         </div>
+
     </div>
 
     <!-- Próximas salidas -->
@@ -91,29 +211,81 @@
         <h2>Próximas salidas</h2>
         <a href="/panel/prestador/actividades">Gestionar horarios →</a>
     </div>
-    <table class="tabla-salidas" th:if="${!#lists.isEmpty(proximas)}">
-        <thead><tr><th>Fecha</th><th>Actividad</th><th>Política</th><th>Ocupación</th></tr></thead>
+
+    <table class="tabla-salidas"
+           th:if="${!#lists.isEmpty(proximas)}">
+
+        <thead>
+        <tr>
+            <th>Fecha</th>
+            <th>Actividad</th>
+            <th>Política</th>
+            <th>Ocupación</th>
+        </tr>
+        </thead>
+
         <tbody>
-        <tr th:each="h : ${proximas}" th:with="ocupados=${h.cuposTotales - h.cuposDisponibles}">
-            <td><b th:text="${#temporals.format(h.fecha, 'dd/MM')}">20/11</b> · <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">18:00</span></td>
-            <td><a th:href="@{/panel/prestador/actividades/{id}/horarios(id=${h.actividad.id})}" th:text="${h.actividad.titulo}" style="color: var(--navy)">Actividad</a></td>
-            <td style="color: var(--muted); font-size: 15px" th:text="${h.textoPoliticaCancelacion()}">No admite cancelación</td>
+        <tr th:each="h : ${proximas}"
+            th:with="ocupados=${h.cuposTotales - h.cuposDisponibles}">
+
+            <td>
+                <b th:text="${#temporals.format(h.fecha, 'dd/MM')}">
+                    20/11
+                </b>
+                ·
+                <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">
+                    18:00
+                </span>
+            </td>
+
+            <td>
+                <a th:href="@{/panel/prestador/actividades/{id}/horarios(id=${h.actividad.id})}"
+                   th:text="${h.actividad.titulo}"
+                   style="color: var(--navy)">
+                    Actividad
+                </a>
+            </td>
+
+            <td style="color: var(--muted); font-size: 15px"
+                th:text="${h.textoPoliticaCancelacion()}">
+                No admite cancelación
+            </td>
+
             <td>
                 <div class="ocupacion">
-                    <div class="barra"><span th:style="'width:' + ${h.cuposTotales > 0 ? ocupados * 100 / h.cuposTotales : 0} + '%'"></span></div>
-                    <span th:text="${ocupados} + '/' + ${h.cuposTotales}">2/8</span>
+
+                    <div class="barra">
+                        <span th:style="'width:' + ${h.cuposTotales > 0 ? ocupados * 100 / h.cuposTotales : 0} + '%'"></span>
+                    </div>
+
+                    <span th:text="${ocupados} + '/' + ${h.cuposTotales}">
+                        2/8
+                    </span>
+
                 </div>
             </td>
+
         </tr>
         </tbody>
     </table>
-    <div class="tarjeta" th:if="${#lists.isEmpty(proximas)}" style="text-align:center; padding:34px">
+
+    <!-- Mensaje cuando no existen salidas próximas -->
+    <div class="tarjeta"
+         th:if="${#lists.isEmpty(proximas)}"
+         style="text-align:center; padding:34px">
+
         <h3>No tenés salidas próximas</h3>
-        <p>Agregá fechas a tus actividades para que los turistas puedan reservar.</p>
+
+        <p>
+            Agregá fechas a tus actividades para que los turistas puedan reservar.
+        </p>
     </div>
+
 </main>
 
-<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
+<footer>
+    © 2026 UMnatural · Desarrollado por SoftSolum
+</footer>
 
 </body>
 </html>
