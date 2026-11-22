@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import uy.edu.um.proytic2026.entities.Resena;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ResenaRepository extends JpaRepository<Resena, Long> {
@@ -26,4 +27,11 @@ public interface ResenaRepository extends JpaRepository<Resena, Long> {
     List<Resena> delEmprendimiento(@Param("emprendimientoId") Long emprendimientoId);
 
     List<Resena> findAllByOrderByFechaDesc();
+
+    // Promedio y cantidad por actividad de las valoraciones visibles hechas entre dos momentos
+    // (desde incluido, hasta excluido): filas [actividadId, promedio, cantidad]. La usa la API publica (top del mes).
+    @Query("SELECT r.actividad.id, AVG(r.puntaje), COUNT(r) FROM Resena r " +
+            "WHERE (r.oculta IS NULL OR r.oculta = false) AND r.fecha >= :desde AND r.fecha < :hasta " +
+            "GROUP BY r.actividad.id")
+    List<Object[]> promediosEntre(@Param("desde") LocalDateTime desde, @Param("hasta") LocalDateTime hasta);
 }
