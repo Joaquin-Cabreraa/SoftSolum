@@ -12,11 +12,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import uy.edu.um.proytic2026.entities.Horario;
 import uy.edu.um.proytic2026.entities.HorarioId;
+import uy.edu.um.proytic2026.entities.Pago;
 import uy.edu.um.proytic2026.entities.Reserva;
 import uy.edu.um.proytic2026.entities.Turista;
 import uy.edu.um.proytic2026.repository.HorarioRepository;
 import uy.edu.um.proytic2026.repository.TuristaRepository;
 import uy.edu.um.proytic2026.services.CatalogoService;
+import uy.edu.um.proytic2026.services.PagoService;
 import uy.edu.um.proytic2026.services.ReservaService;
 
 import java.time.LocalDate;
@@ -38,6 +40,9 @@ public class ReservaWebController {
 
     @Autowired
     private uy.edu.um.proytic2026.services.ResenaService resenaService;
+
+    @Autowired
+    private PagoService pagoService;
 
     @Autowired
     private CatalogoService catalogoService;
@@ -200,7 +205,15 @@ public class ReservaWebController {
 
         // Lugar en la fila de las que están en lista de espera
         Map<Long, Integer> posiciones = new HashMap<>();
+        // Último intento de pago de las reservas pendientes (para "Reintentar pago")
+        Map<Long, Pago> ultimosPagos = new HashMap<>();
         for (Reserva r : reservas) {
+            if (r.getEstado() == uy.edu.um.proytic2026.entities.EstadoReserva.PENDIENTE_PAGO) {
+                Pago ultimo = pagoService.ultimoIntento(r.getId());
+                if (ultimo != null) {
+                    ultimosPagos.put(r.getId(), ultimo);
+                }
+            }
             reservaService.codigoDe(r);   // código del QR (las reservas viejas no tenían)
             if (r.getEstado() == uy.edu.um.proytic2026.entities.EstadoReserva.EN_ESPERA) {
                 posiciones.put(r.getId(), reservaService.posicionEnListaDeEspera(r));
@@ -209,6 +222,7 @@ public class ReservaWebController {
 
         model.addAttribute("reservas", reservas);
         model.addAttribute("posiciones", posiciones);
+        model.addAttribute("ultimosPagos", ultimosPagos);
         model.addAttribute("misResenas", resenaService.delTurista(reservas));   // reseña de cada reserva (si tiene)
         model.addAttribute("ahora", LocalDateTime.now());
         model.addAttribute("reservaService", reservaService);   // para calcular el vencimiento en la página

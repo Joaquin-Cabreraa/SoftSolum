@@ -111,6 +111,14 @@
                      th:text="'Pagá antes de las ' + ${#temporals.format(reservaService.venceElPago(r), 'HH:mm')} + ' del ' + ${#temporals.format(reservaService.venceElPago(r), 'dd/MM')}">
                     Pagá antes de las 15:30
                 </div>
+                <!-- Cómo salió el último intento de pago (si ya hubo alguno) -->
+                <div th:if="${r.estado.name() == 'PENDIENTE_PAGO' and ultimosPagos[r.id] != null}"
+                     style="font-size: 13px; color: #b9483a; margin-top: 6px"
+                     th:text="${ultimosPagos[r.id].estado.name() == 'RECHAZADO'} ? 'Último intento: tarjeta rechazada. Podés probar de nuevo.'
+                             : (${ultimosPagos[r.id].estado.name() == 'PENDIENTE'} ? 'Tu último pago quedó en revisión.'
+                             : 'Último intento: no se pudo procesar el pago. Podés probar de nuevo.')">
+                    Último intento: tarjeta rechazada.
+                </div>
                 <div class="acciones-reserva">
                     <!-- Comprobante con código QR -->
                     <a th:if="${r.estado.name() == 'CONFIRMADA' or r.estado.name() == 'PENDIENTE_PAGO'}"
@@ -127,7 +135,8 @@
 
                     <!-- Pagar (CU-T07) -->
                     <a th:if="${r.estado.name() == 'PENDIENTE_PAGO'}" class="boton boton-naranja boton-chico"
-                       th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}" href="#">Pagar</a>
+                       th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}" href="#"
+                       th:text="${ultimosPagos[r.id] == null} ? 'Pagar' : 'Reintentar pago'">Pagar</a>
 
                     <!-- Cancelar (CU-T08). Se decide con la hora del servidor (Uruguay) y la política del horario -->
                     <th:block th:with="motivo=${reservaService.puedeCancelar(r, ahora)}">

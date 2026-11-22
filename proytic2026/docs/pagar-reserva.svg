@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1300 1572" width="1300" height="1572" font-family="Arial, sans-serif" font-size="12.5">
+<defs><marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#1b2a41"/></marker><marker id="x" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M1,1 L9,9 M9,1 L1,9" stroke="#b9483a" stroke-width="2"/></marker></defs>
+<rect width="1300" height="1572" fill="#ffffff"/>
+<text x="650.0" y="28" text-anchor="middle" font-size="18" font-weight="bold" fill="#1b2a41">Diagrama de secuencia: Pagar reserva (CU-T07)</text>
+<rect x="40" y="474" width="1220" height="96" fill="#fdf3ec" fill-opacity="0.55" stroke="#e0713a" stroke-width="1.3"/>
+<text x="48" y="490" font-weight="bold" fill="#c95f2b">alt  no se puede pagar (ajena, cancelada, vencida, ya paga, en espera)</text>
+<rect x="40" y="690" width="1220" height="842" fill="#fdf3ec" fill-opacity="0.55" stroke="#e0713a" stroke-width="1.3"/>
+<text x="48" y="706" font-weight="bold" fill="#c95f2b">alt  aprobado</text>
+<line x1="40" y1="912" x2="1260" y2="912" stroke="#e0713a" stroke-dasharray="6 4"/>
+<text x="48" y="928" font-weight="bold" fill="#c95f2b">else  rechazado</text>
+<line x1="40" y1="1138" x2="1260" y2="1138" stroke="#e0713a" stroke-dasharray="6 4"/>
+<text x="48" y="1154" font-weight="bold" fill="#c95f2b">else  en revisión</text>
+<line x1="40" y1="1330" x2="1260" y2="1330" stroke="#e0713a" stroke-dasharray="6 4"/>
+<text x="48" y="1346" font-weight="bold" fill="#c95f2b">else  pasarela caída, sin respuesta o timeout</text>
+<line x1="90" y1="130" x2="90" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="10" y="60" width="160" height="54" rx="6" fill="#1b2a41"/>
+<text x="90" y="80" text-anchor="middle" fill="#fff" font-weight="bold">Turista</text>
+<text x="90" y="94" text-anchor="middle" fill="#fff" font-weight="bold">(navegador)</text>
+<line x1="290" y1="130" x2="290" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="210" y="60" width="160" height="40" rx="6" fill="#1b2a41"/>
+<text x="290" y="80" text-anchor="middle" fill="#fff" font-weight="bold">PagoWebController</text>
+<line x1="520" y1="130" x2="520" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="440" y="60" width="160" height="40" rx="6" fill="#1b2a41"/>
+<text x="520" y="80" text-anchor="middle" fill="#fff" font-weight="bold">PagoService</text>
+<line x1="750" y1="130" x2="750" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="670" y="60" width="160" height="40" rx="6" fill="#1b2a41"/>
+<text x="750" y="80" text-anchor="middle" fill="#fff" font-weight="bold">Base de datos</text>
+<line x1="960" y1="130" x2="960" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="880" y="60" width="160" height="40" rx="6" fill="#1b2a41"/>
+<text x="960" y="80" text-anchor="middle" fill="#fff" font-weight="bold">PasarelaPago</text>
+<line x1="1170" y1="130" x2="1170" y2="1558" stroke="#9aa3ad" stroke-dasharray="5 4"/>
+<rect x="1090" y="60" width="160" height="54" rx="6" fill="#1b2a41"/>
+<text x="1170" y="80" text-anchor="middle" fill="#fff" font-weight="bold">Mercado Pago</text>
+<text x="1170" y="94" text-anchor="middle" fill="#fff" font-weight="bold">(API)</text>
+<line x1="90" y1="174" x2="288" y2="174" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="190.0" y="169" text-anchor="middle" fill="#1b2a41">GET /panel/turista/reservas/{id}/pagar</text>
+<line x1="290" y1="208" x2="518" y2="208" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="405.0" y="203" text-anchor="middle" fill="#1b2a41">validarPago(turistaId, reserva)</text>
+<line x1="520" y1="242" x2="292" y2="242" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="237" text-anchor="middle" fill="#1b2a41">null (se puede pagar) o motivo</text>
+<line x1="290" y1="276" x2="92" y2="276" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="271" text-anchor="middle" fill="#1b2a41">pagar.html (formulario de Mercado Pago)</text>
+<rect x="96" y="298" width="512" height="22" fill="#fff6bf" stroke="#d9c75a"/>
+<text x="102" y="313">El navegador convierte la tarjeta en un token: el servidor nunca ve el número</text>
+<line x1="90" y1="344" x2="288" y2="344" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="190.0" y="339" text-anchor="middle" fill="#1b2a41">POST .../pagar (token, medio de pago)</text>
+<line x1="290" y1="378" x2="518" y2="378" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="405.0" y="373" text-anchor="middle" fill="#1b2a41">pagar(turistaId, reservaId, datos)</text>
+<line x1="520" y1="412" x2="748" y2="412" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="407" text-anchor="middle" fill="#1b2a41">findById(reserva)</text>
+<line x1="750" y1="446" x2="522" y2="446" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="635.0" y="441" text-anchor="middle" fill="#1b2a41">reserva</text>
+<line x1="520" y1="512" x2="292" y2="512" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="507" text-anchor="middle" fill="#1b2a41">RespuestaPago(null, motivo)</text>
+<line x1="290" y1="546" x2="92" y2="546" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="541" text-anchor="middle" fill="#1b2a41">JSON { NO_PERMITIDO, mensaje }  (no se llama a la pasarela)</text>
+<rect x="526" y="582" width="286" height="22" fill="#fff6bf" stroke="#d9c75a"/>
+<text x="532" y="597">monto = reserva.montoTotal (precio x cupos)</text>
+<line x1="520" y1="628" x2="958" y2="628" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="740.0" y="623" text-anchor="middle" fill="#1b2a41">cobrar(solicitud)</text>
+<line x1="960" y1="662" x2="1168" y2="662" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="1065.0" y="657" text-anchor="middle" fill="#1b2a41">POST /v1/payments (token, monto, timeout)</text>
+<line x1="1170" y1="728" x2="962" y2="728" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="1065.0" y="723" text-anchor="middle" fill="#1b2a41">approved + id</text>
+<line x1="960" y1="762" x2="522" y2="762" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="740.0" y="757" text-anchor="middle" fill="#1b2a41">ResultadoPago(APROBADO)</text>
+<line x1="520" y1="796" x2="748" y2="796" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="791" text-anchor="middle" fill="#1b2a41">INSERT Pago (APROBADO, id externo, últimos 4)</text>
+<line x1="520" y1="830" x2="748" y2="830" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="825" text-anchor="middle" fill="#1b2a41">UPDATE reserva: estado = CONFIRMADA</text>
+<line x1="520" y1="864" x2="292" y2="864" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="859" text-anchor="middle" fill="#1b2a41">RespuestaPago(APROBADO)</text>
+<line x1="290" y1="898" x2="92" y2="898" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="893" text-anchor="middle" fill="#1b2a41">JSON { aprobado, comprobante }</text>
+<line x1="1170" y1="954" x2="962" y2="954" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="1065.0" y="949" text-anchor="middle" fill="#1b2a41">rejected + motivo</text>
+<line x1="960" y1="988" x2="522" y2="988" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="740.0" y="983" text-anchor="middle" fill="#1b2a41">ResultadoPago(RECHAZADO)</text>
+<line x1="520" y1="1022" x2="748" y2="1022" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="1017" text-anchor="middle" fill="#1b2a41">INSERT Pago (RECHAZADO)</text>
+<rect x="526" y="1044" width="206" height="22" fill="#fff6bf" stroke="#d9c75a"/>
+<text x="532" y="1059">la reserva sigue PENDIENTE_PAGO</text>
+<line x1="520" y1="1090" x2="292" y2="1090" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="1085" text-anchor="middle" fill="#1b2a41">RespuestaPago(RECHAZADO)</text>
+<line x1="290" y1="1124" x2="92" y2="1124" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="1119" text-anchor="middle" fill="#1b2a41">JSON { mensaje }  (se puede reintentar)</text>
+<line x1="1170" y1="1180" x2="962" y2="1180" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="1065.0" y="1175" text-anchor="middle" fill="#1b2a41">in_process</text>
+<line x1="520" y1="1214" x2="748" y2="1214" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="1209" text-anchor="middle" fill="#1b2a41">INSERT Pago (PENDIENTE)</text>
+<rect x="526" y="1236" width="206" height="22" fill="#fff6bf" stroke="#d9c75a"/>
+<text x="532" y="1251">la reserva sigue PENDIENTE_PAGO</text>
+<line x1="520" y1="1282" x2="292" y2="1282" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="1277" text-anchor="middle" fill="#1b2a41">RespuestaPago(PENDIENTE)</text>
+<line x1="290" y1="1316" x2="92" y2="1316" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="1311" text-anchor="middle" fill="#1b2a41">JSON { en revisión }</text>
+<line x1="960" y1="1372" x2="522" y2="1372" stroke="#b9483a" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#x)"/>
+<text x="740.0" y="1367" text-anchor="middle" fill="#b9483a">excepción</text>
+<line x1="520" y1="1406" x2="748" y2="1406" stroke="#1b2a41" stroke-width="1.4" marker-end="url(#a)"/>
+<text x="635.0" y="1401" text-anchor="middle" fill="#1b2a41">INSERT Pago (ERROR)</text>
+<rect x="526" y="1428" width="293" height="22" fill="#fff6bf" stroke="#d9c75a"/>
+<text x="532" y="1443">la reserva sigue PENDIENTE_PAGO; no se rompe</text>
+<line x1="520" y1="1474" x2="292" y2="1474" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="405.0" y="1469" text-anchor="middle" fill="#1b2a41">RespuestaPago(ERROR)</text>
+<line x1="290" y1="1508" x2="92" y2="1508" stroke="#1b2a41" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#a)"/>
+<text x="190.0" y="1503" text-anchor="middle" fill="#1b2a41">JSON { mensaje }  (se puede reintentar)</text>
+</svg>
