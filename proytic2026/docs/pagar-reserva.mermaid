@@ -1,0 +1,52 @@
+sequenceDiagram
+    autonumber
+    actor T as Turista (navegador)
+    participant C as PagoWebController
+    participant S as PagoService
+    participant BD as Base de datos
+    participant PP as PasarelaPago
+    participant MP as Mercado Pago (API)
+
+    T->>C: GET /panel/turista/reservas/{id}/pagar
+    C->>S: validarPago(turistaId, reserva)
+    S-->>C: null (se puede pagar) o motivo
+    C-->>T: pagar.html (Brick de Mercado Pago)
+    Note over T,MP: El navegador convierte la tarjeta en un token. El servidor nunca ve el número.
+    T->>C: POST /panel/turista/reservas/{id}/pagar (token, medio de pago)
+    C->>S: pagar(turistaId, reservaId, datos)
+    S->>BD: findById(reserva)
+    BD-->>S: reserva
+    alt no se puede pagar (ajena, cancelada, vencida, ya paga, en espera)
+        S-->>C: RespuestaPago(null, motivo)
+        C-->>T: JSON { estado: NO_PERMITIDO, mensaje }
+    end
+    S->>S: monto = reserva.montoTotal (precio x cupos), clave de idempotencia
+    S->>PP: cobrar(solicitud)
+    PP->>MP: POST /v1/payments (token, monto, timeout)
+    alt aprobado
+        MP-->>PP: approved + id
+        PP-->>S: ResultadoPago(APROBADO)
+        S->>BD: INSERT Pago (APROBADO, id externo, últimos 4)
+        S->>BD: UPDATE reserva estado = CONFIRMADA
+        S-->>C: RespuestaPago(APROBADO)
+        C-->>T: JSON { aprobado, comprobante }
+    else rechazado
+        MP-->>PP: rejected + motivo
+        PP-->>S: ResultadoPago(RECHAZADO)
+        S->>BD: INSERT Pago (RECHAZADO)
+        Note over S,BD: la reserva sigue PENDIENTE_PAGO
+        S-->>C: RespuestaPago(RECHAZADO)
+        C-->>T: JSON { mensaje, se puede reintentar }
+    else en revisión
+        MP-->>PP: in_process
+        S->>BD: INSERT Pago (PENDIENTE)
+        Note over S,BD: la reserva sigue PENDIENTE_PAGO
+        S-->>C: RespuestaPago(PENDIENTE)
+        C-->>T: JSON { en revisión }
+    else pasarela caída / sin respuesta / timeout
+        PP--xS: excepción
+        S->>BD: INSERT Pago (ERROR)
+        Note over S,BD: la reserva sigue PENDIENTE_PAGO, no se rompe
+        S-->>C: RespuestaPago(ERROR)
+        C-->>T: JSON { mensaje, se puede reintentar }
+    end

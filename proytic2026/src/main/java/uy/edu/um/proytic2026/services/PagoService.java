@@ -145,6 +145,13 @@ public class PagoService {
         return pagoRepository.findByReservaIdOrderByFechaDesc(reservaId);
     }
 
+    // El último intento de pago de la reserva, o null si todavía no se intentó pagar.
+    // "Mis reservas" lo usa para mostrar "Pagar" o "Reintentar pago" y cómo salió el último.
+    public Pago ultimoIntento(Long reservaId) {
+        List<Pago> pagos = pagoRepository.findByReservaIdOrderByFechaDesc(reservaId);
+        return pagos.isEmpty() ? null : pagos.get(0);
+    }
+
     public LocalDateTime venceElPago(Reserva reserva) {
         return reserva.inicioPlazoPago().plusHours(ReservaService.HORAS_PARA_PAGAR);
     }
