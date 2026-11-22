@@ -3,11 +3,11 @@ package uy.edu.um.proytic2026.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import uy.edu.um.proytic2026.entities.Usuario;
 import uy.edu.um.proytic2026.repository.UsuarioRepository;
-import java.time.LocalDateTime;
-import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -17,7 +17,6 @@ public class UsuarioService {
     private UsuarioRepository usuarioRepository;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
 
     private static final int MAX_INTENTOS = 5;
     private static final int MINUTOS_BLOQUEO = 15;
@@ -53,7 +52,7 @@ public class UsuarioService {
             usuario.setIntentosFallidos(0);
         }
 
-        // Contraseña incorrecta
+        // Contraseña incorrecta.
         if (!passwordEncoder.matches(password, usuario.getPasswordHash())) {
 
             int intentos = usuario.getIntentosFallidos() + 1;
@@ -78,6 +77,21 @@ public class UsuarioService {
         return Optional.of(usuario);
     }
 
+    // Comprueba si una cuenta está bloqueada actualmente.
+    @Transactional(readOnly = true)
+    public boolean estaBloqueado(String email) {
+
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+
+        return usuarioRepository.findByUserEmailIgnoreCase(email.trim())
+                .map(usuario ->
+                        usuario.getBloqueadoHasta() != null
+                                && LocalDateTime.now().isBefore(usuario.getBloqueadoHasta())
+                )
+                .orElse(false);
+    }
 
     // REGISTRO: crea un usuario nuevo.
     public boolean altaUsuario(String nombre, String apellido, String email,

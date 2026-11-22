@@ -29,38 +29,56 @@ public class LoginController {
                                 @RequestParam String password,
                                 HttpServletRequest request,
                                 Model model) {
-        Usuario usuario = usuarioService.autenticar(email, password).orElse(null);
+
+        Usuario usuario = usuarioService.autenticar(email, password)
+                .orElse(null);
 
         if (usuario == null) {
-            model.addAttribute("error", "El correo o la contraseña son incorrectos.");
+
+            if (usuarioService.estaBloqueado(email)) {
+                model.addAttribute("error",
+                        "Tu cuenta está bloqueada temporalmente por varios intentos fallidos. Intentá nuevamente más tarde.");
+            } else {
+                model.addAttribute("error",
+                        "El correo o la contraseña son incorrectos.");
+            }
+
             model.addAttribute("email", email);
             return "login";
         }
 
-        // Evita conservar atributos de una sesión anterior al autenticar de nuevo.
+        // Evita conservar atributos de una sesión anterior.
         HttpSession sesionAnterior = request.getSession(false);
+
         if (sesionAnterior != null) {
             sesionAnterior.invalidate();
         }
 
-        // Guardamos en sesión los datos que el resto de la aplicación podrá consultar.
+        // Crear la nueva sesión.
         HttpSession nuevaSesion = request.getSession(true);
+
         nuevaSesion.setAttribute("usuarioId", usuario.getId());
         nuevaSesion.setAttribute("usuarioNombre", usuario.getName());
         nuevaSesion.setAttribute("usuarioEmail", usuario.getUserEmail());
         nuevaSesion.setAttribute("usuarioRol", obtenerRol(usuario));
 
-        // Después del login, cada uno va a su panel según el rol.
+        // Redirigir según el rol.
         String rol = obtenerRol(usuario);
+
         if (rol.equals("ADMINISTRADOR")) {
             return "redirect:/panel/admin";
         }
-        if (rol.equals("EMPRESA") || rol.equals("PARTICULAR") || rol.equals("PRESTADOR")) {
+
+        if (rol.equals("EMPRESA")
+                || rol.equals("PARTICULAR")
+                || rol.equals("PRESTADOR")) {
             return "redirect:/panel/prestador";
         }
+
         if (rol.equals("TURISTA")) {
             return "redirect:/panel/turista";
         }
+
         return "redirect:/";
     }
 
@@ -71,11 +89,13 @@ public class LoginController {
     }
 
     private String obtenerRol(Usuario usuario) {
+
         if (usuario instanceof Administrador) return "ADMINISTRADOR";
         if (usuario instanceof Empresa) return "EMPRESA";
         if (usuario instanceof Particular) return "PARTICULAR";
         if (usuario instanceof Prestador) return "PRESTADOR";
         if (usuario instanceof Turista) return "TURISTA";
+
         return "DESCONOCIDO";
     }
 }
