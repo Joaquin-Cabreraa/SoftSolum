@@ -31,3 +31,9 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### macOS ###
+.DS_Store
+
+### Documentos de entrega (van aparte, no en el codigo) ###
+Entregables/
