@@ -30,7 +30,7 @@ class TuristaServiceTest {
         when(turistaRepository.save(any(Turista.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Turista turista = turistaService.altaTurista("Ana", "Pérez", "1.234.567-2", "1999-03-02",
-                "Ana@Mail.com", "099123456", "clave1234");
+                "Ana@Mail.com", "099123456", "claveSegura123456");
 
         assertNotNull(turista);
         assertEquals("Pérez", turista.getLastName());
@@ -43,9 +43,9 @@ class TuristaServiceTest {
     @Test
     void rechazaDatosIncompletosOFechaFutura() {
         assertEquals("Completá todos los campos obligatorios.", turistaService.validarDatos(
-                "Ana", "", "12345672", "1999-03-02", "ana@mail.com", "099123456", "clave1234"));
+                "Ana", "", "12345672", "1999-03-02", "ana@mail.com", "099123456", "claveSegura123456"));
         assertEquals("La fecha de nacimiento no es válida.", turistaService.validarDatos(
-                "Ana", "Pérez", "12345672", LocalDate.now().plusDays(1).toString(), "ana@mail.com", "099123456", "clave1234"));
+                "Ana", "Pérez", "12345672", LocalDate.now().plusDays(1).toString(), "ana@mail.com", "099123456", "claveSegura123456"));
     }
 
     @Test
@@ -53,7 +53,7 @@ class TuristaServiceTest {
         when(usuarioRepository.existsByUserEmailIgnoreCase("ana@mail.com")).thenReturn(true);
 
         assertEquals("Ya existe una cuenta registrada con ese correo electrónico.", turistaService.validarDatos(
-                "Ana", "Pérez", "12345672", "1999-03-02", "ana@mail.com", "099123456", "clave1234"));
+                "Ana", "Pérez", "12345672", "1999-03-02", "ana@mail.com", "099123456", "claveSegura123456"));
     }
 
     @Test
@@ -62,12 +62,12 @@ class TuristaServiceTest {
         when(turistaRepository.existsByDocumentoIgnoreCase("12345672")).thenReturn(true);
 
         assertEquals("Ya existe una cuenta registrada con ese documento.", turistaService.validarDatos(
-                "Ana", "Pérez", "1.234.567-2", "1999-03-02", "otra@mail.com", "099123456", "clave1234"));
+                "Ana", "Pérez", "1.234.567-2", "1999-03-02", "otra@mail.com", "099123456", "claveSegura123456"));
     }
 
     @Test
     void rechazaCedulaInventada() {
         assertTrue(turistaService.validarDatos("Ana", "Pérez", "1.234.567-9", "1999-03-02",
-                "ana@mail.com", "099123456", "clave1234").contains("no es válida"));
+                "ana@mail.com", "099123456", "claveSegura123456").contains("no es válida"));
     }
 }
