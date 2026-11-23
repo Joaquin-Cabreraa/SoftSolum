@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.server.ResponseStatusException;
 import uy.edu.um.proytic2026.entities.Actividad;
 import uy.edu.um.proytic2026.services.CatalogoService;
+import uy.edu.um.proytic2026.services.ClimaService;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -23,6 +24,9 @@ public class CatalogoWebController {
 
     @Autowired
     private CatalogoService catalogoService;
+
+    @Autowired
+    private ClimaService climaService;
 
     @Autowired
     private uy.edu.um.proytic2026.services.ImagenService imagenService;
@@ -78,7 +82,32 @@ public class CatalogoWebController {
 
         model.addAttribute("actividad", actividad);
         // Todos los horarios en plazo: los que tienen lugar se reservan, los llenos ofrecen lista de espera
-        model.addAttribute("horarios", catalogoService.horariosEnPlazo(actividad));
+
+    // Obtenemos las próximas fechas disponibles de la actividad.
+        var horarios = catalogoService.horariosEnPlazo(actividad);
+        model.addAttribute("horarios", horarios);
+
+    // Guardamos un pronóstico por fecha para no consultar
+    // varias veces el clima si hay horarios el mismo día.
+        java.util.Map<LocalDate, ClimaService.Pronostico> pronosticos =
+                new java.util.HashMap<>();
+
+        for (var horario : horarios) {
+            LocalDate fechaHorario = horario.getFecha();
+
+            if (!pronosticos.containsKey(fechaHorario)) {
+                climaService.consultar(
+                        actividad.getLocalidad(),
+                        actividad.getDepartamento(),
+                        fechaHorario
+                ).ifPresent(pronostico ->
+                        pronosticos.put(fechaHorario, pronostico));
+            }
+        }
+
+    // Enviamos los pronósticos a la página de detalle.
+        model.addAttribute("pronosticos", pronosticos);
+
         model.addAttribute("imagenes", imagenService.idsDe(actividad.getId()));
         model.addAttribute("resenas", resenaService.visiblesDe(actividad.getId()));
         model.addAttribute("valoracion", resenaService.promedios().get(actividad.getId()));

@@ -1,3 +1,4 @@
+
 package uy.edu.um.proytic2026.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,12 +13,16 @@ import java.time.format.DateTimeFormatter;
 @Component
 public class ReservaEmailListener {
 
+    // El servicio es opcional para que la aplicación funcione
+    // incluso cuando el envío de correos está deshabilitado.
     @Autowired(required = false)
     private EmailService emailService;
 
     @Value("${umnatural.mail.enabled:false}")
     private boolean correoHabilitado;
 
+    // Los correos se envían después de confirmar la transacción.
+    // Así evitamos notificar operaciones que no llegaron a guardarse.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarConfirmacion(ReservaCreadaEvent evento) {
 
@@ -25,6 +30,7 @@ public class ReservaEmailListener {
             return;
         }
 
+        // Avisa que la reserva fue registrada y está pendiente de pago.
         String asunto = "Recibimos tu reserva - UMnatural";
 
         String mensaje = """
@@ -57,12 +63,14 @@ public class ReservaEmailListener {
                     mensaje
             );
         } catch (Exception e) {
+            // Un error de correo no debe interrumpir el proceso de reserva.
             System.err.println(
                     "No se pudo enviar el correo de reserva: " + e.getMessage()
             );
         }
     }
 
+    // Notifica al turista cuando se aprueba el pago.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarConfirmacionPago(PagoAprobadoEvent evento) {
 
@@ -112,6 +120,7 @@ public class ReservaEmailListener {
         }
     }
 
+    // Informa la cancelación y si corresponde devolver el dinero.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarCancelacion(ReservaCanceladaEvent evento) {
 
@@ -129,6 +138,7 @@ public class ReservaEmailListener {
 
         String detalleMotivo = "";
 
+        // Si canceló el prestador, incluimos el motivo que ingresó.
         if (evento.canceladaPorPrestador()
                 && evento.motivoCancelacion() != null
                 && !evento.motivoCancelacion().isBlank()) {
@@ -138,6 +148,7 @@ public class ReservaEmailListener {
                     + "\n";
         }
 
+        // El mensaje cambia según el estado del pago y el reembolso.
         String informacionPago;
 
         if (!evento.estabaPaga()) {
@@ -149,7 +160,6 @@ public class ReservaEmailListener {
         } else {
             informacionPago = "Según las condiciones de cancelación, no corresponde un reembolso.";
         }
-
 
         String mensaje = """
         Hola:
@@ -172,7 +182,6 @@ public class ReservaEmailListener {
                 informacionPago
         );
 
-
         try {
             emailService.enviarCorreo(
                     evento.emailTurista(),
@@ -184,6 +193,8 @@ public class ReservaEmailListener {
         }
     }
 
+    // Se ejecuta cuando se libera un lugar y se asigna
+    // a un turista que estaba en lista de espera.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarCupoAsignado(CupoAsignadoEvent evento) {
 
@@ -233,6 +244,8 @@ public class ReservaEmailListener {
         }
     }
 
+    // Notifica cuando una reserva vence por no pagar
+    // dentro del plazo de dos horas.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarReservaVencida(ReservaVencidaEvent evento) {
 
@@ -280,6 +293,8 @@ public class ReservaEmailListener {
         }
     }
 
+    // Confirma que el turista ingresó a la lista de espera.
+    // Todavía no tiene un cupo asignado ni debe realizar un pago.
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void enviarInscripcionListaEspera(ListaEsperaRegistradaEvent evento) {
 
@@ -331,6 +346,4 @@ public class ReservaEmailListener {
             );
         }
     }
-
-
 }

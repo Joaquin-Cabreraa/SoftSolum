@@ -47,7 +47,7 @@
         .galeria .principal { width: 100%; aspect-ratio: 16 / 7; max-height: 480px; object-fit: cover; border-radius: 8px; display: block; background: #eee; }
         .galeria .miniaturas { display: flex; gap: 10px; margin-top: 10px; overflow-x: auto; }
         .galeria .miniaturas img { width: 110px; height: 76px; object-fit: cover; border-radius: 6px; cursor: pointer;
-                                   opacity: .65; border: 2px solid transparent; transition: opacity .2s; flex: none; }
+            opacity: .65; border: 2px solid transparent; transition: opacity .2s; flex: none; }
         .galeria .miniaturas img.elegida, .galeria .miniaturas img:hover { opacity: 1; border-color: var(--orange); }
 
         /* ---------- Horarios ---------- */
@@ -83,6 +83,31 @@
 
         .aviso-login { font-size: 15px; color: var(--muted); }
         .aviso-login a { color: var(--navy); font-weight: 700; }
+
+        /* ---------- Pronóstico del tiempo ---------- */
+        .pronostico {
+            margin-top: 12px;
+            padding: 12px 14px;
+            background: #eef6fa;
+            border: 1px solid #d6e7ef;
+            border-radius: 8px;
+            color: #23446b;
+            font-size: 14px;
+        }
+        .pronostico-titulo {
+            font-weight: 700;
+            margin-bottom: 7px;
+        }
+        .pronostico-datos {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 18px;
+        }
+        .pronostico-aviso {
+            font-size: 12px;
+            color: #657b8a;
+            margin-top: 8px;
+        }
 
         @media (max-width: 850px) {
             .encabezado { grid-template-columns: 1fr; }
@@ -179,60 +204,79 @@
         </aside>
     </div>
 
-    <!-- Próximas fechas (entidad Horario) -->
-    <!-- Las fechas quedan ocultas hasta tocar "Ver fechas disponibles" -->
+    <!-- Próximas fechas disponibles -->
     <section id="seccionHorarios" hidden>
-    <h2 id="horarios">Próximas fechas</h2>
+        <h2 id="horarios">Próximas fechas</h2>
 
-    <p class="aviso-login" th:if="${rol == null}">
-        Para reservar necesitás una cuenta de turista:
-        <a href="/login">iniciá sesión</a> o <a href="/registro/turista">registrate</a>.
-    </p>
+        <p class="aviso-login" th:if="${rol == null}">
+            Para reservar necesitás una cuenta de turista:
+            <a href="/login">iniciá sesión</a> o <a href="/registro/turista">registrate</a>.
+        </p>
 
-    <div class="horarios">
-        <div class="tarjeta horario" th:each="h : ${horarios}">
-            <div>
-                <div class="cuando">
-                    <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
-                    <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">09:00</span> a
-                    <span th:text="${#temporals.format(h.horaFin, 'HH:mm')}">11:00</span>
-                    <span class="dur" th:text="'· ' + ${h.textoDuracion()}">· 2 h</span>
+        <div class="horarios">
+            <div class="tarjeta horario" th:each="h : ${horarios}">
+                <div>
+                    <div class="cuando">
+                        <span th:text="${#temporals.format(h.fecha, 'dd/MM/yyyy')}">01/12/2026</span> ·
+                        <span th:text="${#temporals.format(h.horaInicio, 'HH:mm')}">09:00</span> a
+                        <span th:text="${#temporals.format(h.horaFin, 'HH:mm')}">11:00</span>
+                        <span class="dur" th:text="'· ' + ${h.textoDuracion()}">· 2 h</span>
+                    </div>
+
+                    <div class="detalle">
+                        <th:block th:if="${h.cuposDisponibles > 0}">
+                            <span th:class="${h.cuposDisponibles <= 3} ? 'cupos-pocos' : ''"
+                                  th:text="${h.cuposDisponibles == 1} ? 'Queda 1 lugar' : 'Quedan ' + ${h.cuposDisponibles} + ' lugares'">Quedan 10 lugares</span>
+                        </th:block>
+                        <span class="completo" th:if="${h.cuposDisponibles <= 0}">Completo · podés anotarte en la lista de espera</span>
+                        <div class="politica-cancelacion" th:classappend="${h.cancelable} ? 'si' : 'no'"
+                             th:text="(${h.cancelable} ? '↺ ' : '✕ ') + ${h.textoPoliticaCancelacion()}">No admite cancelación</div>
+                    </div>
+
+                    <!-- Pronóstico para la fecha de esta actividad -->
+                    <div class="pronostico"
+                         th:if="${pronosticos != null and pronosticos.containsKey(h.fecha)}"
+                         th:with="clima=${pronosticos.get(h.fecha)}">
+
+                        <div class="pronostico-titulo">Pronóstico del tiempo</div>
+
+                        <div class="pronostico-datos">
+                            <span th:text="${clima.descripcion()}">Parcialmente nublado</span>
+                            <span th:text="'Máx. ' + ${clima.temperaturaMaxima()} + ' °C'">Máx. 25 °C</span>
+                            <span th:text="'Mín. ' + ${clima.temperaturaMinima()} + ' °C'">Mín. 17 °C</span>
+                            <span th:text="'Prob. lluvia: ' + ${clima.probabilidadLluvia()} + '%'">Prob. lluvia: 20 %</span>
+                        </div>
+
+                        <div class="pronostico-aviso">
+                            Pronóstico orientativo, sujeto a cambios.
+                        </div>
+                    </div>
                 </div>
-                <div class="detalle">
-                    <th:block th:if="${h.cuposDisponibles > 0}">
-                        <span th:class="${h.cuposDisponibles <= 3} ? 'cupos-pocos' : ''"
-                              th:text="${h.cuposDisponibles == 1} ? 'Queda 1 lugar' : 'Quedan ' + ${h.cuposDisponibles} + ' lugares'">Quedan 10 lugares</span>
+
+                <div class="lado-derecho">
+                    <!-- Precio del horario -->
+                    <div th:with="uh=${h.cuposDisponibles > 0 and h.enDescuentoUltimaHora()}">
+                        <span class="cinta-uh" th:if="${uh}" th:text="'⏱ -' + ${actividad.descuentoUltimaHora} + ' %'">-20 %</span>
+                        <span class="precio-viejo" th:if="${uh}" th:text="'$U ' + ${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">$U 1.500</span>
+                        <span class="precio-horario" th:text="'$U ' + ${#numbers.formatDecimal(h.precioActual(), 1, 'POINT', 0, 'COMMA')}">$U 1.200</span>
+                    </div>
+
+                    <!-- Solo un turista puede reservar -->
+                    <th:block th:if="${rol == 'TURISTA'}">
+                        <a th:if="${h.cuposDisponibles > 0}" class="boton boton-naranja boton-chico"
+                           th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Reservar</a>
+                        <a th:if="${h.cuposDisponibles <= 0}" class="boton boton-borde boton-chico"
+                           th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Anotarme en lista de espera</a>
                     </th:block>
-                    <span class="completo" th:if="${h.cuposDisponibles <= 0}">Completo · podés anotarte en la lista de espera</span>
-                    <div class="politica-cancelacion" th:classappend="${h.cancelable} ? 'si' : 'no'"
-                         th:text="(${h.cancelable} ? '↺ ' : '✕ ') + ${h.textoPoliticaCancelacion()}">No admite cancelación</div>
+                    <a th:if="${rol == null}" class="boton boton-borde boton-chico" href="/login">Iniciar sesión para reservar</a>
                 </div>
-            </div>
-
-            <div class="lado-derecho">
-                <!-- Precio de este horario (con descuento de última hora si corresponde) -->
-                <div th:with="uh=${h.cuposDisponibles > 0 and h.enDescuentoUltimaHora()}">
-                    <span class="cinta-uh" th:if="${uh}" th:text="'⏱ -' + ${actividad.descuentoUltimaHora} + ' %'">-20 %</span>
-                    <span class="precio-viejo" th:if="${uh}" th:text="'$U ' + ${#numbers.formatDecimal(actividad.precio, 1, 'POINT', 0, 'COMMA')}">$U 1.500</span>
-                    <span class="precio-horario" th:text="'$U ' + ${#numbers.formatDecimal(h.precioActual(), 1, 'POINT', 0, 'COMMA')}">$U 1.200</span>
-                </div>
-
-                <!-- Solo un turista puede reservar -->
-                <th:block th:if="${rol == 'TURISTA'}">
-                    <a th:if="${h.cuposDisponibles > 0}" class="boton boton-naranja boton-chico"
-                       th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Reservar</a>
-                    <a th:if="${h.cuposDisponibles <= 0}" class="boton boton-borde boton-chico"
-                       th:href="@{/panel/turista/reservar(actividadId=${actividad.id}, fecha=${h.fecha}, hora=${h.horaInicio})}" href="#">Anotarme en lista de espera</a>
-                </th:block>
-                <a th:if="${rol == null}" class="boton boton-borde boton-chico" href="/login">Iniciar sesión para reservar</a>
             </div>
         </div>
-    </div>
 
-    <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
-        <h3>No hay fechas disponibles por ahora</h3>
-        <p>El prestador todavía no cargó próximas fechas.</p>
-    </div>
+        <div class="tarjeta" th:if="${#lists.isEmpty(horarios)}" style="text-align:center; padding:34px">
+            <h3>No hay fechas disponibles por ahora</h3>
+            <p>El prestador todavía no cargó próximas fechas.</p>
+        </div>
     </section>
 
     <!-- Reseñas de turistas que ya hicieron la actividad -->
@@ -267,6 +311,7 @@
         document.getElementById('botonFechas').textContent = 'Ver fechas disponibles ↓';
         seccion.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
+
     // Si se llega con el link .../actividades/5#horarios, se muestran directamente
     if (location.hash === '#horarios') mostrarFechas();
 
