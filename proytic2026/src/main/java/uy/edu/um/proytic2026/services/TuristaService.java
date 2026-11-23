@@ -53,8 +53,9 @@ public class TuristaService {
             return "Ingresá un celular válido, por ejemplo 099123456.";
         }
 
-        if (password.length() < 8) {
-            return "La contraseña debe tener al menos 8 caracteres.";
+        String errorContrasena = PoliticaContrasenas.validar(password);
+        if (errorContrasena != null) {
+            return errorContrasena;
         }
 
         if (usuarioRepository.existsByUserEmailIgnoreCase(email.trim())) {

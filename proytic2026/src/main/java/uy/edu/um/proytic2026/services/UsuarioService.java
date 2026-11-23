@@ -101,7 +101,7 @@ public class UsuarioService {
             return false;
         }
 
-        if (password == null || password.isBlank()) {
+        if (PoliticaContrasenas.validar(password) != null) {
             return false;
         }
 
