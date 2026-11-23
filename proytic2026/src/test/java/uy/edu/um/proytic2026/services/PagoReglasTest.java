@@ -36,6 +36,7 @@ class PagoReglasTest {
     @Mock private PagoRepository pagoRepository;
     @Mock private ReservaRepository reservaRepository;
     @Mock private PasarelaPago pasarela;
+    @Mock private ConfirmacionPagoService confirmacionPagoService;
 
     @InjectMocks private PagoService pagoService;
 
@@ -125,6 +126,7 @@ class PagoReglasTest {
     @Test
     void elPagoAprobadoGuardaMontoUltimosDigitosYCodigoDeLaPasarela() {
         reservaPagable();
+        when(confirmacionPagoService.confirmarReserva(15L)).thenReturn(true);
         when(pasarela.cobrar(any())).thenReturn(new ResultadoPago(EstadoPago.APROBADO, "MP-1", "accredited", "visa", "4111111111113704"));
 
         pagoService.pagar(TURISTA_ID, 15L, datosDelNavegador);

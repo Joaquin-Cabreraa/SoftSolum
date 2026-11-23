@@ -17,6 +17,6 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(controlDeAcceso)
-                .addPathPatterns("/panel/**", "/admin/**");
+                .addPathPatterns("/panel/**", "/admin/**", "/emprendimientos/**", "/emprendimientos");
     }
 }

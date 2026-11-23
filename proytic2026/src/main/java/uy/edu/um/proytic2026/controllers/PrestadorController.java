@@ -8,6 +8,7 @@ import uy.edu.um.proytic2026.services.PrestadorService;
 import uy.edu.um.proytic2026.repository.UsuarioRepository;
 import uy.edu.um.proytic2026.repository.EmpresaRepository;
 import uy.edu.um.proytic2026.repository.ParticularRepository;
+import uy.edu.um.proytic2026.services.PoliticaContrasenas;
 
 @RestController
 @RequestMapping("/prestadores")
@@ -37,7 +38,10 @@ public class PrestadorController {
             @RequestParam String nombreEmprendimiento,
             @RequestParam String direccion,
             @RequestParam(required = false) String descripcion) {
-
+        String errorContrasena = PoliticaContrasenas.validar(password);
+        if (errorContrasena != null) {
+            return ResponseEntity.badRequest().body(errorContrasena);
+        }
         // Comprobar campos obligatorios
         if (vacio(razonSocial) || vacio(rut) || vacio(email)
                 || vacio(password) || vacio(nombreEmprendimiento)) {
@@ -96,6 +100,10 @@ public class PrestadorController {
             @RequestParam String direccion,
             @RequestParam(required = false) String descripcion) {
 
+        String errorContrasena = PoliticaContrasenas.validar(password);
+        if (errorContrasena != null) {
+            return ResponseEntity.badRequest().body(errorContrasena);
+        }
         // Comprobar campos obligatorios
         if (vacio(nombre) || vacio(apellido) || vacio(documento)
                 || vacio(email) || vacio(password)

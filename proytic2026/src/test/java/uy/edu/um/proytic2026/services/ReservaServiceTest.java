@@ -22,6 +22,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
+import org.springframework.context.ApplicationEventPublisher;
 
 // Tests unitarios de ReservaService (CU-T06 Reservar, CU-S01 Vencimiento).
 // No usan la base de datos: los repositorios son "mocks" (objetos falsos de Mockito)
@@ -34,6 +35,7 @@ class ReservaServiceTest {
     @Mock private TuristaRepository turistaRepository;
     @Mock private CatalogoService catalogoService;
     @Mock private PagoService pagoService;
+    @Mock private ApplicationEventPublisher eventPublisher;
 
     @InjectMocks private ReservaService reservaService;
 
@@ -173,15 +175,24 @@ class ReservaServiceTest {
         verify(horarioRepository, never()).descontarCupos(anyLong(), any(), any(), anyInt());
     }
 
+
     @Test
     void cancelaLasReservasVencidasYDevuelveLosCupos() {
+        // Creamos un turista con correo para la notificación.
+        Turista turista = new Turista();
+        turista.setUserEmail("turista@test.com");
+
         Reserva vencida = new Reserva();
+        vencida.setTurista(turista);
         vencida.setHorario(horario);
         vencida.setCantCupos(2);
         vencida.setEstado(EstadoReserva.PENDIENTE_PAGO);
         vencida.setFechaCreacion(LocalDateTime.now().minusHours(3));
-        when(reservaRepository.pendientesConPlazoVencido(eq(EstadoReserva.PENDIENTE_PAGO), any(LocalDateTime.class)))
-                .thenReturn(List.of(vencida));
+
+        when(reservaRepository.pendientesConPlazoVencido(
+                eq(EstadoReserva.PENDIENTE_PAGO),
+                any(LocalDateTime.class)
+        )).thenReturn(List.of(vencida));
 
         int canceladas = reservaService.cancelarReservasVencidas();
 
@@ -189,11 +200,18 @@ class ReservaServiceTest {
         assertEquals(EstadoReserva.CANCELADA, vencida.getEstado());
         verify(horarioRepository).devolverCupos(ACTIVIDAD_ID, fecha, hora, 2);
 
-        // Busca las pendientes cuyo plazo empezó hace más de 2 horas
-        ArgumentCaptor<LocalDateTime> limite = ArgumentCaptor.forClass(LocalDateTime.class);
-        verify(reservaRepository).pendientesConPlazoVencido(eq(EstadoReserva.PENDIENTE_PAGO), limite.capture());
+        // Comprueba que se buscan las reservas cuyo plazo venció.
+        ArgumentCaptor<LocalDateTime> limite =
+                ArgumentCaptor.forClass(LocalDateTime.class);
+
+        verify(reservaRepository).pendientesConPlazoVencido(
+                eq(EstadoReserva.PENDIENTE_PAGO),
+                limite.capture()
+        );
+
         assertTrue(limite.getValue().isBefore(LocalDateTime.now().minusMinutes(119)));
     }
+
 
     // ---------- Lista de espera ----------
 

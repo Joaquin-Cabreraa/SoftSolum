@@ -76,10 +76,23 @@ class PerfilServiceTest {
 
     @Test
     void cambiaLaContrasenaSoloConLaActualCorrecta() {
-        assertEquals("La contraseña actual no es correcta.",
-                perfilService.cambiarContrasena(1L, "otra", "nueva12345", "nueva12345"));
+        assertEquals(
+                "La contraseña actual no es correcta.",
+                perfilService.cambiarContrasena(
+                        1L, "otra", "contrasenaNueva12345", "contrasenaNueva12345"
+                )
+        );
 
-        assertNull(perfilService.cambiarContrasena(1L, "clave1234", "nueva12345", "nueva12345"));
-        assertTrue(new BCryptPasswordEncoder().matches("nueva12345", ana.getPasswordHash()));
+        assertNull(
+                perfilService.cambiarContrasena(
+                        1L, "clave1234", "contrasenaNueva12345", "contrasenaNueva12345"
+                )
+        );
+
+        assertTrue(
+                new BCryptPasswordEncoder().matches(
+                        "contrasenaNueva12345", ana.getPasswordHash()
+                )
+        );
     }
 }

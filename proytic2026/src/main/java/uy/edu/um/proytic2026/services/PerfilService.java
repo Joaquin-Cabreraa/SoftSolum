@@ -132,8 +132,9 @@ public class PerfilService {
         if (vacio(actual) || !passwordEncoder.matches(actual, usuario.getPasswordHash())) {
             return "La contraseña actual no es correcta.";
         }
-        if (nueva == null || nueva.length() < 8) {
-            return "La nueva contraseña debe tener al menos 8 caracteres.";
+        String errorContrasena = PoliticaContrasenas.validar(nueva);
+        if (errorContrasena != null) {
+            return errorContrasena;
         }
         if (!nueva.equals(confirmacion)) {
             return "Las contraseñas nuevas no coinciden.";

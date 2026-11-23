@@ -177,6 +177,20 @@ public class PrestadorActividadesWebController {
                          @RequestParam(name = "eliminarImagenes", required = false) List<Long> eliminarImagenes,
                          HttpSession session, Model model, RedirectAttributes redirect) throws java.io.IOException {
 
+        // Comprobar que la actividad pertenece al prestador autenticado
+        Long idPrestador = prestadorId(session);
+
+        Actividad actividad = actividadService.actividadDelPrestador(idPrestador, id);
+
+        if (actividad == null) {
+            redirect.addFlashAttribute("error",
+                    "No tenés permiso para editar esta actividad.");
+            return "redirect:/panel/prestador/actividades";
+        }
+
+        // Tipos y equipamiento que escribió a mano
+        tipos = sumar(tipos, tiposService.obtenerOCrearTiposActividad(nuevosTipos));
+
         // Tipos y equipamiento que escribió a mano (se crean si no existen)
         tipos = sumar(tipos, tiposService.obtenerOCrearTiposActividad(nuevosTipos));
         equipamiento = sumar(equipamiento, tiposService.obtenerOCrearTiposEquipamiento(nuevoEquipamiento));

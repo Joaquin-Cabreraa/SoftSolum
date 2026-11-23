@@ -1,12 +1,13 @@
-
 package uy.edu.um.proytic2026.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.transaction.annotation.Transactional;
 import uy.edu.um.proytic2026.entities.Usuario;
 import uy.edu.um.proytic2026.repository.UsuarioRepository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -17,16 +18,79 @@ public class UsuarioService {
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    // LOGIN: busca al usuario y verifica su contraseña.
+    private static final int MAX_INTENTOS = 5;
+    private static final int MINUTOS_BLOQUEO = 15;
+
+    // LOGIN: verifica la contraseña y controla los intentos fallidos.
+    @Transactional
     public Optional<Usuario> autenticar(String email, String password) {
-        if (email == null || email.isBlank() ||
-                password == null || password.isBlank()) {
+
+        if (email == null || email.isBlank()
+                || password == null || password.isBlank()) {
             return Optional.empty();
         }
 
+        Optional<Usuario> encontrado =
+                usuarioRepository.findByUserEmailIgnoreCase(email.trim());
+
+        if (encontrado.isEmpty()) {
+            return Optional.empty();
+        }
+
+        Usuario usuario = encontrado.get();
+        LocalDateTime ahora = LocalDateTime.now();
+
+        // Si la cuenta sigue bloqueada, no permite ingresar.
+        if (usuario.getBloqueadoHasta() != null) {
+
+            if (ahora.isBefore(usuario.getBloqueadoHasta())) {
+                return Optional.empty();
+            }
+
+            // Terminó el bloqueo: reiniciamos el contador.
+            usuario.setBloqueadoHasta(null);
+            usuario.setIntentosFallidos(0);
+        }
+
+        // Contraseña incorrecta.
+        if (!passwordEncoder.matches(password, usuario.getPasswordHash())) {
+
+            int intentos = usuario.getIntentosFallidos() + 1;
+            usuario.setIntentosFallidos(intentos);
+
+            if (intentos >= MAX_INTENTOS) {
+                usuario.setBloqueadoHasta(
+                        ahora.plusMinutes(MINUTOS_BLOQUEO)
+                );
+            }
+
+            usuarioRepository.save(usuario);
+            return Optional.empty();
+        }
+
+        // Contraseña correcta: reiniciamos los intentos.
+        usuario.setIntentosFallidos(0);
+        usuario.setBloqueadoHasta(null);
+
+        usuarioRepository.save(usuario);
+
+        return Optional.of(usuario);
+    }
+
+    // Comprueba si una cuenta está bloqueada actualmente.
+    @Transactional(readOnly = true)
+    public boolean estaBloqueado(String email) {
+
+        if (email == null || email.isBlank()) {
+            return false;
+        }
+
         return usuarioRepository.findByUserEmailIgnoreCase(email.trim())
-                .filter(usuario ->
-                        passwordEncoder.matches(password, usuario.getPasswordHash()));
+                .map(usuario ->
+                        usuario.getBloqueadoHasta() != null
+                                && LocalDateTime.now().isBefore(usuario.getBloqueadoHasta())
+                )
+                .orElse(false);
     }
 
     // REGISTRO: crea un usuario nuevo.
@@ -37,7 +101,7 @@ public class UsuarioService {
             return false;
         }
 
-        if (password == null || password.isBlank()) {
+        if (PoliticaContrasenas.validar(password) != null) {
             return false;
         }
 

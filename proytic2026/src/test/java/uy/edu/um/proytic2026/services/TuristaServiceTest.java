@@ -37,7 +37,7 @@ class TuristaServiceTest {
         assertEquals("12345672", turista.getDocumento());          // sin puntos ni guion
         assertEquals(LocalDate.of(1999, 3, 2), turista.getFechaNacimiento());
         assertEquals("ana@mail.com", turista.getUserEmail());      // en minúsculas
-        assertNotEquals("clave1234", turista.getPasswordHash());   // guardada con BCrypt
+        assertNotEquals("claveSegura123456", turista.getPasswordHash());   // guardada con BCrypt
     }
 
     @Test

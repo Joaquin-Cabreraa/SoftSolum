@@ -26,6 +26,10 @@ public class PrestadorService {
     public boolean altaEmpresa(String razonSocial, String rut, String email, String telefono,
                                String password, String nombreEmprendimiento, String direccion,
                                String descripcion) {
+        //validar la forma de la contraseña
+        if (PoliticaContrasenas.validar(password) != null) {
+            return false;
+        }
 
         // Comprobar campos obligatorios
         if (vacio(razonSocial) || vacio(rut) || vacio(email)
@@ -76,7 +80,10 @@ public class PrestadorService {
     public boolean altaParticular(String nombre, String apellido, String documento, String email,
                                   String telefono, String password, String nombreEmprendimiento, String direccion,
                                String descripcion) {
-
+        //validar la forma de la contraseña
+        if (PoliticaContrasenas.validar(password) != null) {
+            return false;
+        }
         // Comprobar campos obligatorios
         if (vacio(nombre) || vacio(apellido) || vacio(documento)
                 || vacio(email) || vacio(password)
