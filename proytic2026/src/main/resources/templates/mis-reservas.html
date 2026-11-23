@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
@@ -61,7 +62,7 @@
     <h1>Mis reservas.</h1>
     <p class="descripcion">Acá ves todas tus reservas y en qué estado está cada una.</p>
 
-    <!-- Mensaje que manda el controller después de reservar -->
+    <!-- Mensajes del controlador -->
     <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Reserva creada</div>
     <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
 
@@ -80,7 +81,8 @@
                         <span th:text="${#temporals.format(r.horario.horaFin, 'HH:mm')}">11:00</span>
                     </div>
                     <div th:text="${r.cantCupos == 1} ? '1 persona' : ${r.cantCupos} + ' personas'">2 personas</div>
-                    <div th:if="${r.estado.name() != 'CANCELADA'}" th:text="'Política: ' + ${r.horario.textoPoliticaCancelacion()}">Política</div>
+                    <div th:if="${r.estado.name() != 'CANCELADA'}"
+                         th:text="'Política: ' + ${r.horario.textoPoliticaCancelacion()}">Política</div>
                 </div>
                 <div class="participantes">
                     <span th:each="p, i : ${r.participantes}"
@@ -90,78 +92,133 @@
 
             <div class="derecha">
                 <!-- Etiqueta según el estado -->
-                <span class="estado estado-pendiente" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
-                <span class="estado estado-aceptado"  th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
-                <span class="estado estado-cancelado" th:if="${r.estado.name() == 'CANCELADA' and !r.canceladaPorPrestador()}">CANCELADA</span>
-                <span class="estado estado-denegado" th:if="${r.canceladaPorPrestador()}">CANCELADA POR EL PRESTADOR</span>
+                <span class="estado estado-pendiente"
+                      th:if="${r.estado.name() == 'PENDIENTE_PAGO'}">PENDIENTE DE PAGO</span>
+
+                <span class="estado estado-aceptado"
+                      th:if="${r.estado.name() == 'CONFIRMADA'}">CONFIRMADA</span>
+
+                <span class="estado estado-cancelado"
+                      th:if="${r.estado.name() == 'CANCELADA' and !r.canceladaPorPrestador()}">CANCELADA</span>
+
+                <span class="estado estado-denegado"
+                      th:if="${r.canceladaPorPrestador()}">CANCELADA POR EL PRESTADOR</span>
+
+                <!-- Motivo de cancelación del prestador -->
                 <div class="aviso-prestador" th:if="${r.canceladaPorPrestador()}">
-                    <b>Motivo:</b> <span th:text="${r.motivoCancelacionPrestador}"></span><br>
-                    <span th:if="${r.montoTotal != null}">Si habías pagado, te devolvimos el 100 % a tu tarjeta.</span>
+                    <b>Motivo:</b>
+                    <span th:text="${r.motivoCancelacionPrestador}"></span>
+                    <br>
+                    <span>
+                        Si habías realizado un pago, el prestador habrá
+                        solicitado el reembolso correspondiente.
+                    </span>
                 </div>
-                <span class="estado estado-espera" th:if="${r.estado.name() == 'EN_ESPERA'}">EN LISTA DE ESPERA</span>
-                <div class="espera-info" th:if="${r.estado.name() == 'EN_ESPERA'}">
-                    Sos el <b th:text="${posiciones[r.id]} + 'º'">1º</b> de la fila. Si se libera lugar, se te asigna solo
+
+                <span class="estado estado-espera"
+                      th:if="${r.estado.name() == 'EN_ESPERA'}">EN LISTA DE ESPERA</span>
+
+                <div class="espera-info"
+                     th:if="${r.estado.name() == 'EN_ESPERA'}">
+                    Sos el <b th:text="${posiciones[r.id]} + 'º'">1º</b> de la fila.
+                    Si se libera lugar, se te asigna solo
                     y vas a tener 2 horas para pagar.
                 </div>
 
-                <div class="monto">$U <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span></div>
+                <div class="monto">
+                    $U <span th:text="${#numbers.formatDecimal(r.montoTotal, 1, 'POINT', 0, 'COMMA')}">0</span>
+                </div>
 
-                <!-- Plazo para pagar (2 horas desde que reservó) -->
-                <div class="vence" th:if="${r.estado.name() == 'PENDIENTE_PAGO'}"
+                <!-- Plazo para pagar -->
+                <div class="vence"
+                     th:if="${r.estado.name() == 'PENDIENTE_PAGO'}"
                      th:text="'Pagá antes de las ' + ${#temporals.format(reservaService.venceElPago(r), 'HH:mm')} + ' del ' + ${#temporals.format(reservaService.venceElPago(r), 'dd/MM')}">
                     Pagá antes de las 15:30
                 </div>
+
                 <div class="acciones-reserva">
+
                     <!-- Comprobante con código QR -->
                     <a th:if="${r.estado.name() == 'CONFIRMADA' or r.estado.name() == 'PENDIENTE_PAGO'}"
-                       class="boton boton-borde boton-chico" th:href="@{/reserva/{c}(c=${r.codigo})}" href="#">▦ Ver QR</a>
+                       class="boton boton-borde boton-chico"
+                       th:href="@{/reserva/{c}(c=${r.codigo})}"
+                       href="#">▦ Ver QR</a>
 
-                    <!-- Reseña: cuando la actividad ya terminó -->
+                    <!-- Reseña cuando la actividad terminó -->
                     <a th:if="${misResenas[r.id] == null and r.estado.name() == 'CONFIRMADA' and r.horario.fecha.atTime(r.horario.horaFin).isBefore(ahora)}"
-                       class="boton boton-naranja boton-chico" th:href="@{/panel/turista/reservas/{id}/resena(id=${r.id})}">★ Dejar reseña</a>
-                    <div class="mi-resena" th:if="${misResenas[r.id] != null}" th:with="mr=${misResenas[r.id]}">
-                        Tu reseña: <span class="estrellas-fijas"><span th:each="i : ${#numbers.sequence(1,5)}" th:classappend="${i > mr.puntaje} ? 'apagada' : ''">★</span></span>
-                        <div class="oculta-motivo" th:if="${mr.estaOculta()}" th:text="'El administrador la ocultó: ' + ${mr.motivoOculta}"></div>
-                        <div class="respuesta-prestador" th:if="${mr.respuestaPrestador}" th:text="'Respuesta del prestador: ' + ${mr.respuestaPrestador}"></div>
+                       class="boton boton-naranja boton-chico"
+                       th:href="@{/panel/turista/reservas/{id}/resena(id=${r.id})}">★ Dejar reseña</a>
+
+                    <div class="mi-resena"
+                         th:if="${misResenas[r.id] != null}"
+                         th:with="mr=${misResenas[r.id]}">
+                        Tu reseña:
+                        <span class="estrellas-fijas">
+                            <span th:each="i : ${#numbers.sequence(1,5)}"
+                                  th:classappend="${i > mr.puntaje} ? 'apagada' : ''">★</span>
+                        </span>
+                        <div class="oculta-motivo"
+                             th:if="${mr.estaOculta()}"
+                             th:text="'El administrador la ocultó: ' + ${mr.motivoOculta}"></div>
+                        <div class="respuesta-prestador"
+                             th:if="${mr.respuestaPrestador}"
+                             th:text="'Respuesta del prestador: ' + ${mr.respuestaPrestador}"></div>
                     </div>
 
-                    <!-- Pagar (CU-T07) -->
-                    <a th:if="${r.estado.name() == 'PENDIENTE_PAGO'}" class="boton boton-naranja boton-chico"
-                       th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}" href="#">Pagar</a>
+                    <!-- Pagar -->
+                    <a th:if="${r.estado.name() == 'PENDIENTE_PAGO'}"
+                       class="boton boton-naranja boton-chico"
+                       th:href="@{/panel/turista/reservas/{id}/pagar(id=${r.id})}"
+                       href="#">Pagar</a>
 
-                    <!-- Cancelar (CU-T08). Se decide con la hora del servidor (Uruguay) y la política del horario -->
+                    <!-- Cancelar -->
                     <th:block th:with="motivo=${reservaService.puedeCancelar(r, ahora)}">
                         <th:block th:if="${motivo == null}">
-                            <!-- En espera o pendiente: no se pagó nada -->
-                            <form method="post" th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
+
+                            <!-- Reserva en espera o pendiente -->
+                            <form method="post"
+                                  th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
                                   th:if="${r.estado.name() != 'CONFIRMADA'}"
                                   onsubmit="return confirm('¿Cancelar esta reserva? Los lugares quedan libres para otro turista.');">
-                                <button type="submit" class="boton boton-borde boton-chico"
+                                <button type="submit"
+                                        class="boton boton-borde boton-chico"
                                         th:text="${r.estado.name() == 'EN_ESPERA'} ? 'Salir de la lista' : 'Cancelar'">Cancelar</button>
                             </form>
-                            <!-- Confirmada: se avisa cuánto se devuelve -->
-                            <form method="post" th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
+
+                            <!-- Reserva confirmada -->
+                            <form method="post"
+                                  th:action="@{/panel/turista/reservas/{id}/cancelar(id=${r.id})}"
                                   th:if="${r.estado.name() == 'CONFIRMADA'}"
                                   th:attr="onsubmit=${r.horario.reembolso() > 0}
                                      ? 'return confirm(&quot;¿Cancelar esta reserva? Te devolvemos $U ' + ${#numbers.formatDecimal(reservaService.montoAReembolsar(r), 1, 'POINT', 0, 'COMMA')} + '.&quot;)'
                                      : 'return confirm(&quot;¿Cancelar esta reserva? Según la política de este horario NO hay reembolso.&quot;)'">
-                                <button type="submit" class="boton boton-borde boton-chico">Cancelar</button>
+                                <button type="submit"
+                                        class="boton boton-borde boton-chico">Cancelar</button>
                             </form>
-                            <span class="reembolso" th:if="${r.estado.name() == 'CONFIRMADA'}"
+
+                            <span class="reembolso"
+                                  th:if="${r.estado.name() == 'CONFIRMADA'}"
                                   th:text="(${r.horario.reembolso() > 0} ? 'Te devolvemos $U ' + ${#numbers.formatDecimal(reservaService.montoAReembolsar(r), 1, 'POINT', 0, 'COMMA')} + ' (' + ${r.horario.reembolso()} + ' %)' : 'Sin reembolso')
                                            + ' · hasta el ' + ${#temporals.format(r.horario.limiteCancelacion(), 'dd/MM HH:mm')}"></span>
                         </th:block>
-                        <!-- No se puede: se explica por qué -->
-                        <span class="reembolso" th:if="${motivo != null and r.estado.name() != 'CANCELADA'}" th:text="${motivo}"></span>
+
+                        <!-- Motivo por el que no se puede cancelar -->
+                        <span class="reembolso"
+                              th:if="${motivo != null and r.estado.name() != 'CANCELADA'}"
+                              th:text="${motivo}"></span>
                     </th:block>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="tarjeta" th:if="${#lists.isEmpty(reservas)}" style="text-align:center; padding:40px; margin-top: 30px">
+    <div class="tarjeta"
+         th:if="${#lists.isEmpty(reservas)}"
+         style="text-align:center; padding:40px; margin-top: 30px">
         <h3>Todavía no hiciste ninguna reserva</h3>
-        <p style="margin-bottom: 18px">Explorá las actividades y reservá tu próxima experiencia.</p>
+        <p style="margin-bottom: 18px">
+            Explorá las actividades y reservá tu próxima experiencia.
+        </p>
         <a href="/actividades" class="boton boton-naranja">Ver actividades</a>
     </div>
 </main>

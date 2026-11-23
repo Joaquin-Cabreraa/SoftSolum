@@ -8,6 +8,7 @@ import uy.edu.um.proytic2026.entities.*;
 import uy.edu.um.proytic2026.repository.HorarioRepository;
 import uy.edu.um.proytic2026.repository.ReservaRepository;
 import uy.edu.um.proytic2026.repository.TuristaRepository;
+import org.springframework.context.ApplicationEventPublisher;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -42,6 +43,9 @@ public class ReservaService {
 
     @Autowired
     private PagoService pagoService;
+
+    @Autowired
+    private ApplicationEventPublisher eventPublisher;
 
     // ---------- Validación ----------
 
@@ -155,6 +159,7 @@ public class ReservaService {
     // o si justo otro turista se llevó los últimos cupos.
     // @Transactional: si algo falla a mitad de camino, se deshace todo
     // (no queda un cupo descontado sin reserva, ni una reserva sin su cupo).
+
     @Transactional
     public Reserva crearReserva(Long turistaId, Long actividadId, LocalDate fecha, LocalTime horaInicio,
                                 int cantidad, List<String> nombres, List<String> apellidos,
@@ -165,25 +170,48 @@ public class ReservaService {
             return null;
         }
 
-        // 1. Descontar los cupos de forma atómica (RNE #3).
-        //    Si devuelve 0, alguien reservó antes y ya no alcanzan.
-        int filas = horarioRepository.descontarCupos(actividadId, fecha, horaInicio, cantidad);
+        // 1. Descontar los cupos de forma atómica
+        int filas = horarioRepository.descontarCupos(
+                actividadId, fecha, horaInicio, cantidad
+        );
+
         if (filas == 0) {
             return null;
         }
 
-        // 2. Armar la reserva (se vuelve a leer el horario, ya con los cupos actualizados)
-        Horario horario = horarioRepository.findById(new HorarioId(actividadId, fecha, horaInicio)).orElseThrow();
+        // 2. Armar la reserva
+        Horario horario = horarioRepository.findById(
+                new HorarioId(actividadId, fecha, horaInicio)
+        ).orElseThrow();
+
         LocalDateTime ahora = LocalDateTime.now();
-        Reserva reserva = armarReserva(turistaId, horario, cantidad, nombres, apellidos, cis, fechasNacimiento, observacion);
+
+        Reserva reserva = armarReserva(
+                turistaId, horario, cantidad,
+                nombres, apellidos, cis, fechasNacimiento, observacion
+        );
+
         reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
         reserva.setPlazoPagoDesde(ahora);
-        // Monto = precio x cantidad (RNE #11), con el descuento de última hora si corresponde
         reserva.setMontoTotal(calcularMonto(horario, cantidad, ahora));
 
-        // 3. Guardar (los participantes se guardan solos por el cascade)
-        return reservaRepository.save(reserva);
+        // 3. Guardar la reserva
+        Reserva reservaGuardada = reservaRepository.save(reserva);
+
+        // 4. Publicar el evento de correo
+        // El listener lo enviará después de confirmar la transacción
+        eventPublisher.publishEvent(new ReservaCreadaEvent(
+                reservaGuardada.getTurista().getUserEmail(),
+                reservaGuardada.getHorario().getActividad().getTitulo(),
+                reservaGuardada.getHorario().getFecha(),
+                reservaGuardada.getHorario().getHoraInicio(),
+                reservaGuardada.getCantCupos(),
+                reservaGuardada.getMontoTotal()
+        ));
+
+        return reservaGuardada;
     }
+
 
     // ---------- Lista de espera ----------
 
@@ -203,8 +231,21 @@ public class ReservaService {
         Reserva reserva = armarReserva(turistaId, horario, cantidad, nombres, apellidos, cis, fechasNacimiento, observacion);
         reserva.setEstado(EstadoReserva.EN_ESPERA);
         // Monto estimado: se vuelve a calcular cuando se le asigne el lugar
+
         reserva.setMontoTotal(calcularMonto(horario, cantidad, LocalDateTime.now()));
-        return reservaRepository.save(reserva);
+
+        Reserva reservaGuardada = reservaRepository.save(reserva);
+
+        eventPublisher.publishEvent(new ListaEsperaRegistradaEvent(
+                reservaGuardada.getTurista().getUserEmail(),
+                reservaGuardada.getHorario().getActividad().getTitulo(),
+                reservaGuardada.getHorario().getFecha(),
+                reservaGuardada.getHorario().getHoraInicio(),
+                reservaGuardada.getCantCupos()
+        ));
+
+        return reservaGuardada;
+
     }
 
     // Se liberaron lugares en un horario: se le ofrecen a la lista de espera, por orden de llegada.
@@ -222,13 +263,31 @@ public class ReservaService {
                 break;   // ya cerró la reserva de este horario
             }
             // Mismo descuento atómico que una reserva normal: si no entra, devuelve 0
-            if (horarioRepository.descontarCupos(actividadId, fecha, horaInicio, reserva.getCantCupos()) == 1) {
+
+            if (horarioRepository.descontarCupos(
+                    actividadId, fecha, horaInicio, reserva.getCantCupos()) == 1) {
+
                 reserva.setEstado(EstadoReserva.PENDIENTE_PAGO);
                 reserva.setPlazoPagoDesde(ahora);
-                reserva.setMontoTotal(calcularMonto(reserva.getHorario(), reserva.getCantCupos(), ahora));
+                reserva.setMontoTotal(calcularMonto(
+                        reserva.getHorario(), reserva.getCantCupos(), ahora
+                ));
+
                 reservaRepository.save(reserva);
+
+                // Avisar que consiguió un cupo desde la lista de espera
+                eventPublisher.publishEvent(new CupoAsignadoEvent(
+                        reserva.getTurista().getUserEmail(),
+                        reserva.getHorario().getActividad().getTitulo(),
+                        reserva.getHorario().getFecha(),
+                        reserva.getHorario().getHoraInicio(),
+                        reserva.getCantCupos(),
+                        reserva.getMontoTotal()
+                ));
+
                 promovidas++;
             }
+
         }
         return promovidas;
     }
@@ -253,56 +312,117 @@ public class ReservaService {
     // - PENDIENTE_PAGO: libera los cupos (y se los ofrece a la lista de espera).
     // - CONFIRMADA: solo si el horario admite cancelación y está a tiempo; se reembolsa el
     //   porcentaje que definió el prestador y se liberan los cupos.
+
     @Transactional
     public String cancelarReserva(Long turistaId, Long reservaId) {
+
         Reserva reserva = reservaRepository.findById(reservaId).orElse(null);
+
         if (reserva == null || !reserva.getTurista().getId().equals(turistaId)) {
             return "La reserva no existe.";
         }
-        // La hora la pone el servidor (hora de Uruguay), no el navegador del turista
+
         String error = puedeCancelar(reserva, LocalDateTime.now());
-        if (error != null) return error;
+        if (error != null) {
+            return error;
+        }
+
+        boolean estabaPaga = reserva.getEstado() == EstadoReserva.CONFIRMADA;
+
+        BigDecimal montoReembolsado = estabaPaga
+                ? montoAReembolsar(reserva)
+                : BigDecimal.ZERO;
 
         if (reserva.getEstado() == EstadoReserva.EN_ESPERA) {
-            // No tenía cupos ni pagó nada: solo sale de la fila
             reserva.setEstado(EstadoReserva.CANCELADA);
             reservaRepository.save(reserva);
-            return null;
-        }
-        if (reserva.getEstado() == EstadoReserva.CONFIRMADA) {
-            // Primero se devuelve la plata (el % que eligió el prestador); si la pasarela falla, no se cancela
-            error = pagoService.reembolsar(reserva, montoAReembolsar(reserva));
-            if (error != null) return error;
+
+        } else {
+
+            if (estabaPaga) {
+                error = pagoService.reembolsar(reserva, montoReembolsado);
+
+                if (error != null) {
+                    return error;
+                }
+            }
+
+            reserva.setEstado(EstadoReserva.CANCELADA);
+            reservaRepository.save(reserva);
+
+            liberarCupos(reserva);
         }
 
-        reserva.setEstado(EstadoReserva.CANCELADA);
-        reservaRepository.save(reserva);
-        liberarCupos(reserva);
+        // Enviar correo únicamente si la cancelación fue exitosa.
+        // El listener espera a que se confirme la transacción.
+        eventPublisher.publishEvent(new ReservaCanceladaEvent(
+                reserva.getTurista().getUserEmail(),
+                reserva.getHorario().getActividad().getTitulo(),
+                reserva.getHorario().getFecha(),
+                reserva.getHorario().getHoraInicio(),
+                false,
+                estabaPaga,
+                montoReembolsado,
+                null
+        ));
         return null;
     }
+
 
     // ---------- El prestador cancela una salida completa ----------
 
     // Cancela todas las reservas activas del horario. A las pagas se les devuelve el 100 %.
     // Devuelve cuántas reservas pagas NO se pudieron reembolsar (0 = todo bien); esas quedan
     // confirmadas para reintentar. Los controles (dueño, plazo) los hace ActividadService.
+
     @Transactional
     public int cancelarPorPrestador(Horario horario, String motivo) {
-        List<Reserva> reservas = reservaRepository.delHorarioNoCanceladas(horario.getActividad().getId(),
-                horario.getFecha(), horario.getHoraInicio(), EstadoReserva.CANCELADA);
+
+        List<Reserva> reservas = reservaRepository.delHorarioNoCanceladas(
+                horario.getActividad().getId(),
+                horario.getFecha(),
+                horario.getHoraInicio(),
+                EstadoReserva.CANCELADA
+        );
+
         int sinReembolsar = 0;
+
         for (Reserva reserva : reservas) {
-            if (reserva.getEstado() == EstadoReserva.CONFIRMADA
-                    && pagoService.reembolsar(reserva, reserva.getMontoTotal()) != null) {
-                sinReembolsar++;
-                continue;
+
+            boolean estabaPaga = reserva.getEstado() == EstadoReserva.CONFIRMADA;
+
+            if (estabaPaga) {
+                String error = pagoService.reembolsar(
+                        reserva,
+                        reserva.getMontoTotal()
+                );
+
+                if (error != null) {
+                    sinReembolsar++;
+                    continue;
+                }
             }
+
             reserva.setEstado(EstadoReserva.CANCELADA);
             reserva.setMotivoCancelacionPrestador(motivo);
             reservaRepository.save(reserva);
+
+            // Avisar al turista después de confirmar la transacción.
+            eventPublisher.publishEvent(new ReservaCanceladaEvent(
+                    reserva.getTurista().getUserEmail(),
+                    reserva.getHorario().getActividad().getTitulo(),
+                    reserva.getHorario().getFecha(),
+                    reserva.getHorario().getHoraInicio(),
+                    true,
+                    estabaPaga,
+                    estabaPaga ? reserva.getMontoTotal() : BigDecimal.ZERO,
+                    motivo
+            ));
         }
+
         return sinReembolsar;
     }
+
 
     // ¿Se puede cancelar esta reserva AHORA? null = sí; si no, el motivo (se muestra en "Mis reservas").
     // - Nada se cancela una vez que la actividad empezó.
@@ -390,10 +510,21 @@ public class ReservaService {
         List<Reserva> vencidas = reservaRepository.pendientesConPlazoVencido(EstadoReserva.PENDIENTE_PAGO, limite);
 
         for (Reserva reserva : vencidas) {
+
             reserva.setEstado(EstadoReserva.CANCELADA);
             reservaRepository.save(reserva);
+
             liberarCupos(reserva);
+
+            // Avisar al turista que su reserva venció
+            eventPublisher.publishEvent(new ReservaVencidaEvent(
+                    reserva.getTurista().getUserEmail(),
+                    reserva.getHorario().getActividad().getTitulo(),
+                    reserva.getHorario().getFecha(),
+                    reserva.getHorario().getHoraInicio()
+            ));
         }
+
 
         for (Reserva espera : reservaRepository.findByEstado(EstadoReserva.EN_ESPERA)) {
             if (!catalogoService.sePuedeReservar(espera.getHorario(), ahora)) {

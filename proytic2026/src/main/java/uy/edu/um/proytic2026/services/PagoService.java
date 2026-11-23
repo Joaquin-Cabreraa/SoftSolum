@@ -30,6 +30,8 @@ public class PagoService {
     @Autowired private PagoRepository pagoRepository;
     @Autowired private ReservaRepository reservaRepository;
     @Autowired private PasarelaPago pasarela;
+    @Autowired
+    private ConfirmacionPagoService confirmacionPagoService;
 
     // Lo que vuelve a la página después de intentar pagar
     public record RespuestaPago(EstadoPago estado, String mensaje) {
@@ -110,9 +112,36 @@ public class PagoService {
                 return new RespuestaPago(EstadoPago.ERROR,
                         "La reserva venció mientras se procesaba el pago. Se te devolvió el dinero.");
             }
-            actual.setEstado(EstadoReserva.CONFIRMADA);
-            reservaRepository.save(actual);
-            return new RespuestaPago(EstadoPago.APROBADO, "¡Pago aprobado! Tu reserva está confirmada.");
+            boolean confirmada = confirmacionPagoService.confirmarReserva(reservaId);
+
+            if (!confirmada) {
+                boolean reembolsado = pasarela.reembolsar(
+                        pago.getIdExterno(),
+                        monto,
+                        "umnatural-reembolso-" + pago.getId()
+                );
+
+                if (!reembolsado) {
+                    log.error("No se pudo reembolsar el pago de la reserva {}", reservaId);
+                    return new RespuestaPago(
+                            EstadoPago.ERROR,
+                            "El pago se procesó, pero no pudimos confirmar la reserva. Contactá a soporte."
+                    );
+                }
+
+                pago.setMontoReembolsado(monto);
+                pagoRepository.save(pago);
+
+                return new RespuestaPago(
+                        EstadoPago.ERROR,
+                        "La reserva no pudo confirmarse. Se te devolvió el dinero."
+                );
+            }
+
+            return new RespuestaPago(
+                    EstadoPago.APROBADO,
+                    "¡Pago aprobado! Tu reserva está confirmada."
+            );
         }
 
         return new RespuestaPago(resultado.estado(), mensajePara(resultado));
