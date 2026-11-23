@@ -30,7 +30,11 @@ public class ClimaService {
     public Optional<Pronostico> consultar(
             String localidad, String departamento, LocalDate fecha) {
 
-        if (localidad == null || localidad.isBlank()
+        String lugarBusqueda = (localidad == null || localidad.isBlank())
+                ? departamento
+                : localidad;
+
+        if (lugarBusqueda == null || lugarBusqueda.isBlank()
                 || fecha == null) {
             return Optional.empty();
         }
@@ -46,7 +50,7 @@ public class ClimaService {
         try {
             // Primero buscamos las coordenadas de la localidad.
             String nombre = URLEncoder.encode(
-                    localidad, StandardCharsets.UTF_8);
+                    lugarBusqueda, StandardCharsets.UTF_8);
 
             String urlUbicacion =
                     "https://geocoding-api.open-meteo.com/v1/search"
@@ -101,7 +105,7 @@ public class ClimaService {
                             + "&longitude=" + longitud
                             + "&daily=temperature_2m_max,temperature_2m_min,"
                             + "precipitation_probability_max,weather_code"
-                            + "&timezone=America%2FMontevideo"
+                            + "&timezone=auto"
                             + "&forecast_days=16";
 
             String respuestaClima = cliente.get()
