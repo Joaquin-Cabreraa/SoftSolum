@@ -49,159 +49,95 @@
                 <p class="ayuda" style="margin-bottom: 16px">
                     <b th:text="${identificacion}">RUT</b> · verificado por el administrador, no se puede cambiar desde acá.
                 </p>
+
                 <div class="dos" th:if="${!esEmpresa}">
-                    <div class="campo"><label for="nombre">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" required maxlength="60" th:value="${prestador.name}"></div>
-                    <div class="campo"><label for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" required maxlength="60" th:value="${prestador.lastName}"></div>
+                    <div class="campo">
+                        <label for="nombre">Nombre</label>
+                        <input type="text" id="nombre" name="nombre" required maxlength="60" th:value="${prestador.name}">
+                    </div>
+                    <div class="campo">
+                        <label for="apellido">Apellido</label>
+                        <input type="text" id="apellido" name="apellido" required maxlength="60" th:value="${prestador.lastName}">
+                    </div>
                 </div>
-                <div class="campo" th:if="${esEmpresa}"><label for="nombre">Razón social</label>
-                    <input type="text" id="nombre" name="nombre" required maxlength="120" th:value="${prestador.name}"></div>
+
+                <div class="campo" th:if="${esEmpresa}">
+                    <label for="razonSocial">Razón social</label>
+                    <input type="text" id="razonSocial" name="nombre" required maxlength="120" th:value="${prestador.name}">
+                </div>
+
                 <div class="dos">
-                    <div class="campo"><label for="email">Correo electrónico</label>
+                    <div class="campo">
+                        <label for="email">Correo electrónico</label>
                         <input type="email" id="email" name="email" required th:value="${prestador.userEmail}">
-                        <p class="ayuda">Es con el que iniciás sesión.</p></div>
-                    <div class="campo"><label for="telefono">Teléfono</label>
-                        <input type="tel" id="telefono" name="telefono" required placeholder="099123456" th:value="${prestador.telefono}"></div>
+                        <p class="ayuda">Es con el que iniciás sesión.</p>
+                    </div>
+                    <div class="campo">
+                        <label for="telefono">Teléfono</label>
+                        <input type="tel" id="telefono" name="telefono" required placeholder="099123456" th:value="${prestador.telefono}">
+                    </div>
                 </div>
+
                 <button type="submit" class="boton boton-naranja" style="width: 100%">Guardar cambios</button>
             </form>
 
             <form class="tarjeta" method="post" action="/panel/prestador/datos/emprendimiento" th:if="${emprendimiento != null}">
                 <h3 style="margin-bottom: 16px">Mi emprendimiento</h3>
+
                 <div class="dos">
-                    <div class="campo"><label for="empNombre">Nombre</label>
-                        <input type="text" id="empNombre" name="nombre" required maxlength="120" th:value="${emprendimiento.nombre}"></div>
-                    <div class="campo"><label for="empUbicacion">Dirección</label>
-                        <input type="text" id="empUbicacion" name="ubicacion" required maxlength="200" th:value="${emprendimiento.ubicacion}"></div>
+                    <div class="campo">
+                        <label for="empNombre">Nombre</label>
+                        <input type="text" id="empNombre" name="nombre" required maxlength="120" th:value="${emprendimiento.nombre}">
+                    </div>
+                    <div class="campo">
+                        <label for="empUbicacion">Dirección</label>
+                        <input type="text" id="empUbicacion" name="ubicacion" required maxlength="200" th:value="${emprendimiento.ubicacion}">
+                    </div>
                 </div>
+
                 <div class="dos">
-                    <div class="campo"><label for="empEmail">Correo de contacto</label>
-                        <input type="email" id="empEmail" name="email" required th:value="${emprendimiento.email}"></div>
-                    <div class="campo"><label for="empTelefono">Teléfono (opcional)</label>
-                        <input type="tel" id="empTelefono" name="telefono" placeholder="099123456 o 42001234" th:value="${emprendimiento.telefono}"></div>
+                    <div class="campo">
+                        <label for="empEmail">Correo de contacto</label>
+                        <input type="email" id="empEmail" name="email" required th:value="${emprendimiento.email}">
+                    </div>
+                    <div class="campo">
+                        <label for="empTelefono">Teléfono (opcional)</label>
+                        <input type="tel" id="empTelefono" name="telefono" placeholder="099123456 o 42001234" th:value="${emprendimiento.telefono}">
+                    </div>
                 </div>
-                <div class="campo"><label for="empDescripcion">Descripción (opcional)</label>
-                    <textarea id="empDescripcion" name="descripcion" maxlength="255" th:text="${emprendimiento.descripcion}"></textarea></div>
+
+                <div class="campo">
+                    <label for="empDescripcion">Descripción (opcional)</label>
+                    <textarea id="empDescripcion" name="descripcion" maxlength="255" th:text="${emprendimiento.descripcion}"></textarea>
+                </div>
+
                 <button type="submit" class="boton boton-naranja" style="width: 100%">Guardar emprendimiento</button>
             </form>
         </div>
 
         <form class="tarjeta" method="post" action="/panel/prestador/datos/contrasena">
             <h3 style="margin-bottom: 16px">Cambiar contraseña</h3>
-            <div class="campo"><label for="actual">Contraseña actual</label>
-                <input type="password" id="actual" name="actual" required autocomplete="current-password"></div>
-            <div class="campo"><label for="nueva">Nueva contraseña</label>
-                <input type="password" id="nueva" name="nueva" required minlength="15" autocomplete="new-password"></div>
-            <div class="campo"><label for="confirmacion">Repetir la nueva</label>
-                <input type="password" id="confirmacion" name="confirmacion" required minlength="15" autocomplete="new-password"></div>
+
+            <div class="campo">
+                <label for="actual">Contraseña actual</label>
+                <input type="password" id="actual" name="actual" required autocomplete="current-password">
+            </div>
+
+            <div class="campo">
+                <label for="nueva">Nueva contraseña</label>
+                <input type="password" id="nueva" name="nueva" required minlength="15" autocomplete="new-password">
+            </div>
+
+            <div class="campo">
+                <label for="confirmacion">Repetir la nueva</label>
+                <input type="password" id="confirmacion" name="confirmacion" required minlength="15" autocomplete="new-password">
+            </div>
+
             <button type="submit" class="boton boton-borde" style="width: 100%">Cambiar contraseña</button>
         </form>
     </div>
 </main>
-<footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
-</body>
-</html><!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>UMnatural | Mis datos</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/css/umnatural.css">
-    <style>
-        .volver { display: table; font-size: 15px; color: var(--muted); text-decoration: none; margin-bottom: 22px; }
-        .columnas { display: grid; grid-template-columns: 1fr 340px; gap: 30px; align-items: start; margin-top: 26px; }
-        .campo { margin-bottom: 14px; }
-        .campo label { font-size: 15px; font-weight: 600; margin-bottom: 6px; display: block; }
-        .dos { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-        .ayuda { font-size: 14px; color: var(--muted); margin-top: 4px; }
-        .mensaje { padding: 12px 16px; border-radius: 6px; font-size: 17px; margin-top: 20px; }
-        .mensaje.ok { background: #e3f1ea; color: #2f7d5b; }
-        .mensaje.error { background: #f7e4e1; color: #b9483a; }
-        @media (max-width: 850px) { .columnas, .dos { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-<nav class="nav">
-    <a href="/" class="logo">UM<span>natural</span></a>
-    <div class="nav-links">
-        <a href="/panel/prestador" class="activo">Mi panel</a>
-        <a href="/panel/prestador/actividades">Mis actividades</a>
-        <a href="/panel/prestador/reservas">Reservas</a>
-        <a href="/panel/prestador/resenas">Reseñas</a>
-        <a href="/logout">Cerrar sesión</a>
-    </div>
-</nav>
 
-<main class="pagina">
-    <a href="/panel/prestador" class="volver">← Volver a mi panel</a>
-    <span class="eyebrow">Prestador</span>
-    <h1>Mis datos.</h1>
-    <p class="descripcion">Mantené al día tus datos y los de tu emprendimiento: son los que ven el administrador y los turistas.</p>
-
-    <div class="mensaje ok" th:if="${exito}" th:text="${exito}">Ok</div>
-    <div class="mensaje error" th:if="${error}" th:text="${error}">Error</div>
-
-    <div class="columnas">
-        <div style="display:flex; flex-direction:column; gap:24px">
-            <form class="tarjeta" method="post" action="/panel/prestador/datos">
-                <h3 style="margin-bottom: 6px" th:text="${esEmpresa} ? 'Datos de la empresa' : 'Datos personales'">Datos</h3>
-                <p class="ayuda" style="margin-bottom: 16px">
-                    <b th:text="${identificacion}">RUT</b> · verificado por el administrador, no se puede cambiar desde acá.
-                </p>
-                <div class="dos" th:if="${!esEmpresa}">
-                    <div class="campo"><label for="nombre">Nombre</label>
-                        <input type="text" id="nombre" name="nombre" required maxlength="60" th:value="${prestador.name}"></div>
-                    <div class="campo"><label for="apellido">Apellido</label>
-                        <input type="text" id="apellido" name="apellido" required maxlength="60" th:value="${prestador.lastName}"></div>
-                </div>
-                <div class="campo" th:if="${esEmpresa}"><label for="nombre">Razón social</label>
-                    <input type="text" id="nombre" name="nombre" required maxlength="120" th:value="${prestador.name}"></div>
-                <div class="dos">
-                    <div class="campo"><label for="email">Correo electrónico</label>
-                        <input type="email" id="email" name="email" required th:value="${prestador.userEmail}">
-                        <p class="ayuda">Es con el que iniciás sesión.</p></div>
-                    <div class="campo"><label for="telefono">Teléfono</label>
-                        <input type="tel" id="telefono" name="telefono" required placeholder="099123456" th:value="${prestador.telefono}"></div>
-                </div>
-                <button type="submit" class="boton boton-naranja" style="width: 100%">Guardar cambios</button>
-            </form>
-
-            <form class="tarjeta" method="post" action="/panel/prestador/datos/emprendimiento" th:if="${emprendimiento != null}">
-                <h3 style="margin-bottom: 16px">Mi emprendimiento</h3>
-                <div class="dos">
-                    <div class="campo"><label for="empNombre">Nombre</label>
-                        <input type="text" id="empNombre" name="nombre" required maxlength="120" th:value="${emprendimiento.nombre}"></div>
-                    <div class="campo"><label for="empUbicacion">Dirección</label>
-                        <input type="text" id="empUbicacion" name="ubicacion" required maxlength="200" th:value="${emprendimiento.ubicacion}"></div>
-                </div>
-                <div class="dos">
-                    <div class="campo"><label for="empEmail">Correo de contacto</label>
-                        <input type="email" id="empEmail" name="email" required th:value="${emprendimiento.email}"></div>
-                    <div class="campo"><label for="empTelefono">Teléfono (opcional)</label>
-                        <input type="tel" id="empTelefono" name="telefono" placeholder="099123456 o 42001234" th:value="${emprendimiento.telefono}"></div>
-                </div>
-                <div class="campo"><label for="empDescripcion">Descripción (opcional)</label>
-                    <textarea id="empDescripcion" name="descripcion" maxlength="255" th:text="${emprendimiento.descripcion}"></textarea></div>
-                <button type="submit" class="boton boton-naranja" style="width: 100%">Guardar emprendimiento</button>
-            </form>
-        </div>
-
-        <form class="tarjeta" method="post" action="/panel/prestador/datos/contrasena">
-            <h3 style="margin-bottom: 16px">Cambiar contraseña</h3>
-            <div class="campo"><label for="actual">Contraseña actual</label>
-                <input type="password" id="actual" name="actual" required autocomplete="current-password"></div>
-            <div class="campo"><label for="nueva">Nueva contraseña</label>
-                <input type="password" id="nueva" name="nueva" required minlength="15" autocomplete="new-password"></div>
-            <div class="campo"><label for="confirmacion">Repetir la nueva</label>
-                <input type="password" id="confirmacion" name="confirmacion" required minlength="15" autocomplete="new-password"></div>
-            <button type="submit" class="boton boton-borde" style="width: 100%">Cambiar contraseña</button>
-        </form>
-    </div>
-</main>
 <footer>© 2026 UMnatural · Desarrollado por SoftSolum</footer>
 </body>
 </html>
